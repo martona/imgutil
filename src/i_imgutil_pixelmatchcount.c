@@ -1,7 +1,7 @@
 #include "i_imgutil.h"
 
 // basic version without instruction set requirements
-static inline u32 i_imgutil_pixelmatchcount_v1
+static inline u32 i_imgutil_pixelmatchcount_v0
 (
     argb** __restrict  haystack,    //pointer to haystack array
     i32 w,                          //width of the array in 32-bit pixels
@@ -30,6 +30,41 @@ static inline u32 i_imgutil_pixelmatchcount_v1
             ret++;
         w--;
     }
+    return ret;
+}
+
+static inline u32 i_imgutil_pixelmatchcount_v1
+(
+    argb** __restrict  haystack,    //pointer to haystack array
+    i32 w,                          //width of the array in 32-bit pixels
+    argb** __restrict  needle_lo,   //precomputed low values for the entire needle array
+    argb** __restrict  needle_hi    //precomputed high values for the entire needle array
+)
+{
+    // pixel match count to be returned
+    u32 ret = 0;
+    i32 vecsize = (sizeof(__m64) / sizeof(i32));
+    while (w > vecsize) {
+        __m64 h  = _mm_cvtsi64_m64(*(u64*)*haystack );  // load 2 haystack pixels
+        (*haystack)  += vecsize;
+        __m64 lo = _mm_cvtsi64_m64(*(u64*)*needle_lo);  // load 2 needle_lo pixels
+        (*needle_lo) += vecsize;
+        __m64 hi = _mm_cvtsi64_m64(*(u64*)*needle_hi);  // load 2 needle_hi pixels
+        (*needle_hi) += vecsize;
+
+        __m64 mask_lo = _mm_cmpge_pu8(h, lo);          // Compare needle_lo and haystack
+        __m64 mask_hi = _mm_cmple_pu8(h, hi);          // Compare needle_hi and haystack
+
+        __m64 mask    = _mm_and_si64(mask_lo, mask_hi);// Combine the comparison results
+
+        u64 res       = _mm_cvtm64_si64(mask);         // convert the mask to a 64-bit integer
+        ret += ((int*)&res)[0] == 0xffffffff;          // if all 4 channels satisfied the conditions
+        ret += ((int*)&res)[1] == 0xffffffff;          // ditto on the high u32
+
+        w -= vecsize;
+    }
+    _mm_empty(); // Clear the MMX state
+    ret += i_imgutil_pixelmatchcount_v0(haystack, w, needle_lo, needle_hi);
     return ret;
 }
 

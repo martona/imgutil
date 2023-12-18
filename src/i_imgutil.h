@@ -20,28 +20,6 @@ typedef int                 i32;
 typedef short               i16;
 typedef char                i8;
 
-#include "i_imgutil_debruijn.h"
-
-#ifndef min
-#define min(a, b) (a < b ? a : b)
-#endif
-#ifndef max
-#define max(a, b) (a > b ? a : b)
-#endif
-
-// https://stackoverflow.com/questions/32945410/
-// some badly needed intrinsics for unsigned 8-bit comparisons
-#define _mm_cmpge_epu8(a, b) _mm_cmpeq_epi8(_mm_max_epu8(a, b), a)
-#define _mm_cmple_epu8(a, b) _mm_cmpge_epu8(b, a)
-#define _mm_cmpgt_epu8(a, b) _mm_xor_si128(_mm_cmple_epu8(a, b), _mm_set1_epi8(-1))
-#define _mm_cmplt_epu8(a, b) _mm_cmpgt_epu8(b, a)
-// and the avx2 version
-#define _mm256_cmpge_epu8(a, b) _mm256_cmpeq_epi8(_mm256_max_epu8(a, b), a)
-#define _mm256_cmple_epu8(a, b) _mm256_cmpge_epu8(b, a)
-#define _mm256_cmpgt_epu8(a, b) _mm256_xor_si128(_mm256_cmple_epu8(a, b), _mm256_set1_epi8(-1))
-#define _mm256_cmplt_epu8(a, b) _mm256_cmpgt_epu8(b, a)
-
-
 typedef union {
     u32 u32;
     struct {
@@ -51,6 +29,13 @@ typedef union {
         u8 a;
     };
 } argb;
+
+#ifndef min
+#define min(a, b) (a < b ? a : b)
+#endif
+#ifndef max
+#define max(a, b) (a > b ? a : b)
+#endif
 
 // this vec union is of the appropriate size based on the MARCH_* definition
 // note that V4 code uses V3, V2, and V1, and V3 code uses V2 and V1, etc...
@@ -66,9 +51,33 @@ typedef union {
 #if defined(MARCH_x86_64_v2) || defined(MARCH_x86_64_v3) || defined(MARCH_x86_64_v4)
     __m128i m128i;
     __m128  m128;
-#endif    
+#endif
     argb    margb;
 } vec;
+
+// https://stackoverflow.com/questions/32945410/
+// some badly needed intrinsics for unsigned 8-bit comparisons
+#define _mm_cmpge_epu8(a, b) _mm_cmpeq_epi8(_mm_max_epu8(a, b), a)
+#define _mm_cmple_epu8(a, b) _mm_cmpge_epu8(b, a)
+#define _mm_cmpgt_epu8(a, b) _mm_xor_si128(_mm_cmple_epu8(a, b), _mm_set1_epi8(-1))
+#define _mm_cmplt_epu8(a, b) _mm_cmpgt_epu8(b, a)
+// and the avx2 version
+#define _mm256_cmpge_epu8(a, b) _mm256_cmpeq_epi8(_mm256_max_epu8(a, b), a)
+#define _mm256_cmple_epu8(a, b) _mm256_cmpge_epu8(b, a)
+#define _mm256_cmpgt_epu8(a, b) _mm256_xor_si128(_mm256_cmple_epu8(a, b), _mm256_set1_epi8(-1))
+#define _mm256_cmplt_epu8(a, b) _mm256_cmpgt_epu8(b, a)
+// mmmmmm.... mmx
+static inline __m64 _mm_cmpge_pu8(__m64 a, __m64 b) {
+    // this could be a macro but so much easier to read this way
+    __m64 c = _mm_subs_pu8(a, b);                    //    0 if a <= b, otherwise nonzero
+    __m64 d = _mm_cmpeq_pi8(c, _mm_setzero_si64());  // 0xFF if c == 0 (i.e. a >  b), otherwise 0
+    __m64 e = _mm_cmpeq_pi8(a, b);                   // 0xFF if a == b, otherwise 0
+    __m64 f = _mm_or_si64(d, e);                     // 0xFF if a == b or a > b otherwise 0
+    return f;
+}
+#define _mm_cmple_pu8(a, b) _mm_cmpge_pu8(b, a)
+
+#include "i_imgutil_debruijn.h"
 
 #ifdef __GNUC__
     #if defined(MARCH_x86_64_v4)
