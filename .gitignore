@@ -50,3 +50,8 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+src/*.aux.txt
+src/*.err.txt
+src/*.lst.txt
+src/*.c.s
+

@@ -33,7 +33,7 @@ static inline u32 i_imgutil_pixelmatchcount_v1
     return ret;
 }
 
-#if defined(MARCH_x86_64_v4) || defined(MARCH_x86_64_v2)
+#if defined(MARCH_x86_64_v4) || defined(MARCH_x86_64_v3) || defined(MARCH_x86_64_v2)
 static inline u32 i_imgutil_pixelmatchcount_v2
 (
     argb** __restrict  haystack,    //pointer to haystack array
@@ -80,6 +80,55 @@ static inline u32 i_imgutil_pixelmatchcount_v2
 }
 #endif
 
+#if defined(MARCH_x86_64_v4) || defined(MARCH_x86_64_v3)
+// https://stackoverflow.com/questions/77620019/
+// the avx check for the final value seems better than the 
+// (admittedly more "elegant") bit twiddling solutions
+static inline u32 i_imgutil_pixelmatchcount_v3
+(
+    argb** __restrict  haystack,    //pointer to haystack array
+    i32 w,                          //width of the array in 32-bit pixels
+    argb** __restrict  needle_lo,   //precomputed low values for the entire needle array
+    argb** __restrict  needle_hi    //precomputed high values for the entire needle array
+)
+{
+    // pixel match count to be returned
+    u32 ret = 0;
+    i32 vecsize = (sizeof(__m256i) / sizeof(i32));
+    // don't scan pixels we can't swallow into a vector
+    while (w > (vecsize - 1)) {
+        // get precomputed low values
+        __m256i nl = _mm256_loadu_si256((__m256i*)*needle_lo);
+        *needle_lo += vecsize;
+        // get precomputed hight values
+        __m256i nh = _mm256_loadu_si256((__m256i*)*needle_hi);
+        *needle_hi += vecsize;
+
+        // load a vector's worth of haystack
+        __m256i h256 = _mm256_loadu_si256((__m256i*)*haystack);
+        *haystack += vecsize;
+
+        // compare haystack to needle low
+        __m256i lres = _mm256_cmpge_epu8(h256, nl);
+        // compare haystack to needle high
+        __m256i hres = _mm256_cmple_epu8(h256, nh);
+        // see where both operations were true
+        __m256i both = _mm256_and_si256(lres, hres);
+        // compare this with the all-1 mask on a 32-bit basis
+        __m256i vres = _mm256_cmpeq_epi32(both, _mm256_set1_epi32(-1));
+
+        // condense the result into one bit per byte comparison
+        u32 mres = _mm256_movemask_epi8(vres);
+        // count the number of bits from this mask and divide by 4 to get matching pixel count
+        // (we get 1 bit for every byte from movemask_epi8)
+        ret += imgutil_popcount(mres) / 4;
+        w -= vecsize;
+    }
+    ret += i_imgutil_pixelmatchcount_v2(haystack, w, needle_lo, needle_hi);
+    return ret;
+}
+#endif
+
 #if defined(MARCH_x86_64_v4)
 // https://stackoverflow.com/questions/77620019/
 // the avx check for the final value seems better than the 
@@ -115,10 +164,10 @@ static inline u32 i_imgutil_pixelmatchcount_v4
         ret += imgutil_popcount((u32)bits);
         *needle_lo += vecsize;
         *needle_hi += vecsize;
-        *haystack += vecsize;
+        *haystack  += vecsize;
         w -= vecsize;
     }
-    ret += i_imgutil_pixelmatchcount_v2(haystack, w, needle_lo, needle_hi);
+    ret += i_imgutil_pixelmatchcount_v3(haystack, w, needle_lo, needle_hi);
     return ret;
 }
 #endif

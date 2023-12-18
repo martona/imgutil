@@ -7,6 +7,10 @@
 #include <intrin.h>
 #endif
 
+#if !defined(MARCH_x86_64_v4) && !defined(MARCH_x86_64_v3) && !defined(MARCH_x86_64_v2) && !defined(MARCH_x86_64_v1)
+    #error "MARCH_x86_64_vx not defined"
+#endif
+
 typedef unsigned long long  u64;
 typedef unsigned int        u32;
 typedef unsigned short      u16;
@@ -26,34 +30,44 @@ typedef char                i8;
 #endif
 
 // https://stackoverflow.com/questions/32945410/
+// some badly needed intrinsics for unsigned 8-bit comparisons
 #define _mm_cmpge_epu8(a, b) _mm_cmpeq_epi8(_mm_max_epu8(a, b), a)
 #define _mm_cmple_epu8(a, b) _mm_cmpge_epu8(b, a)
 #define _mm_cmpgt_epu8(a, b) _mm_xor_si128(_mm_cmple_epu8(a, b), _mm_set1_epi8(-1))
 #define _mm_cmplt_epu8(a, b) _mm_cmpgt_epu8(b, a)
+// and the avx2 version
+#define _mm256_cmpge_epu8(a, b) _mm256_cmpeq_epi8(_mm256_max_epu8(a, b), a)
+#define _mm256_cmple_epu8(a, b) _mm256_cmpge_epu8(b, a)
+#define _mm256_cmpgt_epu8(a, b) _mm256_xor_si128(_mm256_cmple_epu8(a, b), _mm256_set1_epi8(-1))
+#define _mm256_cmplt_epu8(a, b) _mm256_cmpgt_epu8(b, a)
 
-typedef struct {
-    u8 b;
-    u8 g;
-    u8 r;
-    u8 a;
+
+typedef union {
+    u32 u32;
+    struct {
+        u8 b;
+        u8 g;
+        u8 r;
+        u8 a;
+    };
 } argb;
 
 // this vec union is of the appropriate size based on the MARCH_* definition
 // note that V4 code uses V3, V2, and V1, and V3 code uses V2 and V1, etc...
 typedef union {
-    argb    margb;
-#if defined(MARCH_x86_64_v2) || defined(MARCH_x86_64_v3) || defined(MARCH_x86_64_v4)
-    __m128i m128i;
-    __m128  m128;
+#if defined(MARCH_x86_64_v4)    
+    __m512i m512i;
+    __m512  m512;
 #endif    
 #if defined(MARCH_x86_64_v3) || defined(MARCH_x86_64_v4)
     __m256i m256i;
     __m256  m256;
 #endif
-#if defined(MARCH_x86_64_v4)    
-    __m512i m512i;
-    __m512  m512;
+#if defined(MARCH_x86_64_v2) || defined(MARCH_x86_64_v3) || defined(MARCH_x86_64_v4)
+    __m128i m128i;
+    __m128  m128;
 #endif    
+    argb    margb;
 } vec;
 
 #ifdef __GNUC__
@@ -62,8 +76,17 @@ typedef union {
         #define imgutil_clz16(a)    __builtin_clzs(a)
         #define imgutil_clz32(a)    __builtin_clz(a)
         #define imgutil_clz64(a)    __builtin_clzll(a)
-    #elif defined(MARCH_X86_64_v3)
-        //TODO
+        //the member of the vec union that is the appropriate size for this MARCH_* definition
+        #define __mvec              m512i
+        //and the appropriate set1 function to go with it
+        #define _mvec_set1_epi32(a) _mm512_set1_epi32(a)
+    #elif defined(MARCH_x86_64_v3)
+        #define imgutil_popcount(a) __builtin_popcount(a)
+        #define imgutil_clz16(a)    __builtin_clzs(a)
+        #define imgutil_clz32(a)    __builtin_clz(a)
+        #define imgutil_clz64(a)    __builtin_clzll(a)
+        #define __mvec              m256i
+        #define _mvec_set1_epi32(a) _mm256_set1_epi32(a)
     #elif defined(MARCH_x86_64_v2)
         #define imgutil_popcount(a) __builtin_popcount(a)
         #define imgutil_clz16(a)    (15 -  _bit_scan_reverse(a)  )
@@ -79,11 +102,15 @@ typedef union {
         #else
             #define imgutil_clz64(a)    (63 - __builtin_ia32_bsrdi(a)) 
         #endif
-    #elif defined(MARCH_x86_64_V1)
+        #define __mvec              m128i
+        #define _mvec_set1_epi32(a) _mm_set1_epi32(a)
+    #elif defined(MARCH_x86_64_v1)
         #define imgutil_popcount(a) i_imgutil_popcount(a)
         #define imgutil_clz16(a)    (15 - i_imgutil_bsrDeBruijn32(a))
         #define imgutil_clz32(a)    (31 - i_imgutil_bsrDeBruijn32(a))
         #define imgutil_clz64(a)    (63 - i_imgutil_bsrDeBruijn64(a))
+        #define __mvec              margb.u32
+        #define _mvec_set1_epi32(a) (u32)(a)
     #endif
 #else
     // microsoft compiler, probably

@@ -30,7 +30,7 @@ static inline argb* i_imgutil_pixel_scan_v1
     return 0;
 }
 
-#if defined(MARCH_x86_64_v4) || defined(MARCH_x86_64_v2)
+#if defined(MARCH_x86_64_v4) || defined(MARCH_x86_64_v3) || defined(MARCH_x86_64_v2)
 static inline argb* i_imgutil_pixel_scan_v2
 (   
     argb*  __restrict p,
@@ -67,6 +67,44 @@ static inline argb* i_imgutil_pixel_scan_v2
 }
 #endif
 
+#if defined(MARCH_x86_64_v4) || defined(MARCH_x86_64_v3)
+static inline argb* i_imgutil_pixel_scan_v3
+(   
+    argb*  __restrict p,
+    vec nl, vec nh,
+    i32 w
+)
+{
+    // number of 32-bit pixels in a vector
+    i32 vecsize = (sizeof(__m256i) / sizeof(i32));
+    // don't scan pixels we can't swallow into a vector
+    while (w >= vecsize) {
+        // load a vector's worth of haystack
+        __m256i h256 = _mm256_loadu_si256((__m256i*)p);
+        // compare haystack to needle low
+        __m256i lres = _mm256_cmpge_epu8(h256, nl.m256i);
+        // compare haystack to needle high
+        __m256i hres = _mm256_cmple_epu8(h256, nh.m256i);
+        // see where both operations were true
+        __m256i both = _mm256_and_si256(lres, hres);
+        // compare this with the all-1 mask on a 32-bit basis
+        __m256i vres = _mm256_cmpeq_epi32(both, _mm256_set1_epi32(-1));
+        // condense the result into one bit per byte comparison
+        u32 bits = _mm256_movemask_epi8(vres);
+        // if we have a hit...
+        if (bits) 
+            // count leading zeroes in mask (as a 16-bit value)
+            // we get 1 bit for each color channel, and we want
+            // pixels, so divide by 4
+            return p + imgutil_clz32(bits) / 4;
+        p += vecsize;
+        w -= vecsize;
+    }
+    return i_imgutil_pixel_scan_v2(p, nl, nh, w);
+}
+#endif
+
+
 #if defined(MARCH_x86_64_v4)
 static inline argb* i_imgutil_pixel_scan_v4
 (   
@@ -99,6 +137,6 @@ static inline argb* i_imgutil_pixel_scan_v4
         p += vecsize;
         w -= vecsize;
     }
-    return i_imgutil_pixel_scan_v2(p, nl, nh, w);
+    return i_imgutil_pixel_scan_v3(p, nl, nh, w);
 }
 #endif

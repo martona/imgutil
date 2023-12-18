@@ -1,22 +1,18 @@
 
 #if defined (MARCH_x86_64_v4)
-    #define imgutil_imgsrch             imgutil_imgsrch_v4
-    #define __mvec                      m512i
-    #define _mvec_set1_epi32            _mm512_set1_epi32
     #define i_imgutil_pixel_scan        i_imgutil_pixel_scan_v4
     #define i_imgutil_pixelmatchcount   i_imgutil_pixelmatchcount_v4
+#elif defined (MARCH_x86_64_v3)
+    #define i_imgutil_pixel_scan        i_imgutil_pixel_scan_v3
+    #define i_imgutil_pixelmatchcount   i_imgutil_pixelmatchcount_v3
 #elif defined (MARCH_x86_64_v2)
-    #define imgutil_imgsrch             imgutil_imgsrch_v2
-    #define __mvec                      m128i
-    #define _mvec_set1_epi32            _mm_set1_epi32
     #define i_imgutil_pixel_scan        i_imgutil_pixel_scan_v2
     #define i_imgutil_pixelmatchcount   i_imgutil_pixelmatchcount_v2
-#elif defined (MARCH_x86_64_V1)
-    #define imgutil_imgsrch             imgutil_imgsrch_v1
-    #define __mvec                      margb
-    #define _mvec_set1_epi32            
+#elif defined (MARCH_x86_64_v1)
     #define i_imgutil_pixel_scan        i_imgutil_pixel_scan_v1
     #define i_imgutil_pixelmatchcount   i_imgutil_pixelmatchcount_v1
+#else
+    #error "Error: MARCH_x86_64_vx not defined"
 #endif
 
 argb* imgutil_imgsrch (
@@ -32,6 +28,7 @@ argb* imgutil_imgsrch (
 {
     i32 needle_pixels       = needle_w * needle_h;
     i32 pixels_needed       = needle_pixels * pctmatchreq / 100;
+    force_topleft           = pctmatchreq == 100 ? 1 : force_topleft;
     //top left pixel from both upper and lower masks into two vectors
     vec nl, nh;
     nl.__mvec = _mvec_set1_epi32(0x00 << 24  | needle_lo[0].r << 16 | needle_lo[0].g << 8 | needle_lo[0].b);

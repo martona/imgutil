@@ -82,8 +82,8 @@ argb* imgutil_makebw(argb* start, u32 w, u32 h, u8 threshold) {
     argb* end = start + w * h;
     argb* current = start;
     u32 t = threshold * 3;
-    argb black = {0xff, 0x00, 0x00, 0x00};
-    argb white = {0xff, 0xff, 0xff, 0xff};
+    argb black = {.a = 0xff, .r = 0x00, .g = 0x00, .b = 0x00};
+    argb white = {.a = 0xff, .r = 0xff, .g = 0xff, .b = 0xff};
     while (current < end) {
         argb c = *current;
         u32 s = c.r + c.g + c.b;
