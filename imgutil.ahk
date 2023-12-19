@@ -31,7 +31,7 @@ class imgutil {
     ; to addresses in memory
     i_get_mcode_map() {
         ; determine the correct CPU level from cpuinfo
-        psabi_level_expected := this.i_get_psabi_level()
+        psabi_level_expected := 0 ; this.i_get_psabi_level()
 
         ; get the correct machine code blob
         if (psabi_level_expected = 4) {
@@ -42,6 +42,10 @@ class imgutil {
             cmap := this.i_get_mcode_map_v2()
         } else if (psabi_level_expected = 1) {
             cmap := this.i_get_mcode_map_v1()
+        } else if (psabi_level_expected = 0) {
+            cmap := this.i_get_mcode_map_v0()
+        } else if (psabi_level_expected = -1) {
+            cmap := this.i_get_mcode_map_vs()
         } else {
             throw("imgutil: unsupported psabi level: " . psabi_level_expected)
         }
@@ -50,6 +54,214 @@ class imgutil {
         psabi_level := DllCall(cmap["get_blob_psabi_level"], "int")
         if psabi_level != psabi_level_expected
             throw("imgutil: incompatible blob psabi level; expected " . psabi_level_expected . ", got " . psabi_level)
+        return cmap
+    }
+
+
+    ; -march=core2 below baseline, mmx
+    i_get_mcode_map_vs() {
+        static b64 := ""
+        . "" ; imgutil_all.c
+        . "" ; 4144 bytes
+        . "" ; gcc.exe (Rev2, Built by MSYS2 project) 13.2.0
+        . "" ; flags: -march=core2 -D MARCH_x86_64_vs -O3
+        . "" ; GNU assembler (GNU Binutils) 2.41
+        . "" ; flags: -O2
+        . "KdGJyMH4HzHBKcExwEE5yA+dwMNmZi4PH4QAAAAAAJBTichBidHB6BBBwekQRQ+2yQ+2wEQpyEG"
+        . "JwUHB+R9EMchEKchFMclBOcB8NQ+2xQ+23inYQYnCQcH6H0Qx0EQp0EE5wHwbD7bJD7bSRTHJKd"
+        . "GJyMH4HzHBKcFBOchBD53BRInIW8NmLg8fhAAAAAAAVlNEi0QkQEiJy4tMJFBEichFictMY0wkO"
+        . "A+29MHoEEGJ8g+vykhjyUwByUiNNIuLTCRID6/KSGPJTAHJSI0Mi0g58Q+DpwAAAIP6AUQPtsh1"
+        . "Rg+2QQJEKciZMdAp0EE5wHwtD7ZBAUEPttIp0Jkx0CnQQTnAfBkPtgFBD7bTKdCZMdAp0EE5wH1"
+        . "2Zg8fRAAAMcBbXsMPHwAPtkECRCnIicPB+x8x2CnYQTnAfOMPtkEBQQ+22inYicPB+x8x2CnYQT"
+        . "nAfMsPtgFBD7bbKdiJw8H7HzHYKdhBOcB8tEhjwkiNDIFIOfFysA8fhAAAAAAAuAEAAADrm2YPH"
+        . "4QAAAAAAEiDwQRIOfEPgkX////r4ZBTD69UJDBEi0QkOEhj0kSJyEWJy0xjTCRID7bcwegQQYna"
+        . "SQHRSo0ciUxjTCRATAHKSI0UkUg52nNRRA+2yA+2QgJEKciJwcH5HzHIKchBOcB8RQ+2QgFBD7b"
+        . "KKciJwcH5HzHIKchBOcB8LQ+2AkEPtsspyInBwfkfMcgpyEE5wHwWSIPCBEg52nKzuAEAAABbw2"
+        . "YPH0QAADHAW8MPH0AAVlNBD6/QSInISI00lQAAAABMjRwxTDnZcz5FD7bJZpBED7ZRAcZBA/9ED"
+        . "7ZBAkUB0EQPthFFAdBFOcgPk8JIg8EE99oPttqIUf6I12aJWfxMOdlyy0gB8Fteww8fRAAAQVdB"
+        . "VkFVQVRVV1ZTSIHsuAIAAA8RtCQQAgAADxG8JCACAABEDxGEJDACAABEDxGMJEACAABEDxGUJFA"
+        . "CAABEDxGcJGACAABEDxGkJHACAABEDxGsJIACAABEDxG0JJACAABEDxG8JKACAAAPtoQkIAMAAE"
+        . "Rp4AABAQCJ10EJxEGBzAAAAP9EieBFieZEieZBwe4QD7bEhdJBicJFifMPjgwIAACD+hAPjnYHA"
+        . "ABFD7bkRQ+29kUPturzRA9vPT4MAABMieBMifPzRA9vNX8MAABmD+//SMHgCEjB4wjzRA9vLXoM"
+        . "AABmRQ92241q/0wJ8EwJ6/NED28lcwwAAEjB4AhIweMITInqTAnjTAnoSMHiCEjB4AhIweMITAn"
+        . "iTAngTAnzSMHiCEjB4AhIweMITAnyTAnwTAnrSMHgCEjB4whMCeNMCehIweAISMHjCEwJ4EwJ80"
+        . "jB4AhIweMITAnwTAnrSMHiCEwJ6kiJBCRIweIISIlcJAhMCeJIiVwkEEiJy0jB4ghIiUQkKEyJy"
+        . "EwJ8kjB4ghMCepIweIITAniQYnsQcHsBEiJVCQYScHkBkiJVCQgTInCSQHMDx+AAAAAAPMPbzPG"
+        . "QgMASIPDQEiDwkDzD29T0MZCxwBIg8BA8w9va+DGQssAZg84ADWxCgAAZg9vwvMPb2QkIMZCzwB"
+        . "mDzgAFboKAABmDzgABaEKAABmD+vwZg9vxWYPOAAtwAoAAGYP/ObzD29cJBBmRA9v1mYPOAAFmA"
+        . "oAAGYP69DzD29D8GZED/hUJCBmRA9vymYP/NrzD28MJGZED/hMJBDGQtMAZg84AAWGCgAAZg/r6"
+        . "GYPb8bGQtcAZg/YxGYP/M3GQtsAZkQPb8VmD3THZkQP+AQkxkLfAMZC4wDGQucAZg/b4GZBD9/D"
+        . "Zg/rxGYPb+JmD9jjxkLrAGYPdOfGQu8AxkLzAMZC9wBmD9vcZkEP3+NmD+vjZg9v3WYP2NnGQvs"
+        . "AZg9038ZC/wBmD9vLZkEP39tmD+vZZkEPb8pmD9jOZkEPb/FmD3TPZg/Y8mZBD2/QZg/Y1WYPdP"
+        . "dmD3TXZkEP28pmRA/F6QBmRIlqwGYPb+kPEYwkAAIAAGZBDzgA72ZBD9vxRA+2rCQCAgAAZkEP2"
+        . "9BEiGrCZkQPxe0AZg9v6WYPOAAtqQkAAGZEiWrEDxGMJPABAABED7asJPUBAABEiGrGZkQPxekD"
+        . "ZkSJasgPEYwk4AEAAEQPtqwk6AEAAESIaspmRA/F7QBmD2/uZg84AC18CQAAZkSJaswPEYwk0AE"
+        . "AAEQPtqwk2wEAAESIas5mRA/F6QZmRIlq0A8RjCTAAQAARA+2rCTOAQAAZg84AA0tCQAAZg/rzU"
+        . "SIatJmRA/F6QBmD2/OZg84AA0yCQAAZkSJatQPEbQksAEAAEQPtqwksQEAAESIatZmRA/F7gFmR"
+        . "Ilq2A8RtCSgAQAARA+2rCSkAQAARIhq2mZED8XpAGYPb85mRIlq3GZBDzgAzg8RtCSQAQAARA+2"
+        . "rCSXAQAARIhq3mZED8XuBGZEiWrgDxG0JIABAABED7asJIoBAABEiGriZkQPxekAZg9vymZEiWr"
+        . "kZkEPOADNDxG0JHABAABED7asJH0BAABEiGrmZkQPxe4HZkSJauhmQQ9+1USIaupmRA/F6QBmD2"
+        . "/KZkSJauxmQQ84AMwPEZQkYAEAAEQPtqwkYwEAAESIau5mRA/F6gJmRIlq8A8RlCRQAQAARA+2r"
+        . "CRWAQAARIhq8mZED8XpAGYPb8pmDzgADVMIAABmRIlq9A8RlCRAAQAARA+2rCRJAQAARIhq9mZE"
+        . "D8XqBWZEiWr4DxGUJDABAABED7asJDwBAABEiGr6ZkQPxekAZg9vyGZEiWr8ZkEPOADPDxGUJCA"
+        . "BAABED7asJC8BAABEiGr+ZkQPxegAxkDD/8ZAx//GQMv/xkDP/8ZA0//GQNf/xkDb/8ZA3//GQO"
+        . "P/xkDn/8ZA6//GQO//xkDz/8ZA9//GQPv/xkD//2ZEiWjADxGEJBABAABED7asJBIBAABEiGjCZ"
+        . "kQPxekAZg9vyGYPOAANDAcAAGZEiWjEDxGEJAABAABED7asJAUBAABEiGjGZkQPxegDZkSJaMgP"
+        . "EYQk8AAAAEQPtqwk+AAAAESIaMpmRA/F6QBmD2/MZkSJaMwPEYQk4AAAAEQPtqwk6wAAAESIaM5"
+        . "mRA/F6AZmDzgADb8GAABmRIlo0A8RhCTQAAAARA+2rCTeAAAAZg84AAWQBgAAZg/rwUSIaNJmRA"
+        . "/F6ABmD2/EZg84AAWVBgAAZkSJaNQPEaQkwAAAAEQPtqwkwQAAAESIaNZmRA/F7AFmRIlo2A8Rp"
+        . "CSwAAAARA+2rCS0AAAARIho2mZED8XoAGYPb8RmRIlo3GZBDzgAxg8RpCSgAAAARA+2rCSnAAAA"
+        . "RIho3mZED8XsBGZEiWjgDxGkJJAAAABED7asJJoAAABEiGjiZkQPxegAZg9vw2ZEiWjkZkEPOAD"
+        . "FDxGkJIAAAABED7asJI0AAABEiGjmZkQPxewHZkSJaOhmQQ9+3USIaOpmRA/F6ABmD2/DZkSJaO"
+        . "xmQQ84AMQPEVwkcEQPtmwkc0SIaO5mRA/F6wJmRIlo8A8RXCRgRA+2bCRmRIho8mZED8XoAGYPb"
+        . "8NmDzgABcIFAABmRIlo9A8RXCRQRA+2bCRZRIho9mZED8XrBWZEiWj4DxFcJEBED7ZsJExEiGj6"
+        . "ZkQPxegAZkSJaPwPEVwkMEQPtmwkP0SIaP5MOeMPhbH5//+D5fCJ6CnvSMHgAkgBwUkBwEkBwY1"
+        . "H/zHSTY10gQQPHwAPtkECQcZBA/9BxkADAInFRCjdD0LqRADYRRjkQQnED7ZBAUGIaAJFiGECQY"
+        . "nFRSjVRA9C6kQA0EAY/zHbCccPtgFBiHkBiAQkQCjwQYnHRInoRA9C+kSI+4jHD7YEJGZBiRhAA"
+        . "PBAGP9Jg8EESIPBBAn4SYPABEGIQfxNOc51gA8QtCQQAgAAMcAPELwkIAIAAEQPEIQkMAIAAEQP"
+        . "EIwkQAIAAEQPEJQkUAIAAEQPEJwkYAIAAEQPEKQkcAIAAEQPEKwkgAIAAEQPELQkkAIAAEQPELw"
+        . "koAIAAEiBxLgCAABbXl9dQVxBXUFeQV/DZpBBV0FWQVVBVFVXVlNIg+xYRIukJMgAAABEi5wk2A"
+        . "AAAEiLnCTAAAAATImMJLgAAABFiedMY9JEicdEi4wk0AAAAEEPvsNFD6/5QQ+vx0hj0MH4H0hp0"
+        . "h+F61FIwfolKcJBgPtkuAEAAABED7ZbAQ9FhCTgAAAAQYnWiUQkMEiLhCS4AAAAQcHjCA+2UAIP"
+        . "tkABweIQweAICcJIi4QkuAAAAA+2AAnCSIuEJMAAAAAPtkACweAQRAnYRA+2G0QJ2A0AAAD/RCn"
+        . "PD4heAgAATYnQTWPMQYnTiXwkTEqNHJUAAAAATSnIMfZEiXwkFEiJXCQgSInLQYnCifdBjUwk/0"
+        . "SJdCQQSIneSI0sjQQAAAAPts7B6hBOjSyFAAAAAIlMJDSJ0Q+21IlUJDjB6BBMiWwkCEiLXCQIS"
+        . "YnwSAHzD4LUAQAAi1QkMIXSD4VUAQAASInySIXSdRlIi1QkIEwBwkg50w+CrwEAAEiF0kmJ0HTn"
+        . "RIhcJEpMicJFidNBicFIiVwkKIl8JDxIiXQkQIhMJEuLXCQQOVwkFEGJ2A+MvgAAAESLVCQUSIn"
+        . "QSIlUJBhEidtIi7wkwAAAAEiLtCS4AAAARTH/RYXkSYnFfnRMjSwoSIn6SInxSIk8JEUx/w8fQA"
+        . "APtnoCSIPABEiDwQRIg8IERA+2WP5ED7Zx/kQ433IxRTjzcixED7ZY/UQ4Wv1yIUQ6Wf1yG0QPt"
+        . "lj8RDha/HIQRDpZ/EGD3/8PH4QAAAAAAEk5xXWrSIs8JEgB7kgB70iLRCQIRSn4RSniTAHoRTnQ"
+        . "D45q////SItUJBhBidtFhcAPjuUAAABIi1wkKEiDwgRIOdMPgrcAAACLRCQwhcAPhAr///9Fidq"
+        . "LfCQ8SYnQRInISIt0JEAPtkwkS0QPtlwkSkiJ2kSLfCQ0TCnCRIt0JDhIwfoChdJ4T4nSTY1skA"
+        . "RMicIPH0AARA+2SgJEOMhyLkE4yXIpRA+2SgFFOM5yH0U4+XIaRA+2CkU4ynIRRTjZD4N3/v//D"
+        . "x+EAAAAAABIg8IESTnVdb9Ii1QkIEkB0Ew5w3OMSItcJCCDxwFIAd45fCRMD40G/v//RTHJ6x9F"
+        . "idqLfCQ8RInISIt0JEAPtkwkS0QPtlwkSuvKSYnRTInISIPEWFteX11BXEFdQV5BX8NmZi4PH4Q"
+        . "AAAAAAGaQuP/////DZi4PH4QAAAAAAAABAgQFBggJCgwNDoCAgICAgICAgICAgICAgIAAAQIEBQ"
+        . "YICQoMDQ6AgICAgICAgICAgICAgICAAAECBAUGCAkKDA0OgICAgICAgICAgICAgICAgAABAgQFB"
+        . "ggJCgwNDgMEAgMEBQYHCAkKCwwNDg8JCgIDBAUGBwgJCgsMDQ4PD4CAgICAgICAgICAgICAgIAA"
+        . "AgMEBQYHCAkKCwwNDg8FBgIDBAUGBwgJCgsMDQ4PCwwCAwQFBgcICQoLDA0ODwECAgMEBQYHCAk"
+        . "KCwwNDg8HCAIDBAUGBwgJCgsMDQ4PDQ4CAwQFBgcICQoLDA0ODw=="
+        . "" ; 0x000000: imgutil_channel_match : i32 imgutil_channel_match(i32 a, i32 b, i32 t)
+        . "" ; 0x000020: imgutil_pixels_match  : u32 imgutil_pixels_match(argb p1, argb p2, i32 t)
+        . "" ; 0x000090: imgutil_column_uniform: u32 imgutil_column_uniform(argb *ptr, i32 width, i32 height, argb refc, i32 x, i32 tolerance, i32 ymin, i32 ymax)
+        . "" ; 0x0001a0: imgutil_row_uniform   : i32 imgutil_row_uniform(argb *ptr, i32 width, i32 height, argb refc, i32 y, i32 tolerance, i32 xmin, i32 xmax)
+        . "" ; 0x000240: imgutil_makebw        : argb *imgutil_makebw(argb *start, u32 w, u32 h, u8 threshold)
+        . "" ; 0x0002a0: imgutil_make_sat_masks: u32 imgutil_make_sat_masks(u32 *__restrict needle, i32 pixelcount, u32 *__restrict needle_lo, u32 *__restrict needle_hi, u8 t)
+        . "" ; 0x000bc0: imgutil_imgsrch       : argb *imgutil_imgsrch(argb *haystack, i32 haystack_w, i32 haystack_h, argb *needle_lo, argb *needle_hi, i32 needle_w, i32 needle_h, i8 pctmatchreq, i32 force_topleft)
+        . "" ; 0x000f30: get_blob_psabi_level  : u32 get_blob_psabi_level()
+                static code := this.i_b64decode(b64)
+        cmap := Map(  "imgutil_channel_match",     code + 0x000000
+                    , "imgutil_pixels_match",      code + 0x000020
+                    , "imgutil_column_uniform",    code + 0x000090
+                    , "imgutil_row_uniform",       code + 0x0001a0
+                    , "imgutil_makebw",            code + 0x000240
+                    , "imgutil_make_sat_masks",    code + 0x0002a0
+                    , "imgutil_imgsrch",           code + 0x000bc0
+                    , "get_blob_psabi_level",      code + 0x000f30
+                    )
+        return cmap
+    }
+        
+
+    ; -march=core2 below baseline, (mmx)
+    i_get_mcode_map_v0() {
+        static b64 := ""
+        . "" ; imgutil_all.c
+        . "" ; 4032 bytes
+        . "" ; gcc.exe (Rev2, Built by MSYS2 project) 13.2.0
+        . "" ; flags: -march=core2 -D MARCH_x86_64_v0 -O3
+        . "" ; GNU assembler (GNU Binutils) 2.41
+        . "" ; flags: -O2
+        . "KdGJyMH4HzHBKcExwEE5yA+dwMNmZi4PH4QAAAAAAJBTichBidHB6BBBwekQRQ+2yQ+2wEQpyEG"
+        . "JwUHB+R9EMchEKchFMclBOcB8NQ+2xQ+23inYQYnCQcH6H0Qx0EQp0EE5wHwbD7bJD7bSRTHJKd"
+        . "GJyMH4HzHBKcFBOchBD53BRInIW8NmLg8fhAAAAAAAVlNEi0QkQEiJy4tMJFBEichFictMY0wkO"
+        . "A+29MHoEEGJ8g+vykhjyUwByUiNNIuLTCRID6/KSGPJTAHJSI0Mi0g58Q+DpwAAAIP6AUQPtsh1"
+        . "Rg+2QQJEKciZMdAp0EE5wHwtD7ZBAUEPttIp0Jkx0CnQQTnAfBkPtgFBD7bTKdCZMdAp0EE5wH1"
+        . "2Zg8fRAAAMcBbXsMPHwAPtkECRCnIicPB+x8x2CnYQTnAfOMPtkEBQQ+22inYicPB+x8x2CnYQT"
+        . "nAfMsPtgFBD7bbKdiJw8H7HzHYKdhBOcB8tEhjwkiNDIFIOfFysA8fhAAAAAAAuAEAAADrm2YPH"
+        . "4QAAAAAAEiDwQRIOfEPgkX////r4ZBTD69UJDBEi0QkOEhj0kSJyEWJy0xjTCRID7bcwegQQYna"
+        . "SQHRSo0ciUxjTCRATAHKSI0UkUg52nNRRA+2yA+2QgJEKciJwcH5HzHIKchBOcB8RQ+2QgFBD7b"
+        . "KKciJwcH5HzHIKchBOcB8LQ+2AkEPtsspyInBwfkfMcgpyEE5wHwWSIPCBEg52nKzuAEAAABbw2"
+        . "YPH0QAADHAW8MPH0AAVlNBD6/QSInISI00lQAAAABMjRwxTDnZcz5FD7bJZpBED7ZRAcZBA/9ED"
+        . "7ZBAkUB0EQPthFFAdBFOcgPk8JIg8EE99oPttqIUf6I12aJWfxMOdlyy0gB8Fteww8fRAAAQVZV"
+        . "V1ZTi0QkUEQPttgPtsBJicqJ0WnQAAEBAEwJ2kjB4iBMCdpBicPB4AhBweMQSJhNY9tMCdpICcJ"
+        . "IuAAAAP8AAAD/SAnCg/kBflKNWf5mSA9uyjHAQYnbQdHrQY1LAUjB4QMPHwDzQQ9+BAJmD2/QZg"
+        . "/cwWYP2NFmQQ/WBAFmQQ/WFABIg8AISDnBddlB99tJAcpJAclJAchCjQxbD3dIidBBidMPtt5Iw"
+        . "egQg/kBdWdBD7ZSAjH2QcZAAwBBxkED/4nRKMEPQs4A0EAY/wnHQQ+2QgFBiEgCQYh5AonFQCjd"
+        . "D0LuAMNBD7YCGNIJ2jHbQYnWiepBicJFiHEBRSjaRA9C1kEAwxjARIjTRAnYiNdBiAFmQYkYMcB"
+        . "bXl9dQV7DZmYuDx+EAAAAAABmkEFXQVZBVUFUVVdWU0iB7BgBAAAPEXQkcA8RvCSAAAAARA8RhC"
+        . "SQAAAARA8RjCSgAAAARA8RlCSwAAAARA8RnCTAAAAARA8RpCTQAAAARA8RrCTgAAAARA8RtCTwA"
+        . "AAARA8RvCQAAQAARIusJIgBAACLtCSYAQAASIusJIABAABIicuLjCSQAQAARYnsTImMJHgBAABA"
+        . "D77GD7Z9AkQPr+FBD6/ETGPIwfgfTWnJH4XrUUnB+SVFicpBKcJAgP5kuAEAAABIi7QkeAEAAA9"
+        . "FhCSgAQAAwecQQYnBSIuEJHgBAAAPtnYBD7ZAAsHmCMHgEAnwSIu0JHgBAABImA+2NkgJ8EiJxk"
+        . "jB5iBIAfAPtnUBD7ZtAEiJRCQIifhIY//B5ggJ8Ehj9kgJ6EjB4CBICehICfhICfBIvgAAAP8AA"
+        . "AD/SAnwRInGKc5IiUQkOA+ISgkAAEhj0k1jxWYP78lmD2/ZSInQRIlkJCxmDzgAHW4KAABMKcBJ"
+        . "idhmD9YcJEyNHIUAAAAASI0ElQAAAABMiVwkYEGNVf9IiUQkQEqNBBtEietIiUQkIInQwegESMH"
+        . "gBkiJRCQYidCD4PBMjTyFAAAAACnDiUQkKInQTI00hQQAAAAxwIlcJBRMif9BicOJ0InyTIn2TI"
+        . "t0JAhMOUQkIEyJRCQI80QPbz2zCQAAD4KACAAAidNJif9EidpMi5wkeAEAAInH6ylIi0wkCEiDf"
+        . "CQIAA+FUAkAAEiLRCRASAHISDlEJCBIiUQkCA+COQgAAEWFyXTS8w9+XCQ4ZkkPbuZmD+/S8w9+"
+        . "LUwJAABIi0QkIEiLTCQISCnISMH4AoP4AYnFD466CAAASInI6xwPHwBIwekgg/n/dFKD7QJIg8A"
+        . "Ig/0BD47/BgAA8w9+AGYPb8hmD2/wZg/YzGYPdPRmD3TKZg/rzmYPb/NmD9jwZg90w2YPdPJmD+"
+        . "vwZg/bzmYPds1mSA9+yYP5/3WliVQkSEiLVCRgTIn4QYn/iVwkaEyJRCRQTIl0JFhEOVQkLEWJ1"
+        . "A+MNQYAAEiLXCQITInfRIlUJDBEi3QkLEyJnCR4AQAA80QPfjWHCAAARIlMJDRmkDHJRYXtD47c"
+        . "BQAAQYP/Dw+GOwYAAEyLVCQYSIn5SYnYZkUP7+1mRQ/v5E2NDDpmkPNFD29AEGZBD2/PZkEPb/d"
+        . "mQQ9v//NBD28YZkUPb99Ig8FASYPAQPNBD29g4GZBD9vIZkEPcdAI80EPb0DwZkEP299mD2fZZk"
+        . "EPb8/zD29RwGYP2/RmD3HUCPNED29R0GYP28hmD2fxZkEPb8/zD29p4GYP28pmD3HSCPNED29J8"
+        . "GZBD9v6Zg9nz2ZBD2//Zg/b/WZBD3HSCGZFD9vZZg9x1QhmQQ9n0mZBD9vXZkEPcdEIZkEPZ/tm"
+        . "QQ9n6WZED2/K80EPb1DAZg9x0AhmD2fgZg9vwWZBD9vnZkEP2+9mD3HSCGZED2fNZg9v7mZBD9v"
+        . "PZkEPZ9BmQQ/b12YPZ9RmD2/nZg9x1AhmQQ/b92ZBD9rRZkEP2/9mD3HQCGYPZ89JOclmD2fEZg"
+        . "9v42YPcdUIZkEP299mD3HUCGYPZ95mD9rZZg/v9mYPZ+VmD9rgZg90y2YPdMRmQQ900WYP29BmD"
+        . "9vRZg/bFfQGAABmD2/CZg9gxmYPb8hmD2jWZkEPYcRmQQ9pzGYP/sFmD2/KZkEPYdRmQQ9pzGYP"
+        . "/tFmD/7CZkQP/ugPhVX+//9Ei0QkKEyNDAdmQQ9vxWYPc9gIi2wkFEyNFANmQQ/+xWYPb8hmD3P"
+        . "ZBGYP/sFBDxLNZg9+wWZBD2/FZkQPb+lmRA/+6EWJ+0Upw0GD+wcPhiUCAABJweACZkEPb95mQQ"
+        . "9vxkqNDANmQQ9v/kkB+PMPfglmQQ9v1mZBD2/2ZkUPb9bzRA9+YQhBg+P48w9+aRBmD9vZZg9x0"
+        . "QhEKd3zRA9+WRhmQQ/bxGYPZ9hmQQ9vxvNFD35ICGYP2/1mQQ9x1AhmD3DbCGZBD9vDZg9n+PNB"
+        . "D34AZg9x1QjzQQ9+YBBmQQ/b8WZBD2fMZkEPcdMI80UPfkAYZg/b0GYPZ9ZmQQ9v9mYP2/RmD3H"
+        . "QCGYPcMkIZkEPZ+tmRQ/b0GZBD3HRCGYPcO0IZkEP285mD3HUCGZBD9vuZkEPZ8FmD2fNZkEPcd"
+        . "AIZg9wyQhmD3DACGZBD9vGZkEPZ+BmD3DkCGZBD9vmZg9nxGYPcMAIZg/ayGYPb+NmD3D/CGYPd"
+        . "MFmD2/PZg9w0ghmQQ9n8mYPcdEIZg9w9ghmD2/uZkEP2/5mD3HUCGZBD9veZkEP2/ZmD2ffZg9n"
+        . "4WYPb8pmD3HVCGYPcOQIZg9x0QhmD3DbCGYP7/9JweMCZg9nzWZBD9vWZg9wyQhNAdlmD9rhZg9"
+        . "n1mYPcNIIZg/a2mYPdMxmD+/tTQHaZg900/MPfh2qBAAAZg/bwWYP29BmD9vTZg9vwmYPYNVmD2"
+        . "DFZg9w0k5mD2/YZg9vymYPYc9mD2HfZg9hx2YPYddmD3DATmYPcNJOZg/+w/MPfiwkZg/+0WYP/"
+        . "sJmQQ/+xWYPb8hmDzgADVgEAABmD+vNZg/+wWYPfsFFD7ZZAUU4WgFFD7ZBAkEPk8NFOEICQQ+T"
+        . "wEWEw3QKRQ+2GUU4GoPZ/4P9AQ+EWwEAAEUPtlkGRThaBkUPtkEFQQ+Tw0U4QgVBD5PARYTDdAx"
+        . "FD7ZZBEU4WgSD2f+D/QIPhCcBAABFD7ZZCUU4WglFD7ZBCkEPk8NFOEIKQQ+TwEWEw3QMRQ+2WQ"
+        . "hFOFoIg9n/g/0DD4TzAAAARQ+2WQ5FOFoORQ+2QQ1BD5PDRThCDUEPk8BFhMN0DEUPtlkMRThaD"
+        . "IPZ/4P9BA+EvwAAAEUPtlkRRThaEUUPtkESQQ+Tw0U4QhJBD5PARYTDdAxFD7ZZEEU4WhCD2f+D"
+        . "/QUPhIsAAABFD7ZZFUU4WhVFD7ZBFkEPk8NFOEIWQQ+TwEWEw3QMRQ+2WRRFOFoUg9n/g/0GdFt"
+        . "FD7ZZGUU4WhlFD7ZBGkEPk8NFOEIaQQ+TwEWEw3QMRQ+2WRhFOFoYg9n/g/0HdCtFD7ZZHkU4Wh"
+        . "5FD7ZBHUEPk8NFOEIdQQ+TwEWEw3QMRQ+2SRxFOEocg9n/SAH3SAHzQSnMRSnuSAHTRTn0D44H+"
+        . "v//RItUJDBMi5wkeAEAAESLTCQ0RYXkD45iAQAASINEJAgESIt8JAhIOXwkIA+CugEAAEWFyQ+E"
+        . "lfn//0SJ/4tUJEhJiceLXCRoTItEJFBMi3QkWOnF+P//SYnaSYn5RIntZkUP7+1FMcAxyem3+//"
+        . "/TInxRIh0JGgPts1IiUwkUEyJ8UjB6RCITCQ0SItMJDhJicyITCRYD7bNSIlMJEhMieFIwekQiE"
+        . "wkMA+2SAFED7ZgAkQ4ZCQwiEwkbg+2CIhMJG9yN0Q6ZCQ0cjAPtkwkbjhMJEhyJUQPtmQkUEQ44"
+        . "XIaD7ZMJG84TCRYcg9ED7ZkJGhEOOEPg14BAACD/QF1Ng+2SAY4TCQwD7ZoBQ+2QARyJDpMJDRy"
+        . "HkA4bCRIchdAOmwkUHIQOEQkWHIKOkQkaA+DfPj//0iLTCRASAFMJAhIi0QkCEg5RCQgD4Pj9//"
+        . "/QYnTifiJ2kyJ/0iLXCRAQYPDAUgBXCQgSQHYQTnTD45N9///SMdEJAgAAAAASItEJAgPEHQkcA"
+        . "8QvCSAAAAARA8QhCSQAAAARA8QjCSgAAAARA8QlCSwAAAARA8QnCTAAAAARA8QpCTQAAAARA8Qr"
+        . "CTgAAAARA8QtCTwAAAARA8QvCQAAQAASIHEGAEAAFteX11BXEFdQV5BX8NIicdEi1wkSESJ+ItU"
+        . "JGhMi0QkUEyLdCRY6VH///+FwA+IJf///0yJ8ESIdCRoD7bESIlEJFBMifBIwegQiEQkNEiLRCQ"
+        . "4D7bMiEQkWEjB6BCIRCQwSItEJAhIiUwkSOla/v//SIlMJAjpWff//0iLTCQISIlEJAjpi/b//2"
+        . "ZmLg8fhAAAAAAADx9AADHAww8fRAAA////////////AP8A/wD/AP8A/wD/AP8AAQEBAQEBAQEBA"
+        . "QEBAQEBAQQFBgeAgICAgICAgICAgICAgICAAAECA4CAgICAgICA"
+        . "" ; 0x000000: imgutil_channel_match : i32 imgutil_channel_match(i32 a, i32 b, i32 t)
+        . "" ; 0x000020: imgutil_pixels_match  : u32 imgutil_pixels_match(argb p1, argb p2, i32 t)
+        . "" ; 0x000090: imgutil_column_uniform: u32 imgutil_column_uniform(argb *ptr, i32 width, i32 height, argb refc, i32 x, i32 tolerance, i32 ymin, i32 ymax)
+        . "" ; 0x0001a0: imgutil_row_uniform   : i32 imgutil_row_uniform(argb *ptr, i32 width, i32 height, argb refc, i32 y, i32 tolerance, i32 xmin, i32 xmax)
+        . "" ; 0x000240: imgutil_makebw        : argb *imgutil_makebw(argb *start, u32 w, u32 h, u8 threshold)
+        . "" ; 0x0002a0: imgutil_make_sat_masks: u32 imgutil_make_sat_masks(u32 *__restrict needle, i32 pixelcount, u32 *__restrict needle_lo, u32 *__restrict needle_hi, u8 t)
+        . "" ; 0x0003d0: imgutil_imgsrch       : argb *imgutil_imgsrch(argb *haystack, i32 haystack_w, i32 haystack_h, argb *needle_lo, argb *needle_hi, i32 needle_w, i32 needle_h, i8 pctmatchreq, i32 force_topleft)
+        . "" ; 0x000f70: get_blob_psabi_level  : u32 get_blob_psabi_level()
+        static code := this.i_b64decode(b64)
+        cmap := Map(  "imgutil_channel_match",     code + 0x000000
+                    , "imgutil_pixels_match",      code + 0x000020
+                    , "imgutil_column_uniform",    code + 0x000090
+                    , "imgutil_row_uniform",       code + 0x0001a0
+                    , "imgutil_makebw",            code + 0x000240
+                    , "imgutil_make_sat_masks",    code + 0x0002a0
+                    , "imgutil_imgsrch",           code + 0x0003d0
+                    , "get_blob_psabi_level",      code + 0x000f70
+                    )
         return cmap
     }
 

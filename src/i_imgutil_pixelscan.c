@@ -5,7 +5,7 @@
 // occurrence of a pixel within the given values,
 // or zero if none found.
 
-static inline argb* i_imgutil_pixel_scan_v1
+static inline argb* i_imgutil_pixel_scan_vs
 (   
     argb* __restrict p,
     vec nl, vec nh,
@@ -30,8 +30,44 @@ static inline argb* i_imgutil_pixel_scan_v1
     return 0;
 }
 
-#if defined(MARCH_x86_64_v4) || defined(MARCH_x86_64_v3) || defined(MARCH_x86_64_v2)
-static inline argb* i_imgutil_pixel_scan_v2
+#if defined(MARCH_x86_64_v4) || defined(MARCH_x86_64_v3) || defined(MARCH_x86_64_v2) || defined(MARCH_x86_64_v1) || defined(MARCH_x86_64_v0)
+static inline argb* i_imgutil_pixel_scan_v0 (
+    argb* __restrict p,
+    vec nl, vec nh,
+    i32 w
+)
+{
+    // number of 32-bit pixels in a vector
+    i32 vecsize = (sizeof(__m64) / sizeof(i32));
+
+    // don't scan pixels we can't swallow into a vector
+    while (w >= vecsize) {
+        // load a vector's worth of haystack
+        __m64 h64 = _mm_cvtsi64_m64(*(u64*)p);
+        // compare haystack to needle low
+        __m64 lres = _mm_cmpge_pu8(h64, nl.m64);
+        // compare haystack to needle high
+        __m64 hres = _mm_cmple_pu8(h64, nh.m64);
+        // see where both operations were true
+        __m64 both = _mm_and_si64(lres, hres);
+        // compare this with the all-1 mask on a 32-bit basis
+        __m64 vres = _mm_cmpeq_pi32(both, _mm_set1_pi32(-1));
+        // condense the result into one bit per byte comparison
+        u64 res    = _mm_cvtm64_si64(vres);
+        // if we have a hit...
+        u32 pixel_lo = ((u32*)&res)[0];
+        if (pixel_lo == 0xffffffff) return p + 1;
+        u32 pixel_hi = ((u32*)&res)[1];
+        if (pixel_hi == 0xffffffff) return p + 2;
+        p += vecsize;
+        w -= vecsize;
+    }
+    return i_imgutil_pixel_scan_vs(p, nl, nh, w);
+}
+#endif
+
+#if defined(MARCH_x86_64_v4) || defined(MARCH_x86_64_v3) || defined(MARCH_x86_64_v2) || defined(MARCH_x86_64_v1)
+static inline argb* i_imgutil_pixel_scan_v12
 (   
     argb*  __restrict p,
     vec nl, vec nh,
@@ -63,7 +99,7 @@ static inline argb* i_imgutil_pixel_scan_v2
         p += vecsize;
         w -= vecsize;
     }
-    return i_imgutil_pixel_scan_v1(p, nl, nh, w);
+    return i_imgutil_pixel_scan_v0(p, nl, nh, w);
 }
 #endif
 
@@ -100,7 +136,7 @@ static inline argb* i_imgutil_pixel_scan_v3
         p += vecsize;
         w -= vecsize;
     }
-    return i_imgutil_pixel_scan_v2(p, nl, nh, w);
+    return i_imgutil_pixel_scan_v12(p, nl, nh, w);
 }
 #endif
 
@@ -137,6 +173,7 @@ static inline argb* i_imgutil_pixel_scan_v4
         p += vecsize;
         w -= vecsize;
     }
+    _mm_empty();
     return i_imgutil_pixel_scan_v3(p, nl, nh, w);
 }
 #endif

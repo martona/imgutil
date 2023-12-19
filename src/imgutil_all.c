@@ -10,13 +10,19 @@
 // an exported function to allow the caller to verify that this object file
 // contains the correct psabi level implementation
 u32 get_blob_psabi_level() {
-    if (sizeof(vec) == sizeof(__m512i))
+    #if   defined(MARCH_x86_64_v4)
         return 4;
-    if (sizeof(vec) == sizeof(__m256i))
+    #elif defined(MARCH_x86_64_v3)
         return 3;
-    if (sizeof(vec) == sizeof(__m128i))    
+    #elif defined(MARCH_x86_64_v2)  
         return 2;
-    if (sizeof(vec) == sizeof(argb))
+    #elif defined(MARCH_x86_64_v1)  
         return 1;
+    #elif defined(MARCH_x86_64_v0)
+        return 0;
+    #elif defined(MARCH_x86_64_vs)
+        return -1;
+    #endif
+
     return 0;
 }

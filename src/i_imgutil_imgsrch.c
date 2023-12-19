@@ -1,20 +1,4 @@
 
-#if defined (MARCH_x86_64_v4)
-    #define i_imgutil_pixel_scan        i_imgutil_pixel_scan_v4
-    #define i_imgutil_pixelmatchcount   i_imgutil_pixelmatchcount_v4
-#elif defined (MARCH_x86_64_v3)
-    #define i_imgutil_pixel_scan        i_imgutil_pixel_scan_v3
-    #define i_imgutil_pixelmatchcount   i_imgutil_pixelmatchcount_v3
-#elif defined (MARCH_x86_64_v2)
-    #define i_imgutil_pixel_scan        i_imgutil_pixel_scan_v2
-    #define i_imgutil_pixelmatchcount   i_imgutil_pixelmatchcount_v2
-#elif defined (MARCH_x86_64_v1)
-    #define i_imgutil_pixel_scan        i_imgutil_pixel_scan_v1
-    #define i_imgutil_pixelmatchcount   i_imgutil_pixelmatchcount_v1
-#else
-    #error "Error: MARCH_x86_64_vx not defined"
-#endif
-
 argb* imgutil_imgsrch (
     argb* haystack,      // the haystack image buffer; assumed flat 32-bit RGB or ARGB
     i32   haystack_w,    // width of the image
@@ -51,7 +35,7 @@ argb* imgutil_imgsrch (
                 i32   pixels_left    = needle_pixels;
                 while (pixels_left >= pixels_tomatch) {
                     pixels_tomatch -= i_imgutil_pixelmatchcount(&inner_haystack, needle_w, &ptr_needle_lo, &ptr_needle_hi);
-                    pixels_left -= needle_w;
+                    pixels_left    -= needle_w;
                     inner_haystack += (haystack_w - needle_w);
                 }
                 if (pixels_tomatch <= 0)

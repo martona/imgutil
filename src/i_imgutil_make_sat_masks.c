@@ -1,6 +1,6 @@
 #include "i_imgutil.h"
 
-static inline u32 i_imgutil_make_sat_masks_v1
+static inline u32 i_imgutil_make_sat_masks_vs
             (
                 u32* __restrict needle, 
                          i32  pixelcount,
@@ -31,8 +31,44 @@ static inline u32 i_imgutil_make_sat_masks_v1
     return 0;
 }
 
-#if defined(MARCH_x86_64_v4) || defined(MARCH_x86_64_v3) || defined(MARCH_x86_64_v2)
-static inline u32 i_imgutil_make_sat_masks_v2
+#if defined(MARCH_x86_64_v4) || defined(MARCH_x86_64_v3) || defined(MARCH_x86_64_v2) || defined(MARCH_x86_64_v1) || defined(MARCH_x86_64_v0)
+static inline u32 i_imgutil_make_sat_masks_v0
+            (
+                u32* __restrict needle, 
+                         i32  pixelcount,
+                u32* __restrict needle_lo,
+                u32* __restrict needle_hi,
+                vec     tv
+            )
+{
+    i32 vecsize      = (sizeof(__m64)/sizeof(i32));
+    // the vector we're adding and subtracting from needle's values
+    while (pixelcount >= vecsize) {
+        // load a vector's worth of needle
+        __m64 n64 = _mm_cvtsi64_m64(*(u64*)needle);
+        // subtract t values from needle values using saturation
+        __m64 nl  = _mm_subs_pu8(n64, tv.m64);
+        // store the low mask
+        (*(u64*)needle_lo) = _mm_cvtm64_si64(nl);
+        // load a vector's worth of needle
+        n64 = _mm_cvtsi64_m64(*(u64*)needle);
+        // add t values to needle using saturation
+        __m64 nh  = _mm_adds_pu8(n64, tv.m64);
+        // store the hi mask
+        (*(u64*)needle_hi) = _mm_cvtm64_si64(nh);
+
+        needle     += vecsize;
+        needle_hi  += vecsize;
+        needle_lo  += vecsize;
+        pixelcount -= vecsize;
+    }
+    _mm_empty();
+    return i_imgutil_make_sat_masks_vs(needle, pixelcount, needle_lo, needle_hi, tv);
+}
+#endif
+
+#if defined(MARCH_x86_64_v4) || defined(MARCH_x86_64_v3) || defined(MARCH_x86_64_v2) || defined(MARCH_x86_64_v1)
+static inline u32 i_imgutil_make_sat_masks_v12
             (
                 u32* __restrict needle, 
                          i32  pixelcount,
@@ -62,7 +98,7 @@ static inline u32 i_imgutil_make_sat_masks_v2
         needle_lo  += vecsize;
         pixelcount -= vecsize;
     }
-    return i_imgutil_make_sat_masks_v1(needle, pixelcount, needle_lo, needle_hi, tv);
+    return i_imgutil_make_sat_masks_v0(needle, pixelcount, needle_lo, needle_hi, tv);
 }
 #endif
 
@@ -134,16 +170,6 @@ static inline u32 i_imgutil_make_sat_masks_v4
     }
     return i_imgutil_make_sat_masks_v3(needle, pixelcount, needle_lo, needle_hi, tv);
 }
-#endif
-
-#if defined(MARCH_x86_64_v4)
-    #define i_imgutil_make_sat_masks i_imgutil_make_sat_masks_v4
-#elif defined(MARCH_x86_64_v3)
-    #define i_imgutil_make_sat_masks i_imgutil_make_sat_masks_v3
-#elif defined(MARCH_x86_64_v2)
-    #define i_imgutil_make_sat_masks i_imgutil_make_sat_masks_v2
-#elif defined(MARCH_x86_64_v1)
-    #define i_imgutil_make_sat_masks i_imgutil_make_sat_masks_v1
 #endif
 
 u32 imgutil_make_sat_masks (

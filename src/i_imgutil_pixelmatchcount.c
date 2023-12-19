@@ -1,7 +1,7 @@
 #include "i_imgutil.h"
 
-// basic version without instruction set requirements
-static inline u32 i_imgutil_pixelmatchcount_v0
+// the scalar version should never be used other than for falling through
+static inline u32 i_imgutil_pixelmatchcount_vs
 (
     argb** __restrict  haystack,    //pointer to haystack array
     i32 w,                          //width of the array in 32-bit pixels
@@ -12,28 +12,25 @@ static inline u32 i_imgutil_pixelmatchcount_v0
     // pixel match count to be returned
     u32 ret = 0;
     while (w > 0) {
-        u8 r =   ((u8*)*haystack)[2];
-        u8 g =   ((u8*)*haystack)[1];
-        u8 b =   ((u8*)*haystack)[0];
+        argb h = **haystack;
+        argb l = **needle_lo;
+        argb g = **needle_hi;
         (*haystack)++;
-        u8 rl =  ((u8*)*needle_lo)[2];
-        u8 gl =  ((u8*)*needle_lo)[1];
-        u8 bl =  ((u8*)*needle_lo)[0];
         (*needle_lo)++;
-        u8 rh =  ((u8*)*needle_hi)[2];
-        u8 gh =  ((u8*)*needle_hi)[1];
-        u8 bh =  ((u8*)*needle_hi)[0];
         (*needle_hi)++;
-        if ((r <= rh) && (r >= rl) && 
-            (g <= gh) && (g >= gl) && 
-            (b <= bh) && (b >= bl))
+        if ((h.r <= h.r) && (h.r >= l.r) && 
+            (h.g <= h.g) && (h.g >= l.g) && 
+            (h.b <= h.b) && (h.b >= l.b))
             ret++;
         w--;
     }
     return ret;
 }
 
-static inline u32 i_imgutil_pixelmatchcount_v1
+// MMX ends up being the below-baseline solution - what might use it other than
+// falling through it for efficient cleanup?
+#if defined(MARCH_x86_64_v4) || defined(MARCH_x86_64_v3) || defined(MARCH_x86_64_v2) || defined(MARCH_x86_64_v1) || defined(MARCH_x86_64_v0)
+static inline u32 i_imgutil_pixelmatchcount_v0
 (
     argb** __restrict  haystack,    //pointer to haystack array
     i32 w,                          //width of the array in 32-bit pixels
@@ -58,18 +55,21 @@ static inline u32 i_imgutil_pixelmatchcount_v1
         __m64 mask    = _mm_and_si64(mask_lo, mask_hi);// Combine the comparison results
 
         u64 res       = _mm_cvtm64_si64(mask);         // convert the mask to a 64-bit integer
-        ret += ((int*)&res)[0] == 0xffffffff;          // if all 4 channels satisfied the conditions
-        ret += ((int*)&res)[1] == 0xffffffff;          // ditto on the high u32
+        ret += ((u32*)&res)[0] == 0xffffffff;          // if all 4 channels satisfied the conditions
+        ret += ((u32*)&res)[1] == 0xffffffff;          // ditto on the high u32
 
         w -= vecsize;
     }
     _mm_empty(); // Clear the MMX state
-    ret += i_imgutil_pixelmatchcount_v0(haystack, w, needle_lo, needle_hi);
+    ret += i_imgutil_pixelmatchcount_vs(haystack, w, needle_lo, needle_hi);
     return ret;
 }
+#endif
 
-#if defined(MARCH_x86_64_v4) || defined(MARCH_x86_64_v3) || defined(MARCH_x86_64_v2)
-static inline u32 i_imgutil_pixelmatchcount_v2
+#if defined(MARCH_x86_64_v4) || defined(MARCH_x86_64_v3) || defined(MARCH_x86_64_v2) || defined(MARCH_x86_64_v1)
+// this is the same for v1 and v2, with the only difference being the unavailability of
+// popcnt in v1, but the macro takes care of that.
+static inline u32 i_imgutil_pixelmatchcount_v12
 (
     argb** __restrict  haystack,    //pointer to haystack array
     i32 w,                          //width of the array in 32-bit pixels
@@ -159,7 +159,7 @@ static inline u32 i_imgutil_pixelmatchcount_v3
         ret += imgutil_popcount(mres) / 4;
         w -= vecsize;
     }
-    ret += i_imgutil_pixelmatchcount_v2(haystack, w, needle_lo, needle_hi);
+    ret += i_imgutil_pixelmatchcount_v12(haystack, w, needle_lo, needle_hi);
     return ret;
 }
 #endif
