@@ -20,9 +20,5 @@ u32 get_blob_psabi_level() {
         return 1;
     #elif defined(MARCH_x86_64_v0)
         return 0;
-    #elif defined(MARCH_x86_64_vs)
-        return -1;
     #endif
-
-    return 0;
 }

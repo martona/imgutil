@@ -9,7 +9,7 @@ static inline i32 i_imgutil_channel_match(i32 a, i32 b, i32 t) {
     // this is branchless on both, and same number of ops.
     // mindblown.gif
     // same code on clang as above, actually.
-    int c = a - b;
+    i32 c = a - b;
     return ((c >= 0) ? c : -c) <= t;}
 
 i32 imgutil_channel_match(i32 a, i32 b, i32 t) {
@@ -18,8 +18,9 @@ i32 imgutil_channel_match(i32 a, i32 b, i32 t) {
 
 // check if two pixels match each other within the allowed tolerance t
 static inline u32 i_imgutil_pixels_match(argb p1, argb p2, i32 t) {
-    return i_imgutil_channel_match(p1.r, p2.r, t) && 
-           i_imgutil_channel_match(p1.g, p2.g, t) && 
+    // binary & on purpose
+    return i_imgutil_channel_match(p1.r, p2.r, t) &
+           i_imgutil_channel_match(p1.g, p2.g, t) & 
            i_imgutil_channel_match(p1.b, p2.b, t);
 }
 
@@ -91,4 +92,21 @@ argb* imgutil_makebw(argb* start, u32 w, u32 h, u8 threshold) {
         current++;
     }
     return current;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+argb* imgutil_flip_vert(argb* p, u32 w, u32 h) {
+    u32 rowbytes = w * sizeof(argb);
+    argb* line1 = p;
+    argb* line2 = p + (h - 1) * w;
+    while (line1 < line2) {
+        for (u32 i = 0; i < rowbytes; i++) {
+            argb tmp = line1[i];
+            line1[i] = line2[i];
+            line2[i] = tmp;
+        }
+        line1 += w;
+        line2 -= w;
+    }
+    return p;
 }

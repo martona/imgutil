@@ -3,13 +3,14 @@
 #ifdef __GNUC__
 #include <emmintrin.h>
 #include <immintrin.h>
+#include <x86intrin.h>
 #else //assume microsoft
 #include <intrin.h>
 #endif
 
 #if !defined(MARCH_x86_64_v4) && !defined(MARCH_x86_64_v3) && \
     !defined(MARCH_x86_64_v2) && !defined(MARCH_x86_64_v1) && \
-    !defined(MARCH_x86_64_v0) && !defined(MARCH_x86_64_vs)
+    !defined(MARCH_x86_64_v0)
     #error "MARCH_x86_64_vx not defined"
 #endif
 
@@ -54,9 +55,6 @@ typedef union {
     __m128i m128i;
     __m128  m128;
 #endif
-#if defined(MARCH_x86_64_v0) || defined(MARCH_x86_64_v1) || defined(MARCH_x86_64_v2) || defined(MARCH_x86_64_v3) || defined(MARCH_x86_64_v4)
-    __m64   m64;
-#endif
     argb    margb;
 } vec;
 
@@ -71,17 +69,6 @@ typedef union {
 #define _mm256_cmple_epu8(a, b) _mm256_cmpge_epu8(b, a)
 #define _mm256_cmpgt_epu8(a, b) _mm256_xor_si128(_mm256_cmple_epu8(a, b), _mm256_set1_epi8(-1))
 #define _mm256_cmplt_epu8(a, b) _mm256_cmpgt_epu8(b, a)
-// mmmmmm.... mmx
-static inline __m64 _mm_cmpge_pu8(__m64 a, __m64 b) {
-    // this could be a macro but so much easier to read this way
-    __m64 c = _mm_subs_pu8(a, b);                    //    0 if a <= b, otherwise nonzero
-    __m64 d = _mm_cmpeq_pi8(c, _mm_setzero_si64());  // 0xFF if c == 0 (i.e. a >  b), otherwise 0
-    __m64 e = _mm_cmpeq_pi8(a, b);                   // 0xFF if a == b, otherwise 0
-    __m64 f = _mm_or_si64(d, e);                     // 0xFF if a == b or a > b otherwise 0
-    return f;
-}
-
-#define _mm_cmple_pu8(a, b) _mm_cmpge_pu8(b, a)
 
 #include "i_imgutil_debruijn.h"
 
@@ -89,6 +76,9 @@ static inline __m64 _mm_cmpge_pu8(__m64 a, __m64 b) {
     #if defined(MARCH_x86_64_v4)
     // avx512 and everything else
         #define imgutil_popcount(a) __builtin_popcount(a)
+        #define imgutil_ctz16(a)    __builtin_ctzs(a)
+        #define imgutil_ctz32(a)    __builtin_ctz(a)
+        #define imgutil_ctz64(a)    __builtin_ctzll(a)
         #define imgutil_clz16(a)    __builtin_clzs(a)
         #define imgutil_clz32(a)    __builtin_clz(a)
         #define imgutil_clz64(a)    __builtin_clzll(a)
@@ -102,6 +92,9 @@ static inline __m64 _mm_cmpge_pu8(__m64 a, __m64 b) {
     #elif defined(MARCH_x86_64_v3)
     // AVX2, clz
         #define imgutil_popcount(a) __builtin_popcount(a)
+        #define imgutil_ctz16(a)    __builtin_ctzs(a)
+        #define imgutil_ctz32(a)    __builtin_ctz(a)
+        #define imgutil_ctz64(a)    __builtin_ctzll(a)
         #define imgutil_clz16(a)    __builtin_clzs(a)
         #define imgutil_clz32(a)    __builtin_clz(a)
         #define imgutil_clz64(a)    __builtin_clzll(a)
@@ -113,6 +106,9 @@ static inline __m64 _mm_cmpge_pu8(__m64 a, __m64 b) {
     #elif defined(MARCH_x86_64_v2)
     // SSE4.2 ; we lose clz but bsr is almost as good, popcnt remains
         #define imgutil_popcount(a) __builtin_popcount(a)
+        #define imgutil_ctz16(a)    __bsfd(a)
+        #define imgutil_ctz32(a)    __bsfd(a)
+        #define imgutil_ctz64(a)    __bsfq(a)
         #define imgutil_clz16(a)    (15 -  _bit_scan_reverse(a)  )
         #define imgutil_clz32(a)    (31 -  _bit_scan_reverse(a)  )
         #if defined(__clang__)
@@ -132,38 +128,33 @@ static inline __m64 _mm_cmpge_pu8(__m64 a, __m64 b) {
         #define i_imgutil_pixel_scan        i_imgutil_pixel_scan_v12
         #define i_imgutil_pixelmatchcount   i_imgutil_pixelmatchcount_v12
     #elif defined(MARCH_x86_64_v1)
-        // no popcount, no clz, but should have bsr and definitely SSE
+        // no popcount, no clz, but have bsr and SSE
         #define imgutil_popcount(a) i_imgutil_popcount(a)
+        #define imgutil_ctz16(a)    __bsfd(a)
+        #define imgutil_ctz32(a)    __bsfd(a)
+        #define imgutil_ctz64(a)    __bsfq(a)
         #define imgutil_clz16(a)    (15 -  _bit_scan_reverse(a)  )
         #define imgutil_clz32(a)    (31 -  _bit_scan_reverse(a)  )
         #define imgutil_clz64(a)    (63 - __builtin_ia32_bsrdi(a)) 
         #define __mvec              m128i
         #define _mvec_set1_epi32(a) _mm_set1_epi32(a)
-        #define i_imgutil_make_sat_masks    i_imgutil_make_sat_masks_v1
-        #define i_imgutil_pixel_scan        i_imgutil_pixel_scan_v1
-        #define i_imgutil_pixelmatchcount   i_imgutil_pixelmatchcount_v1
+        #define i_imgutil_make_sat_masks    i_imgutil_make_sat_masks_v12
+        #define i_imgutil_pixel_scan        i_imgutil_pixel_scan_v12
+        #define i_imgutil_pixelmatchcount   i_imgutil_pixelmatchcount_v12
     #elif defined(MARCH_x86_64_v0)
-        // below baseline: we only have MMX (todo - vecsize and stuff)
+        // scalar only
         #define imgutil_popcount(a) i_imgutil_popcount(a)
-        #define imgutil_clz16(a)    (15 - i_imgutil_bsrDeBruijn32(a))
-        #define imgutil_clz32(a)    (31 - i_imgutil_bsrDeBruijn32(a))
-        #define imgutil_clz64(a)    (63 - i_imgutil_bsrDeBruijn64(a))
-        #define __mvec              m64
-        #define _mvec_set1_epi32(a)         ((__m64)((((u64)a)<<32) | (u64)a))
-        #define i_imgutil_make_sat_masks    i_imgutil_make_sat_masks_v0
-        #define i_imgutil_pixel_scan        i_imgutil_pixel_scan_v0
-        #define i_imgutil_pixelmatchcount   i_imgutil_pixelmatchcount_vs
-    #elif defined(MARCH_x86_64_vs)
-        // scalar only, not even mmx, totally brute force
-        #define imgutil_popcount(a) i_imgutil_popcount(a)
+        #define imgutil_ctz16(a)    __bsfd(a)
+        #define imgutil_ctz32(a)    __bsfd(a)
+        #define imgutil_ctz64(a)    __bsfq(a)
         #define imgutil_clz16(a)    (15 - i_imgutil_bsrDeBruijn32(a))
         #define imgutil_clz32(a)    (31 - i_imgutil_bsrDeBruijn32(a))
         #define imgutil_clz64(a)    (63 - i_imgutil_bsrDeBruijn64(a))
         #define __mvec              margb.u32
         #define _mvec_set1_epi32(a) (u32)(a)
-        #define i_imgutil_make_sat_masks    i_imgutil_make_sat_masks_vs
-        #define i_imgutil_pixel_scan        i_imgutil_pixel_scan_vs
-        #define i_imgutil_pixelmatchcount   i_imgutil_pixelmatchcount_vs
+        #define i_imgutil_make_sat_masks    i_imgutil_make_sat_masks_v0
+        #define i_imgutil_pixel_scan        i_imgutil_pixel_scan_v0
+        #define i_imgutil_pixelmatchcount   i_imgutil_pixelmatchcount_v0
     #endif
 #else
     // microsoft compiler, probably

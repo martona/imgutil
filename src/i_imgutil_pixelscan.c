@@ -1,28 +1,26 @@
 #include "i_imgutil.h"
 
+
+
+
 // the basic version that doesn't require a special CPU
 // instruction set. returns a pointer to the first
 // occurrence of a pixel within the given values,
 // or zero if none found.
 
-static inline argb* i_imgutil_pixel_scan_vs
+static inline argb* i_imgutil_pixel_scan_v0
 (   
     argb* __restrict p,
     vec nl, vec nh,
     i32 w
 )
 {
-    u8 rl = nl.margb.r, rh = nh.margb.r;
-    u8 gl = nl.margb.g, gh = nh.margb.g;
-    u8 bl = nl.margb.b, bh = nh.margb.b;
-
+    argb lo = nl.margb, hi = nh.margb;
     while (w >= 0) {
-        u8 r = ((u8*)p)[2];
-        u8 g = ((u8*)p)[1];
-        u8 b = ((u8*)p)[0];
-        if ((r <= rh) && (r >= rl) && 
-            (g <= gh) && (g >= gl) && 
-            (b <= bh) && (b >= bl))
+        argb h = *p;
+        if ((h.r <= hi.r) && (h.r >= lo.r) && 
+            (h.g <= hi.g) && (h.g >= lo.g) && 
+            (h.b <= hi.b) && (h.b >= lo.b))
             return p;
         p++;
         w--;
@@ -30,43 +28,8 @@ static inline argb* i_imgutil_pixel_scan_vs
     return 0;
 }
 
-#if defined(MARCH_x86_64_v4) || defined(MARCH_x86_64_v3) || defined(MARCH_x86_64_v2) || defined(MARCH_x86_64_v1) || defined(MARCH_x86_64_v0)
-static inline argb* i_imgutil_pixel_scan_v0 (
-    argb* __restrict p,
-    vec nl, vec nh,
-    i32 w
-)
-{
-    // number of 32-bit pixels in a vector
-    i32 vecsize = (sizeof(__m64) / sizeof(i32));
-
-    // don't scan pixels we can't swallow into a vector
-    while (w >= vecsize) {
-        // load a vector's worth of haystack
-        __m64 h64 = _mm_cvtsi64_m64(*(u64*)p);
-        // compare haystack to needle low
-        __m64 lres = _mm_cmpge_pu8(h64, nl.m64);
-        // compare haystack to needle high
-        __m64 hres = _mm_cmple_pu8(h64, nh.m64);
-        // see where both operations were true
-        __m64 both = _mm_and_si64(lres, hres);
-        // compare this with the all-1 mask on a 32-bit basis
-        __m64 vres = _mm_cmpeq_pi32(both, _mm_set1_pi32(-1));
-        // condense the result into one bit per byte comparison
-        u64 res    = _mm_cvtm64_si64(vres);
-        // if we have a hit...
-        u32 pixel_lo = ((u32*)&res)[0];
-        if (pixel_lo == 0xffffffff) return p + 1;
-        u32 pixel_hi = ((u32*)&res)[1];
-        if (pixel_hi == 0xffffffff) return p + 2;
-        p += vecsize;
-        w -= vecsize;
-    }
-    return i_imgutil_pixel_scan_vs(p, nl, nh, w);
-}
-#endif
-
 #if defined(MARCH_x86_64_v4) || defined(MARCH_x86_64_v3) || defined(MARCH_x86_64_v2) || defined(MARCH_x86_64_v1)
+// SSE implementation, psabi level 1 and 2 are essentially the same.
 static inline argb* i_imgutil_pixel_scan_v12
 (   
     argb*  __restrict p,
@@ -93,13 +56,35 @@ static inline argb* i_imgutil_pixel_scan_v12
         u32 bits = _mm_movemask_epi8(vres);
         // if we have a hit...
         if (bits) 
-            // count leading zeroes in mask (as a 16-bit value)
+            // count trailing zeroes in mask (as a 16-bit value)
             // and divide by 4 to get the index of the pixel that matched
-            return p + imgutil_clz16(bits) / 4;
+            return p + imgutil_ctz16(bits) / 4;
         p += vecsize;
         w -= vecsize;
     }
-    return i_imgutil_pixel_scan_v0(p, nl, nh, w);
+    // handle the remaining pixels, we only have 3 or fewer, so we can
+    // just do them one by one
+    while (w) {
+        // load a vector's worth of haystack
+        __m128i h128 = _mm_loadu_si32(p);
+        // compare haystack to needle low
+        __m128i lres = _mm_cmpge_epu8(h128, nl.m128i);
+        // compare haystack to needle high
+        __m128i hres = _mm_cmple_epu8(h128, nh.m128i);
+        // see where both operations were true
+        __m128i both = _mm_and_si128(lres, hres);
+        // compare this with the all-1 mask on a 32-bit basis
+        __m128i vres = _mm_cmpeq_epi32(both, _mm_set1_epi32(-1));
+        // condense the result into one bit per byte comparison
+        u32 bits = _mm_movemask_epi8(vres);
+        // only need to test one bit
+        if (bits & 1) 
+            return p;
+        p++;
+        w--;
+    }
+    // nothing found
+    return 0;
 }
 #endif
 
@@ -129,10 +114,10 @@ static inline argb* i_imgutil_pixel_scan_v3
         u32 bits = _mm256_movemask_epi8(vres);
         // if we have a hit...
         if (bits) 
-            // count leading zeroes in mask (as a 16-bit value)
+            // count trailing zeroes in mask (as a 32-bit value)
             // we get 1 bit for each color channel, and we want
             // pixels, so divide by 4
-            return p + imgutil_clz32(bits) / 4;
+            return p + imgutil_ctz32(bits) / 4;
         p += vecsize;
         w -= vecsize;
     }
@@ -167,13 +152,37 @@ static inline argb* i_imgutil_pixel_scan_v4
         __mmask16 bits = _mm512_cmpeq_epi32_mask(vboth, _mm512_set1_epi32(-1));
         // if we have a hit...
         if (bits)
-            // count leading zeroes in mask (as a 16-bit value)
+            // count trailing zeroes in mask (as a 16-bit value)
             // to get the index of the pixel that matched
-            return p + imgutil_clz16(bits);
+            return p + imgutil_ctz16(bits);
         p += vecsize;
         w -= vecsize;
     }
-    _mm_empty();
-    return i_imgutil_pixel_scan_v3(p, nl, nh, w);
+    // cleanup any remaining pixels
+    if (w) {
+        //16-bit mask for loading the last w pixels;
+        i16 mask = (1 << w) - 1;
+        //perform the load; this looks like it might reach beyond
+        //the bounds of memory this code is allowed to access, but 
+        //masked-off areas do not generate faults
+        __m512i h512 = _mm512_maskz_loadu_epi32(_cvtu32_mask16((u32)mask), p);
+        // compare haystack to needle low
+        __mmask64 lres = _mm512_cmpge_epu8_mask(h512, nl.m512i);
+        // compare haystack to needle high
+        __mmask64 mboth = _mm512_mask_cmp_epu8_mask(lres, h512, nh.m512i, _MM_CMPINT_LE);
+        //expand every bit of the mask into 8 so we get a __m512i
+        __m512i vboth = _mm512_movm_epi8(mboth);
+        // compare this with the all-1 mask on a 32-bit basis.
+        __mmask16 bits = _mm512_cmpeq_epi32_mask(vboth, _mm512_set1_epi32(-1));
+        // mask off anything that was beyond our reach due to the mask used
+        bits &= mask;
+        // if we have a hit...
+        if (bits)
+            // count trailing zeroes in mask (as a 16-bit value)
+            // to get the index of the pixel that matched
+            return p + imgutil_ctz16(bits);
+    }
+    // i guess we were called with w=0
+    return 0;
 }
 #endif

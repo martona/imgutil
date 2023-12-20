@@ -1,3 +1,7 @@
+/* VERY important: if we can ensure that needle, needle_lo, needle_hi AND haystack
+    are all allocated to a size that is a multiple of the vector size (so 64 bytes 
+    covers all of them), then we can vastly simplify the cleanup code in the vector
+    loops. pixelmatchcount, pixelscan and make_sat_masks all would benefit from this. */
 
 argb* imgutil_imgsrch (
     argb* haystack,      // the haystack image buffer; assumed flat 32-bit RGB or ARGB
@@ -22,29 +26,53 @@ argb* imgutil_imgsrch (
         argb* pixels     = haystack + haystack_row * haystack_w;
         argb* pixels_max = pixels + haystack_w - needle_w;
         while (pixels <= pixels_max) {
-            i32 togo = (i32)(pixels_max - pixels);
+            i32 row_pixels_left = (i32)(pixels_max - pixels);
+            // if we're pixel-matching, allow an extra pixel to the right so a
+            // rightmost needle's first column can be found
             argb* pfound = force_topleft ?
-                i_imgutil_pixel_scan(pixels, nl, nh, togo)
+                i_imgutil_pixel_scan(pixels, nl, nh, row_pixels_left + 1)
                 :
                 pixels;
             if (pfound) {
+                pixels = pfound;
+                #if DEBUG
+                i32 y = haystack_row;
+                i32 x = (i32)(pixels - haystack - haystack_row * haystack_w);
+                printf("pixel found at %d, %d\n", x, y);
+                #endif
                 argb* ptr_needle_lo  = needle_lo;
                 argb* ptr_needle_hi  = needle_hi;
                 argb* inner_haystack = pixels;
                 i32   pixels_tomatch = pixels_needed;
                 i32   pixels_left    = needle_pixels;
-                while (pixels_left >= pixels_tomatch) {
-                    pixels_tomatch -= i_imgutil_pixelmatchcount(&inner_haystack, needle_w, &ptr_needle_lo, &ptr_needle_hi);
+                while (pixels_left && pixels_left >= pixels_tomatch) {
+                    #if DEBUG
+                    i32 needle_y    = (i32)(ptr_needle_lo - needle_lo) / needle_w;
+                    #endif
+                    i32 matched     = i_imgutil_pixelmatchcount(&inner_haystack, needle_w, &ptr_needle_lo, &ptr_needle_hi);
+                    pixels_tomatch -= matched;
+                    #if DEBUG
+                    printf("row %d/%d matched %d pixels, need %d more\n", needle_y, needle_h, matched, pixels_tomatch);
+                    #endif
+                    if (pixels_tomatch <= 0)
+                        break;
                     pixels_left    -= needle_w;
                     inner_haystack += (haystack_w - needle_w);
                 }
-                if (pixels_tomatch <= 0)
+                if (pixels_tomatch <= 0) {
+                    #if DEBUG
+                    printf("found %d pixels out of %d, returning with success\n", pixels_needed, needle_pixels);
+                    #endif
                     return pixels;
+                }
                 pixels++;
             } else {
                 pixels += haystack_w;
             }
         }
     }
+    #if DEBUG
+    printf("no match found\n");
+    #endif
     return 0;
 }

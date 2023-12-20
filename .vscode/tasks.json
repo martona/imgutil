@@ -6,8 +6,6 @@
             "command": "C:\\msys64\\ucrt64\\bin\\gcc.exe",
             "args": [
                 "-march=native",
-                "-D",
-                " MARCH_x86_64_v1",
                 " -m64",
                 "-fdiagnostics-color=always",
                 "-g",
@@ -16,6 +14,50 @@
                 "${fileDirname}\\${fileBasenameNoExtension}.exe"
             ],
             "options": {
+                //"cwd": "C:\\msys64\\ucrt64\\bin"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": ""
+        },
+        {
+            "label": "delete test.exe",
+            "command": "cmd.exe",
+            "args": [
+                "/c",
+                "del",
+                "${workspaceFolder}\\test\\test.exe",
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+        },
+        {
+            "type": "cppbuild",
+            "label": "build test.exe",
+            "command": "C:\\msys64\\ucrt64\\bin\\gcc.exe",
+            "args": [
+                "-march=native",
+                " -m64",
+                "-fdiagnostics-color=always",
+                "-g",
+                "${workspaceFolder}\\test\\test.c",
+                "-o",
+                "${workspaceFolder}\\test\\test.exe"
+            ],
+            "environment": [
+                {
+                    "name": "PATH",
+                    "value": "${env:Path};C:\\msys64\\ucrt64\\bin"
+                }
+            ],
+           "options": {
                 "cwd": "C:\\msys64\\ucrt64\\bin"
             },
             "problemMatcher": [
@@ -25,6 +67,9 @@
                 "kind": "build",
                 "isDefault": true
             },
+            "dependsOn": [
+                "delete test.exe"
+            ],
             "detail": ""
         },
     ],
