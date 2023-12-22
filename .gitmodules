@@ -1,0 +1,6 @@
+[submodule "submodules/leanloader"]
+	path = submodules/leanloader
+	url = ssh://git@github.com/martona/leanloader
+[submodule "submodules/multithread"]
+	path = submodules/multithread
+	url = ssh://git@github.com/martona/multithread
