@@ -1,8 +1,7 @@
-#include <stdio.h>
-
 #if defined(__HEADLESS__)
     #define printf_(a) 0
 #else
+    #include <stdio.h>
     #define printf_(a) printf a
 #endif
 

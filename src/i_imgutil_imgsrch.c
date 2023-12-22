@@ -4,15 +4,17 @@
     loops. pixelmatchcount, pixelscan and make_sat_masks all would benefit from this. */
 
 argb* imgutil_imgsrch (
-    argb* haystack,      // the haystack image buffer; assumed flat 32-bit RGB or ARGB
-    i32   haystack_w,    // width of the image
-    i32   haystack_h,    // height of the image
-    argb* needle_lo,     // pre-made mask where each each pixel channel is the low value
-    argb* needle_hi,     // pre-made mask where each each pixel channel is the high value
-    i32   needle_w,      // width of the image
-    i32   needle_h,      // height of the image
-    i8    pctmatchreq,   // minimum percentage of pixels to match from needle
-    i32   force_topleft) // force top left pixel to match before determining percentages
+    argb* haystack,       // the haystack image buffer; assumed flat 32-bit RGB or ARGB
+    i32   haystack_w,     // width of the image
+    i32   haystack_h,     // height of the image
+    argb* needle_lo,      // pre-made mask where each each pixel channel is the low value
+    argb* needle_hi,      // pre-made mask where each each pixel channel is the high value
+    i32   needle_w,       // width of the image
+    i32   needle_h,       // height of the image
+    i8    pctmatchreq,    // minimum percentage of pixels to match from needle
+    i32   force_topleft,  // force top left pixel to match before determining percentages
+    i32*  ppixels_matched // optional pointer to store the number of pixels matched)
+)
 {
     i32 needle_pixels       = needle_w * needle_h;
     i32 pixels_needed       = needle_pixels * pctmatchreq / 100;
@@ -36,9 +38,9 @@ argb* imgutil_imgsrch (
             if (pfound) {
                 pixels = pfound;
                 #if DEBUG
-                i32 y = haystack_row;
-                i32 x = (i32)(pixels - haystack - haystack_row * haystack_w);
-                printf("pixel found at %d, %d\n", x, y);
+                // i32 y = haystack_row;
+                // i32 x = (i32)(pixels - haystack - haystack_row * haystack_w);
+                // printf("pixel found at %d, %d\n", x, y);
                 #endif
                 argb* ptr_needle_lo  = needle_lo;
                 argb* ptr_needle_hi  = needle_hi;
@@ -52,17 +54,17 @@ argb* imgutil_imgsrch (
                     i32 matched     = i_imgutil_pixelmatchcount(&inner_haystack, needle_w, &ptr_needle_lo, &ptr_needle_hi);
                     pixels_tomatch -= matched;
                     #if DEBUG
-                    printf("row %d/%d matched %d pixels, need %d more\n", needle_y, needle_h, matched, pixels_tomatch);
+                    // printf("row %d/%d matched %d pixels, need %d more\n", needle_y, needle_h, matched, pixels_tomatch);
                     #endif
-                    if (pixels_tomatch <= 0)
-                        break;
                     pixels_left    -= needle_w;
                     inner_haystack += (haystack_w - needle_w);
                 }
                 if (pixels_tomatch <= 0) {
                     #if DEBUG
-                    printf("found %d pixels out of %d, returning with success\n", pixels_needed, needle_pixels);
+                    // printf("found %d pixels out of %d, returning with success\n", pixels_needed, needle_pixels);
                     #endif
+                    if (ppixels_matched)
+                        *ppixels_matched = pixels_needed - pixels_tomatch;
                     return pixels;
                 }
                 pixels++;
@@ -71,8 +73,5 @@ argb* imgutil_imgsrch (
             }
         }
     }
-    #if DEBUG
-    printf("no match found\n");
-    #endif
     return 0;
 }

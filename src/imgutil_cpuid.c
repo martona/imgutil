@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include "imgutil_cpuid.h"
 
 //https://stackoverflow.com/questions/6121792/
@@ -67,7 +66,7 @@ int get_cpu_psabi_level() {
     unsigned int max_extended    = cpuid_max_extended();
     
     int level = 0;
-    cpu_feature_info* feature = NULL;
+    cpu_feature_info* feature = 0;
     for (int i = 0; feature = get_feature_info(i); i++) {
         if (feature->psabi_level > level) {
             level = feature->psabi_level;

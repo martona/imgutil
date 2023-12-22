@@ -18,9 +18,10 @@ static inline argb* i_imgutil_pixel_scan_v0
     argb lo = nl.margb, hi = nh.margb;
     while (w >= 0) {
         argb h = *p;
-        if ((h.r <= hi.r) && (h.r >= lo.r) && 
-            (h.g <= hi.g) && (h.g >= lo.g) && 
-            (h.b <= hi.b) && (h.b >= lo.b))
+        i32 cond_r = ((i32)h.r - (i32)lo.r) <= ((i32)hi.r - (i32)lo.r);
+        i32 cond_g = ((i32)h.g - (i32)lo.g) <= ((i32)hi.g - (i32)lo.g);
+        i32 cond_b = ((i32)h.b - (i32)lo.b) <= ((i32)hi.b - (i32)lo.b);
+        if (cond_r & cond_g & cond_b)
             return p;
         p++;
         w--;

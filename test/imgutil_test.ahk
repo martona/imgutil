@@ -21,6 +21,9 @@ class imgutilTest {
     ctlbench := 0
     benchmarkFileCtl := 0
     benchmarkFileSelection := "01"
+    benchmarkThreadCtlText := 0
+    benchmarkThreadCtlEdit := 0
+    benchmarkMultiCtl := 0
 
     show() {
         this.gui := Gui()
@@ -38,7 +41,7 @@ class imgutilTest {
         this.gui.Add("Button", "ys", "Haystack/needle 02").OnEvent("Click", this.benchmarkFile.Bind(this, "02"))
         this.gui.Add("Button", "ys", "Haystack/needle 03").OnEvent("Click", this.benchmarkFile.Bind(this, "03"))
         this.benchmarkFileCtl := this.gui.Add("Text", "section xs", "Currently selected: " . this.benchmarkFileSelection)
-
+        
         v := 0
         while v < 5 {
             this.gui.Add("Text", "section xs w0 h0")
@@ -49,6 +52,15 @@ class imgutilTest {
             v++
         }
         this.ctlbench := this.gui.Add("Text", "section xs w300 +Multi h40", "")
+        this.benchmarkMultiCtl := this.gui.Add("Checkbox", "section xs checked", "Allow multiple threads")
+        this.benchmarkMultiCtl.OnEvent("Click", this.benchmarkMulti.Bind(this))
+
+        this.gui.Add("Text", "ys", "Threads:") 
+        this.benchmarkThreadCtlText := this.gui.Add("Text", "ys", "000")
+        this.benchmarkThreadCtlText.Value := DllCall(imgu.i_mcode_map["get_cpu_threads"], "ptr", imgu.multithread_ctx,  "int")
+        this.benchmarkThreadCtlEdit := this.gui.Add("Edit", "ys w40", this.benchmarkThreadCtlText.Text)
+        this.gui.Add("Button", "ys", "Set").OnEvent("Click", this.benchmarkThreadCtl.Bind(this))
+
         this.gui.Show()
     }
 
@@ -73,6 +85,25 @@ class imgutilTest {
             }
         }
         return
+    }
+
+    benchmarkThreadCtl(ctl, *) {
+        t := this.benchmarkThreadCtlEdit.Text
+        if (t < 1) 
+            t := 1
+        if t > DllCall(imgu.i_mcode_map["get_cpu_threads"], "ptr", imgu.multithread_ctx,  "int")
+            t := DllCall(imgu.i_mcode_map["get_cpu_threads"], "ptr", imgu.multithread_ctx,  "int")
+        this.benchmarkThreadCtlText.Text := t
+        DllCall(imgu.i_mcode_map["mt_deinit_ctx"], "ptr", imgu.multithread_ctx)
+        imgu.multithread_ctx := DllCall(imgu.i_mcode_map["mt_init_ctx"], "int", t, "ptr")
+    }
+
+    benchmarkMulti(ctl, *) {
+        if this.benchmarkMultiCtl.Value {
+            imgu.use_single_thread := false
+        } else {
+            imgu.use_single_thread := true
+        }
     }
 
     benchmarkFile(selection, ctl, *) {

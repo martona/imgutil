@@ -1,31 +1,6 @@
 {
     "tasks": [
         {
-            "type": "cppbuild",
-            "label": "C/C++: gcc.exe build active file",
-            "command": "C:\\msys64\\ucrt64\\bin\\gcc.exe",
-            "args": [
-                "-march=native",
-                " -m64",
-                "-fdiagnostics-color=always",
-                "-g",
-                "${file}",
-                "-o",
-                "${fileDirname}\\${fileBasenameNoExtension}.exe"
-            ],
-            "options": {
-                //"cwd": "C:\\msys64\\ucrt64\\bin"
-            },
-            "problemMatcher": [
-                "$gcc"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "detail": ""
-        },
-        {
             "label": "delete test.exe",
             "command": "cmd.exe",
             "args": [
@@ -43,20 +18,16 @@
             "label": "build test.exe",
             "command": "C:\\msys64\\ucrt64\\bin\\gcc.exe",
             "args": [
-                "-march=native",
-                " -m64",
+                "-march=core2",
                 "-fdiagnostics-color=always",
                 "-g",
                 "${workspaceFolder}\\test\\test.c",
                 "-o",
                 "${workspaceFolder}\\test\\test.exe"
             ],
-            "environment": [
-                {
-                    "name": "PATH",
-                    "value": "${env:Path};C:\\msys64\\ucrt64\\bin"
-                }
-            ],
+            "presentation": {
+                "clear": true
+            },                
            "options": {
                 "cwd": "C:\\msys64\\ucrt64\\bin"
             },

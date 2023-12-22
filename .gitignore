@@ -55,3 +55,4 @@ src/*.err.txt
 src/*.lst.txt
 src/*.c.s
 
+test/test.exo
