@@ -93,7 +93,7 @@ argb* imgutil_imgsrch_multi (
         .force_topleft  = force_topleft     // force top left pixel to match before determining percentages?
     };
     // run the workers
-    ctx->mt_run_threads(ctx, imgutil_imgsrch_worker, &tctx);
+    ctx->mt_run(ctx, imgutil_imgsrch_worker, &tctx);
     // return the result
     if (ppixels_matched)
         *ppixels_matched = tctx.pixels_matched;

@@ -27,7 +27,7 @@ int main(int argc, char* argv[])
 
     imgutil_make_sat_masks((u32*)needle_info.bd.ptr, needle_size, (u32*)needle_lo, (u32*)needle_hi, 8);
 
-    mt_ctx* ctx = mt_init_ctx(0);
+    mt_ctx* ctx = mt_init(0);
     int pixels_matched = 0;
     argb* match = imgutil_imgsrch_multi ( ctx,
                                           (argb*)haystack_info.bd.ptr, haystack_info.bd.w, haystack_info.bd.h,
@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
     free(needle_lo);
     free(needle_hi);
     
-    mt_deinit_ctx(ctx);
+    mt_deinit(ctx);
 
     leanloader_dispose(&haystack_info);
     leanloader_dispose(&needle_info);

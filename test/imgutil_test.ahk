@@ -57,7 +57,7 @@ class imgutilTest {
 
         this.gui.Add("Text", "ys", "Threads:") 
         this.benchmarkThreadCtlText := this.gui.Add("Text", "ys", "000")
-        this.benchmarkThreadCtlText.Value := DllCall(imgu.i_mcode_map["get_cpu_threads"], "ptr", imgu.multithread_ctx,  "int")
+        this.benchmarkThreadCtlText.Value := DllCall(imgu.i_mcode_map["mt_get_cputhreads"], "ptr", imgu.i_multithread_ctx,  "int")
         this.benchmarkThreadCtlEdit := this.gui.Add("Edit", "ys w40", this.benchmarkThreadCtlText.Text)
         this.gui.Add("Button", "ys", "Set").OnEvent("Click", this.benchmarkThreadCtl.Bind(this))
 
@@ -91,18 +91,18 @@ class imgutilTest {
         t := this.benchmarkThreadCtlEdit.Text
         if (t < 1) 
             t := 1
-        if t > DllCall(imgu.i_mcode_map["get_cpu_threads"], "ptr", imgu.multithread_ctx,  "int")
-            t := DllCall(imgu.i_mcode_map["get_cpu_threads"], "ptr", imgu.multithread_ctx,  "int")
+        if t > DllCall(imgu.i_mcode_map["mt_get_cputhreads"], "ptr", imgu.i_multithread_ctx,  "int")
+            t := DllCall(imgu.i_mcode_map["mt_get_cputhreads"], "ptr", imgu.i_multithread_ctx,  "int")
         this.benchmarkThreadCtlText.Text := t
-        DllCall(imgu.i_mcode_map["mt_deinit_ctx"], "ptr", imgu.multithread_ctx)
-        imgu.multithread_ctx := DllCall(imgu.i_mcode_map["mt_init_ctx"], "int", t, "ptr")
+        DllCall(imgu.i_mcode_map["mt_deinit"], "ptr", imgu.i_multithread_ctx)
+        imgu.i_multithread_ctx := DllCall(imgu.i_mcode_map["mt_init"], "int", t, "ptr")
     }
 
     benchmarkMulti(ctl, *) {
         if this.benchmarkMultiCtl.Value {
-            imgu.use_single_thread := false
+            imgu.i_use_single_thread := false
         } else {
-            imgu.use_single_thread := true
+            imgu.i_use_single_thread := true
         }
     }
 
@@ -173,29 +173,30 @@ class imgutilTest {
 
 
         test_rect(img, bgc, t, r, res) {
-            y := imgutil_find_row_match(        img, bgc, r.y,              t, r.x, r.x + r.w)
+            imgu.tolerance_set(t)
+            y := imgu.get_row_match(    img, bgc, r.y,              r.x, r.x + r.w)
             if y != res[1]
                 throw("test error")
-            x := imgutil_find_column_match(     img, bgc, r.x,              t, r.y, r.y + r.h)    
+            x := imgu.get_col_match(    img, bgc, r.x,              r.y, r.y + r.h)    
             if x != res[2] 
                 throw("test error")
-            y := imgutil_find_row_match_rev(    img, bgc, r.y + r.h - 1,    t, r.x, r.x + r.w)
+            y := imgu.get_row_match_rev(img, bgc, r.y + r.h - 1,    r.x, r.x + r.w)
             if y != res[3]
                 throw("test error")
-            x := imgutil_find_column_match_rev( img, bgc, r.x + r.w - 1,    t, r.y, r.y + r.h)
+            x := imgu.get_col_match_rev(img, bgc, r.x + r.w - 1,    r.y, r.y + r.h)
             if x != res[4]
                 throw("test error")
 
-            y := imgutil_find_row_mismatch(        img, bgc, r.y,              t, r.x, r.x + r.w)
+            y := imgu.get_row_mism(     img, bgc, r.y,              r.x, r.x + r.w)
             if y != res[5]
                 throw("test error")
-            x := imgutil_find_column_mismatch(     img, bgc, r.x,              t, r.y, r.y + r.h)    
+            x := imgu.get_col_mism(     img, bgc, r.x,              r.y, r.y + r.h)    
             if x != res[6] 
                 throw("test error")
-            y := imgutil_find_row_mismatch_rev(    img, bgc, r.y + r.h - 1,    t, r.x, r.x + r.w)
+            y := imgu.get_row_mism_rev( img, bgc, r.y + r.h - 1,    r.x, r.x + r.w)
             if y != res[7]
                 throw("test error")
-            x := imgutil_find_column_mismatch_rev( img, bgc, r.x + r.w - 1,    t, r.y, r.y + r.h)
+            x := imgu.get_col_mism_rev( img, bgc, r.x + r.w - 1,    r.y, r.y + r.h)
             if x != res[8]
                 throw("test error")
         }
