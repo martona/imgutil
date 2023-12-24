@@ -35,6 +35,7 @@
             "type": "autohotkey",
             "request": "launch",
             "program": "${workspaceFolder}\\test\\imgutil_test.ahk",
+            "cwd": "${workspaceFolder}\\test",
             "args": []
         },
     ]

@@ -17,6 +17,13 @@
 */
 
 #Requires AutoHotkey v2.0+
+#DllLoad "Gdiplus.dll"
+#DllLoad "ole32.dll"
+;############################################################################################################
+; some global defines
+;############################################################################################################
+imgu_GPTR := 0x40
+imgu_GDIP_OK := 0
 
 ;############################################################################################################
 ; a global instance of the class. you should only ever need this one.
@@ -32,17 +39,24 @@ class imgutil {
     i_multithread_ctx := 0                          ; multithread context
     i_use_single_thread := false                    ; used for testing purposes, forces srch to use a single thread
     i_tolerance := 8                                ; tolerance used by all pixel matching functions
+    i_gdip_token := 0                               ; gdiplus token
 
     ; initialize the library
     __New() {
         this.i_mcode_map        := this.i_get_mcode_map()
         this.i_multithread_ctx  := DllCall(this.i_mcode_map["mt_init"], "int", 0, "ptr")
+        si := Buffer(24, 0)
+        NumPut("int", 1, si)
+        token := 0
+        DllCall("Gdiplus.dll\GdiplusStartup", "ptr*", &token, "ptr", si.ptr, "ptr", 0, "uint")
+        this.i_gdip_token := token
     }
 
     ; deinit
     __Delete() {
         DllCall(this.i_mcode_map["mt_deinit"], "ptr", this.i_multithread_ctx)
-    }
+        DllCall("Gdiplus.dll\GdiplusShutdown", "ptr", this.i_gdip_token)
+     }
 
     ;########################################################################################################
     ; determines the correct version of machine code blobs to use,
@@ -746,6 +760,14 @@ class imgutil {
     }
 
     ;########################################################################################################
+    ; load an image from disk
+    ;########################################################################################################
+    load(fname) {
+        img := imgutil.img(this)
+        return img.load(fname)
+    }
+
+    ;########################################################################################################
     ; pixel brightness (naive, good enough)
     ;########################################################################################################
     get_pixel_magnitude(px) {
@@ -754,5 +776,209 @@ class imgutil {
         b := (px & 0x000000ff)
         return r + g + b
     }
+
+    class img {
+        ptr         := 0     ; pointer to ARGB flat pixel data
+        width       := 0     ; width of image
+        height      := 0     ; height of image
+        origin      := 0     ; origin of image relative to screen(0,0)
+
+        i_imgu      := 0     ; internal variable holding the imgutil object
+
+        i_vrect     := 0     ; virtual rectangle, affected by cropping and
+                             ; observed by most operations (pixel scan, etc)
+
+        i_buffer    := 0     ; internal variable holding the buffer object 
+                             ; that provides the ptr
+        i_bmp       := 0     ; internal variable holding the gdi+ bitmap object
+        i_bitmapdata:= 0     ; gdi+ bitmapdata struct, used to locl/unlock the image
+        i_locked    := false ; internal variable holding the lock state of the image
+
+        __New(imgu) {
+            this.i_imgu := imgu
+        }
+
+        __Delete() {
+            this.i_cleanup()
+        }
+
+        i_cleanup() {
+            this.i_unlock()
+            if (this.i_bmp) {
+                DllCall("gdiplus\GdipDisposeImage", "ptr", this.i_bmp)
+                this.i_bmp    := 0
+            }
+            this.i_vrect := 0
+        }
+
+        load(fname) {
+            ret := false
+            try {
+                ; release any resources we might be using
+                this.i_cleanup()
+                ; open the file
+                fileobj := FileOpen(fname, "r")
+                if fileobj.length = 0
+                    return false
+                ; read file into a blob
+                data := Buffer(fileobj.length)
+                fileobj.RawRead(data, fileobj.length)
+                fileobj.Close()
+                ; create an IStream from the blob
+                pstream := DllCall("shlwapi.dll\SHCreateMemStream", "ptr", data.ptr, "uint", data.size, "ptr")
+                if pstream {
+                    ; get GDI+ to load it. if we use *FromFile it will keep the file locked
+                    if (imgu_GDIP_OK = DllCall("gdiplus\GdipLoadImageFromStream", "ptr", pstream, "ptr*", &i_bmp := 0)) {
+                        this.i_bmp  := i_bmp
+                        DllCall("gdiplus\GdipGetImageWidth",  "ptr", this.i_bmp, "uint*", &w:= 0)
+                        DllCall("gdiplus\GdipGetImageHeight", "ptr", this.i_bmp, "uint*", &h:= 0)
+                        if w && h {
+                            this.width  := w
+                            this.height := h
+                            if (this.i_lock()) {
+                                ret := true
+                            }
+                        }
+                    }
+                    ObjRelease(pstream)
+                }
+            }
+            if !ret {
+                this.i_cleanup()
+                return 0
+            }
+            return this
+        } ;; end of img.load
+        
+        save(fname) {
+            ret := false
+            try {
+                if (this.i_locked) {
+                    ; ok the funny thing is, we'd need to unlock the bits here to make sure any changes in the locked buffer
+                    ; get copied back by gdi+ into the object. but if we do that, then re-lock, that copies the image twice,
+                    ; once to unlock then again to lock. which seems insane. so we'll just create a new unlocked object
+                    ; from the locked bits in memory, save that, and throw it away.
+                    i := 0
+                    while i < this.i_buffer.size//4 {
+                        NumPut("uint", 0xff000000, this.i_buffer.ptr + i)
+                        i := i + 4
+                    }
+                    return imgutil.img(this.i_imgu).grab_memory(this.ptr, this.width, this.height, this.width*4).save(fname)
+                } else if this.i_bmp {
+                    ; get filename extension
+                    dotidx := InStr(fname, ".",, -1)
+                    if dotidx {
+                        extension := SubStr(fname, dotidx+1)
+                        ; get available codecs
+                        num_codecs := 0
+                        size_codecs := 0
+                        if imgu_GDIP_OK = DllCall("gdiplus\GdipGetImageEncodersSize", "uint*", &num_codecs, "uint*", &size_codecs, "uint") {
+                            buf_codecs := Buffer(size_codecs)
+                            if imgu_GDIP_OK = DllCall("gdiplus\GdipGetImageEncoders", "uint", num_codecs, "uint", size_codecs, "ptr", buf_codecs.ptr) {
+                                i := 0
+                                while (i < num_codecs) {
+                                    pcodec := buf_codecs.ptr + i*104            ; the current codec entry
+                                    strptr := NumGet(pcodec + 32+3*8, "ptr")    ; pointer to the unicode string describing extensions handled by this codec
+                                    codecexts := StrGet(strptr, "UTF-16")       ; now an ahk string
+                                    if (RegExMatch(codecexts, "i).*\*\." . extension . "\b")) {
+                                        ; we matched and pcodec points to the clsid
+                                        if imgu_GDIP_OK = DllCall("gdiplus\GdipSaveImageToFile", "ptr", this.i_bmp, "wstr", fname, "ptr", pcodec, "ptr", 0, "ptr") {
+                                            ret := true
+                                        }
+                                        break
+                                    }
+                                    i++
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return ret
+        } ;; end of img.save
+
+        i_lock() {
+            if (this.i_locked)
+                return this
+            ; !!!!!!!!!!!!!!this is SUPER important!!!!!!!!!!!!!!!!:
+            ; the SIMD code needs the buffer to be allocated to a multiple of 64 bytes.
+            ; the loop cleanup code relies on this, it makes everything a lot easier.
+            ; (well, it's 64 bytes for AVX512, 32 for AVX2, etc, but we don't know which one
+            ; will be in use and it's just a few bytes...)
+            allocsize     := (this.width * this.height * 4 + 63) & ~63
+            this.i_buffer := Buffer(allocsize)
+            this.ptr      := this.i_buffer.ptr
+            ; the rectangle to be locked is the entire image
+            gdirect := imgutil.rect(0, 0, this.width, this.height).gdiplus_rect()
+            ; bitmapdata struct, only need stride and scan0
+            this.i_bitmapdata := Buffer(32, 0)
+            NumPut("int", this.width * 4, this.i_bitmapdata.ptr +  8) ; bitmapdata->stride
+            NumPut("ptr", this.ptr,       this.i_bitmapdata.ptr + 16) ; bitmapdata->scan0
+            ; lock the bits
+            if (imgu_GDIP_OK = DllCall("gdiplus\GdipBitmapLockBits", 
+                    "ptr", this.i_bmp, 
+                    "ptr", gdirect.ptr,
+                    "uint", 7,          ; ImageLockModeRead | ImageLockModeWrite | ImageLockModeUserInputBuf
+                    "uint", 0x0026200a, ; PixelFormat32bppARGB
+                    "ptr", this.i_bitmapdata,
+                    "uint")) 
+            {
+                this.i_locked := true
+                return this
+            }
+            return false
+        }
+
+        i_unlock() {
+            if (this.i_locked) {
+                DllCall("gdiplus\GdipBitmapUnlockBits", "ptr", this.i_bmp, "ptr", this.i_bitmapdata)
+                this.i_bitmapdata := 0
+                this.ptr          := 0
+                this.i_buffer     := 0
+                this.i_locked     := false
+            }
+            return this
+        }
+
+        grab_memory(ptr, w, h, stride) {
+            this.i_cleanup()
+            this.width    := w
+            this.height   := h
+            if imgu_GDIP_OK = DllCall("gdiplus\GdipCreateBitmapFromScan0", 
+                    "uint", w, "uint", h, "int", stride, 
+                    "uint", 0x0026200a,     ; PixelFormat32bppARGB
+                    "ptr", ptr, 
+                    "ptr*", &i_bmp := 0) 
+            {
+                this.i_bmp := i_bmp
+                return this
+            }
+            return false
+        } ;; end of img.grab_memory
+
+    } ;; end of img class
+
+    ; a simple rectangle class to wrap up all the x/y/w/h nonsense
+    class rect {
+        x := 0
+        y := 0
+        w := 0
+        h := 0
+        __New(x:=0, y:=0, w:=0, h:=0) {
+            this.x := x
+            this.y := y
+            this.w := w
+            this.h := h
+        }
+        gdiplus_rect() {
+            gdirect := Buffer(16, 0)
+            NumPut("int", this.x, gdirect.ptr +  0)
+            NumPut("int", this.y, gdirect.ptr +  4)
+            NumPut("int", this.w, gdirect.ptr +  8)
+            NumPut("int", this.h, gdirect.ptr + 12)
+            return gdirect
+        }
+    }
+
 }
 

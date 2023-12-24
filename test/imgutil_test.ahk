@@ -62,6 +62,9 @@ class imgutilTest {
         this.gui.Add("Button", "ys", "Set").OnEvent("Click", this.benchmarkThreadCtl.Bind(this))
 
         this.gui.Show()
+
+        image := imgu.load("imgutil_test_haystack_with_needle01.png")
+        image.save("imgutil_test_haystack_with_needle01.saved.png")
     }
 
     benchmark(benchTarget, forcepixel, ctl, *) {
@@ -75,7 +78,7 @@ class imgutilTest {
         time_taken := 0
         while time_taken < 5000 {
             iterations++
-            imgutil_imgsrch(&x, &y, haystack, needle, 8, 95, forcepixel)
+            imgu.srch(&x, &y, haystack, needle, 8, 95, forcepixel)
             time_taken := A_TickCount - start
         }
         this.ctlbench.Text := "Benchmark: " . iterations . " iterations in " . time_taken . "ms" . "`n" . "Average: " . Format("{:2.2f}", time_taken / iterations)  . "ms per iteration"
@@ -136,11 +139,11 @@ class imgutilTest {
         needle := ImagePutBuffer("imgutil_test_needle01.png")
 
         ;TODO: need more of these tests
-        if !imgutil_imgsrch(&x, &y, haystack, needle, 8, 95, 1)
+        if !imgu.srch(&x, &y, haystack, needle, 8, 95, 1)
             throw("test error")
         if x != 3840 - 64 || y != 2160 - 64
             throw("test error (x: " . x . ", y: " . y . ")")
-        if !imgutil_imgsrch(&x, &y, needle, needle, 8, 95, 1)
+        if !imgu.srch(&x, &y, needle, needle, 8, 95, 1)
             throw("test error")
         if x != 0 || y != 0
             throw("test error (x: " . x . ", y: " . y . ")")
@@ -149,11 +152,11 @@ class imgutilTest {
         needle := ImagePutBuffer("imgutil_test_needle02.png")
 
         ;TODO: need more of these tests
-        if !imgutil_imgsrch(&x, &y, haystack, needle, 8, 100, 0)
+        if !imgu.srch(&x, &y, haystack, needle, 8, 100, 0)
             throw("test error")
         if x != 1787 || y != 2104
             throw("test error (x: " . x . ", y: " . y . ")")
-        if !imgutil_imgsrch(&x, &y, needle, needle, 8, 95, 1)
+        if !imgu.srch(&x, &y, needle, needle, 8, 95, 1)
             throw("test error")
         if x != 0 || y != 0
             throw("test error (x: " . x . ", y: " . y . ")")
@@ -162,11 +165,11 @@ class imgutilTest {
         needle := ImagePutBuffer("imgutil_test_needle03.png")
 
         ;TODO: need more of these tests
-        if !imgutil_imgsrch(&x, &y, haystack, needle, 8, 100, 0)
+        if !imgu.srch(&x, &y, haystack, needle, 8, 100, 0)
             throw("test error")
         if x != 1925 || y != 2154
             throw("test error (x: " . x . ", y: " . y . ")")
-        if !imgutil_imgsrch(&x, &y, needle, needle, 8, 95, 1)
+        if !imgu.srch(&x, &y, needle, needle, 8, 95, 1)
             throw("test error")
         if x != 0 || y != 0
             throw("test error (x: " . x . ", y: " . y . ")")
