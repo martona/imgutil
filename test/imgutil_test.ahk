@@ -62,9 +62,6 @@ class imgutilTest {
         this.gui.Add("Button", "ys", "Set").OnEvent("Click", this.benchmarkThreadCtl.Bind(this))
 
         this.gui.Show()
-
-        image := imgu.load("imgutil_test_haystack_with_needle01.png")
-        image.save("imgutil_test_haystack_with_needle01.saved.png")
     }
 
     benchmark(benchTarget, forcepixel, ctl, *) {
@@ -121,6 +118,13 @@ class imgutilTest {
     }
 
     test() {
+
+        imgutil.img(imgu).grab_screen(imgutil.rect(0, 0, 200, 200)).save("imgutil_test.tmp.png")
+        img1 := ImagePutBuffer("imgutil_test.tmp.png")
+        img2 := ImagePutBuffer("imgutil_test.tmp.png")
+        FileDelete("imgutil_test.tmp.png")
+        if !imgu.srch(&x, &y, img1, img2, 0, 100, 0)
+            throw("test error")
 
         img := ImagePutBuffer("imgutil_test.png")
 

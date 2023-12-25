@@ -763,8 +763,14 @@ class imgutil {
     ; load an image from disk
     ;########################################################################################################
     load(fname) {
-        img := imgutil.img(this)
-        return img.load(fname)
+        return imgutil.img(this).load(fname)
+    }
+
+    ;########################################################################################################
+    ; capture the screen
+    ;########################################################################################################
+    grab_screen(rect := 0) {
+        return imgutil.img(this).grab_screen(rect)
     }
 
     ;########################################################################################################
@@ -777,185 +783,117 @@ class imgutil {
         return r + g + b
     }
 
+    ;########################################################################################################
+    ;########################################################################################################
+    ; the img class, does a lot of the heavy lifting
+    ;########################################################################################################
+    ;########################################################################################################
     class img {
-        ptr         := 0     ; pointer to ARGB flat pixel data
-        width       := 0     ; width of image
-        height      := 0     ; height of image
-        origin      := 0     ; origin of image relative to screen(0,0)
+        ptr     := 0     ; pointer to ARGB flat pixel data
+        w       := 0     ; width of image
+        h       := 0     ; height of image
+        origin  := 0     ; origin of image relative to screen(0,0)
 
         i_imgu      := 0     ; internal variable holding the imgutil object
 
         i_vrect     := 0     ; virtual rectangle, affected by cropping and
                              ; observed by most operations (pixel scan, etc)
+        i_provider  := 0     ; provider object
 
-        i_buffer    := 0     ; internal variable holding the buffer object 
-                             ; that provides the ptr
-        i_bmp       := 0     ; internal variable holding the gdi+ bitmap object
-        i_bitmapdata:= 0     ; gdi+ bitmapdata struct, used to locl/unlock the image
-        i_locked    := false ; internal variable holding the lock state of the image
-
+        ;########################################################################################################
+        ; ctor/dtor
+        ;########################################################################################################
         __New(imgu) {
             this.i_imgu := imgu
         }
 
         __Delete() {
-            this.i_cleanup()
         }
 
-        i_cleanup() {
-            this.i_unlock()
-            if (this.i_bmp) {
-                DllCall("gdiplus\GdipDisposeImage", "ptr", this.i_bmp)
-                this.i_bmp    := 0
-            }
-            this.i_vrect := 0
-        }
-
+        ;########################################################################################################
+        ; object from file
+        ;########################################################################################################
         load(fname) {
-            ret := false
-            try {
-                ; release any resources we might be using
-                this.i_cleanup()
-                ; open the file
-                fileobj := FileOpen(fname, "r")
-                if fileobj.length = 0
-                    return false
-                ; read file into a blob
-                data := Buffer(fileobj.length)
-                fileobj.RawRead(data, fileobj.length)
-                fileobj.Close()
-                ; create an IStream from the blob
-                pstream := DllCall("shlwapi.dll\SHCreateMemStream", "ptr", data.ptr, "uint", data.size, "ptr")
-                if pstream {
-                    ; get GDI+ to load it. if we use *FromFile it will keep the file locked
-                    if (imgu_GDIP_OK = DllCall("gdiplus\GdipLoadImageFromStream", "ptr", pstream, "ptr*", &i_bmp := 0)) {
-                        this.i_bmp  := i_bmp
-                        DllCall("gdiplus\GdipGetImageWidth",  "ptr", this.i_bmp, "uint*", &w:= 0)
-                        DllCall("gdiplus\GdipGetImageHeight", "ptr", this.i_bmp, "uint*", &h:= 0)
-                        if w && h {
-                            this.width  := w
-                            this.height := h
-                            if (this.i_lock()) {
-                                ret := true
-                            }
-                        }
-                    }
-                    ObjRelease(pstream)
+            i_provider := image_provider.gdip.file()
+            if i_provider.get_image(fname) {
+                this.i_provider := i_provider
+                this.ptr        := i_provider.ptr
+                this.w          := i_provider.w
+                this.h          := i_provider.h
+                return this
+            }
+            return false
+        }
+
+        ;########################################################################################################
+        ; object from memory location
+        ;########################################################################################################
+        grab_memory(ptr, w, h, stride) {
+            i_provider := image_provider.gdip.memory()
+            if i_provider.get_image(ptr, w, h, stride) {
+                this.i_provider := i_provider
+                this.ptr        := i_provider.ptr
+                this.w          := i_provider.w
+                this.h          := i_provider.h
+                return this
+            }
+            return false
+        }
+        
+        ;########################################################################################################
+        ; object from screen
+        ;########################################################################################################
+        grab_screen(rect := 0) { 
+            ; try with directx first (fast), otherwise try with gdi (sloooow)
+            providers := [image_provider.dx_screen(), image_provider.gdi_screen()]
+            for provider in providers {
+                if origin := provider.get_image(rect) {
+                    this.i_provider := provider
+                    this.ptr        := provider.ptr
+                    this.w          := provider.w
+                    this.h          := provider.h
+                    this.origin     := origin
+                    return this
                 }
             }
-            if !ret {
-                this.i_cleanup()
-                return 0
-            }
-            return this
-        } ;; end of img.load
+        }
         
+        ;########################################################################################################
+        ; save the image to a file, the type is based on the extension  
+        ;########################################################################################################
         save(fname) {
             ret := false
-            try {
-                if (this.i_locked) {
-                    ; ok the funny thing is, we'd need to unlock the bits here to make sure any changes in the locked buffer
-                    ; get copied back by gdi+ into the object. but if we do that, then re-lock, that copies the image twice,
-                    ; once to unlock then again to lock. which seems insane. so we'll just create a new unlocked object
-                    ; from the locked bits in memory, save that, and throw it away.
-                    i := 0
-                    while i < this.i_buffer.size//4 {
-                        NumPut("uint", 0xff000000, this.i_buffer.ptr + i)
-                        i := i + 4
-                    }
-                    return imgutil.img(this.i_imgu).grab_memory(this.ptr, this.width, this.height, this.width*4).save(fname)
-                } else if this.i_bmp {
-                    ; get filename extension
-                    dotidx := InStr(fname, ".",, -1)
-                    if dotidx {
-                        extension := SubStr(fname, dotidx+1)
-                        ; get available codecs
-                        num_codecs := 0
-                        size_codecs := 0
-                        if imgu_GDIP_OK = DllCall("gdiplus\GdipGetImageEncodersSize", "uint*", &num_codecs, "uint*", &size_codecs, "uint") {
-                            buf_codecs := Buffer(size_codecs)
-                            if imgu_GDIP_OK = DllCall("gdiplus\GdipGetImageEncoders", "uint", num_codecs, "uint", size_codecs, "ptr", buf_codecs.ptr) {
-                                i := 0
-                                while (i < num_codecs) {
-                                    pcodec := buf_codecs.ptr + i*104            ; the current codec entry
-                                    strptr := NumGet(pcodec + 32+3*8, "ptr")    ; pointer to the unicode string describing extensions handled by this codec
-                                    codecexts := StrGet(strptr, "UTF-16")       ; now an ahk string
-                                    if (RegExMatch(codecexts, "i).*\*\." . extension . "\b")) {
-                                        ; we matched and pcodec points to the clsid
-                                        if imgu_GDIP_OK = DllCall("gdiplus\GdipSaveImageToFile", "ptr", this.i_bmp, "wstr", fname, "ptr", pcodec, "ptr", 0, "ptr") {
-                                            ret := true
-                                        }
-                                        break
-                                    }
-                                    i++
+            ; create a new image object that copies our memory buffer into a gdi+ bitmap
+            if image := imgutil.img(this.i_imgu).grab_memory(this.ptr, this.w, this.h, this.w*4) {
+                ; get filename extension
+                dotidx := InStr(fname, ".",, -1)
+                if dotidx {
+                    extension := SubStr(fname, dotidx+1)
+                    ; get available codecs
+                    num_codecs := 0
+                    size_codecs := 0
+                    if imgu_GDIP_OK = DllCall("gdiplus\GdipGetImageEncodersSize", "uint*", &num_codecs, "uint*", &size_codecs, "uint") {
+                        buf_codecs := Buffer(size_codecs)
+                        if imgu_GDIP_OK = DllCall("gdiplus\GdipGetImageEncoders", "uint", num_codecs, "uint", size_codecs, "ptr", buf_codecs.ptr) {
+                            i := 0
+                            while (i < num_codecs) {
+                                pcodec := buf_codecs.ptr + i*104            ; the current codec entry
+                                strptr := NumGet(pcodec + 32+3*8, "ptr")    ; pointer to the unicode string describing extensions handled by this codec
+                                codecexts := StrGet(strptr, "UTF-16")       ; now an ahk string
+                                if (RegExMatch(codecexts, "i).*\*\." . extension . "\b")) {
+                                    ; we matched and pcodec points to the clsid
+                                    if imgu_GDIP_OK = DllCall("gdiplus\GdipSaveImageToFile", "ptr", image.i_provider.gdip_pBitmap, "wstr", fname, "ptr", pcodec, "ptr", 0, "ptr")
+                                        ret := true
+                                    break
                                 }
+                                i++
                             }
                         }
                     }
                 }
             }
             return ret
-        } ;; end of img.save
-
-        i_lock() {
-            if (this.i_locked)
-                return this
-            ; !!!!!!!!!!!!!!this is SUPER important!!!!!!!!!!!!!!!!:
-            ; the SIMD code needs the buffer to be allocated to a multiple of 64 bytes.
-            ; the loop cleanup code relies on this, it makes everything a lot easier.
-            ; (well, it's 64 bytes for AVX512, 32 for AVX2, etc, but we don't know which one
-            ; will be in use and it's just a few bytes...)
-            allocsize     := (this.width * this.height * 4 + 63) & ~63
-            this.i_buffer := Buffer(allocsize)
-            this.ptr      := this.i_buffer.ptr
-            ; the rectangle to be locked is the entire image
-            gdirect := imgutil.rect(0, 0, this.width, this.height).gdiplus_rect()
-            ; bitmapdata struct, only need stride and scan0
-            this.i_bitmapdata := Buffer(32, 0)
-            NumPut("int", this.width * 4, this.i_bitmapdata.ptr +  8) ; bitmapdata->stride
-            NumPut("ptr", this.ptr,       this.i_bitmapdata.ptr + 16) ; bitmapdata->scan0
-            ; lock the bits
-            if (imgu_GDIP_OK = DllCall("gdiplus\GdipBitmapLockBits", 
-                    "ptr", this.i_bmp, 
-                    "ptr", gdirect.ptr,
-                    "uint", 7,          ; ImageLockModeRead | ImageLockModeWrite | ImageLockModeUserInputBuf
-                    "uint", 0x0026200a, ; PixelFormat32bppARGB
-                    "ptr", this.i_bitmapdata,
-                    "uint")) 
-            {
-                this.i_locked := true
-                return this
-            }
-            return false
-        }
-
-        i_unlock() {
-            if (this.i_locked) {
-                DllCall("gdiplus\GdipBitmapUnlockBits", "ptr", this.i_bmp, "ptr", this.i_bitmapdata)
-                this.i_bitmapdata := 0
-                this.ptr          := 0
-                this.i_buffer     := 0
-                this.i_locked     := false
-            }
-            return this
-        }
-
-        grab_memory(ptr, w, h, stride) {
-            this.i_cleanup()
-            this.width    := w
-            this.height   := h
-            if imgu_GDIP_OK = DllCall("gdiplus\GdipCreateBitmapFromScan0", 
-                    "uint", w, "uint", h, "int", stride, 
-                    "uint", 0x0026200a,     ; PixelFormat32bppARGB
-                    "ptr", ptr, 
-                    "ptr*", &i_bmp := 0) 
-            {
-                this.i_bmp := i_bmp
-                return this
-            }
-            return false
-        } ;; end of img.grab_memory
-
+        } 
     } ;; end of img class
 
     ; a simple rectangle class to wrap up all the x/y/w/h nonsense
@@ -970,6 +908,15 @@ class imgutil {
             this.w := w
             this.h := h
         }
+        r() {
+            return this.x + this.w
+        }
+        b() {
+            return this.y + this.h
+        }
+        contains(r) {
+            return (r.x >= this.x) && (r.y >= this.y) && (r.r() <= this.r()) && (r.b() <= this.b())
+        }
         gdiplus_rect() {
             gdirect := Buffer(16, 0)
             NumPut("int", this.x, gdirect.ptr +  0)
@@ -978,7 +925,540 @@ class imgutil {
             NumPut("int", this.h, gdirect.ptr + 12)
             return gdirect
         }
+        d3d_box() {
+            d3dbox := Buffer(24, 0)
+            NumPut("int", this.x,   d3dbox.ptr +  0)
+            NumPut("int", this.y,   d3dbox.ptr +  4)
+            NumPut("int", this.r(), d3dbox.ptr +  8)
+            NumPut("int", this.b(), d3dbox.ptr + 12)
+            NumPut("int", 0,        d3dbox.ptr + 16)
+            NumPut("int", 1,        d3dbox.ptr + 20)
+            return d3dbox
+        }
     }
-
 }
 
+;########################################################################################################
+; a series of image providers that make it transparent to imgutil how various images are
+; acquired; from a file, from a screenshot, etc.
+;########################################################################################################
+class image_provider {
+
+    ptr     := 0            ; pointer to ARGB flat pixel data
+    w       := 0            ; image width
+    h       := 0            ; image height
+    stride  := 0            ; image stride
+    ; with dx11 screengrabs, we get a copy of the entire screen (really fast). we could muck around and
+    ; copy the rectangle of interest into a new buffer, or we can just keep track of the coordinate
+    ; offsets and have caller do the math. we have caller do the math. this is the origin of the image 
+    ; relative to the screen.
+    offs_x  := 0            ; x offset of image 
+    offs_y  := 0            ; y offset of image 
+
+    __New() {
+    }
+
+    __Delete() {
+    }
+
+    get_image(ptr, w, h, stride, offs_x, offs_y) {
+        this.ptr    := ptr
+        this.w      := w
+        this.h      := h
+        this.stride := stride
+        this.offs_x := offs_x
+        this.offs_y := offs_y
+        return true
+    }
+
+    ; image provider for anything gdi+ based (file & memory)
+    class gdip extends image_provider {
+        gdip_pBitmap        := 0
+        gdip_bits_locked    := 0
+        bits_buffer         := 0
+        bitmapdata          := 0
+
+        __New() {
+            super.__New()
+        }
+
+        __Delete() {
+            this.unlock()
+            if (this.gdip_pBitmap) {
+                DllCall("gdiplus\GdipDisposeImage", "ptr", this.gdip_pBitmap)
+                this.gdip_pBitmap := 0
+            }
+            super.__Delete()
+        }
+
+        get_image(gdip_pBitmap) {
+            ret := false
+            if this.gdip_pBitmap := gdip_pBitmap {
+                DllCall("gdiplus\GdipGetImageWidth",  "ptr", this.gdip_pBitmap, "uint*", &w:= 0)
+                DllCall("gdiplus\GdipGetImageHeight", "ptr", this.gdip_pBitmap, "uint*", &h:= 0)
+                if w && h {
+                    if this.lock(w, h, w * 4) {
+                        ret := super.get_image(this.bits_buffer.ptr, w, h, w * 4, 0, 0)
+                    }
+                }
+            }
+            return ret
+        }
+
+        ; lock the bitmap object's bits into memory, making the pixel data accessible
+        lock(w, h, stride) {
+            if (this.gdip_bits_locked)
+                return true
+            this.bits_buffer := Buffer(stride * h)
+            ; the rectangle to be locked is the entire image
+            gdirect := imgutil.rect(0, 0, w, h).gdiplus_rect()
+            ; bitmapdata struct, only need stride and scan0
+            this.bitmapdata := Buffer(32, 0)
+            NumPut("int", stride,               this.bitmapdata.ptr +  8) ; bitmapdata->stride
+            NumPut("ptr", this.bits_buffer.ptr, this.bitmapdata.ptr + 16) ; bitmapdata->scan0
+            ; lock the bits
+            if imgu_GDIP_OK = DllCall("gdiplus\GdipBitmapLockBits", 
+                    "ptr", this.gdip_pBitmap, 
+                    "ptr", gdirect.ptr,
+                    "uint", 7,          ; ImageLockModeRead | ImageLockModeWrite | ImageLockModeUserInputBuf
+                    "uint", 0x0026200a, ; PixelFormat32bppARGB
+                    "ptr", this.bitmapdata.ptr,
+                    "uint")
+            {
+                this.gdip_bits_locked := true
+                return true
+            }
+            return false
+        }
+
+        ; unlock the bitmap object and merge any changes were made to the pixel data back into the object
+        unlock() {
+            if (this.gdip_bits_locked) {
+                DllCall("gdiplus\GdipBitmapUnlockBits", "ptr", this.gdip_pBitmap, "ptr", this.bitmapdata)
+                ; release internal data
+                this.bitmapdata         := 0
+                this.bits_buffer        := 0
+                this.gdip_bits_locked   := false
+                ; also indicate to parent that its data is no longer valid
+                super.get_image(0, 0, 0, 0, 0, 0)
+            }
+            return false
+        }
+
+        ; gdiplus image provider for file sources
+        class file extends image_provider.gdip {
+
+            __New() {
+                super.__New()
+            }
+
+            __Delete() {
+                super.__Delete()    
+            }
+
+            get_image(fname) {
+                ret := false
+                ; open the file
+                fileobj := FileOpen(fname, "r")
+                if fileobj.length = 0
+                    return false
+                ; read file into a blob
+                data := Buffer(fileobj.length)
+                fileobj.RawRead(data, fileobj.length)
+                fileobj.Close()
+                ; create an IStream from the blob
+                pstream := DllCall("shlwapi.dll\SHCreateMemStream", "ptr", data.ptr, "uint", data.size, "ptr")
+                if pstream {
+                    ; get GDI+ to load it. if we use *FromFile it will keep the file locked
+                    if (imgu_GDIP_OK = DllCall("gdiplus\GdipLoadImageFromStream", "ptr", pstream, "ptr*", &pbmp := 0)) {
+                        ret := super.get_image(pbmp)
+                    }
+                    ObjRelease(pstream)
+                }
+                return ret
+            }    
+        } ; end of image_provider.gdip.file class
+
+        ; gdiplus image provider for memory sources (intended to serve as a gdip object 
+        ; that we can use to save the memory to a file)
+        class memory extends image_provider.gdip {
+            
+            __New() {
+                super.__New()
+            }
+
+            __Delete() {
+                super.__Delete()    
+            }
+
+            get_image(ptr, w, h, stride) {
+                if imgu_GDIP_OK = DllCall("gdiplus\GdipCreateBitmapFromScan0", 
+                        "uint", w, "uint", h, "int", stride, 
+                        "uint", 0x0026200a,     ; PixelFormat32bppARGB
+                        "ptr" , ptr, 
+                        "ptr*", &pbmp := 0) 
+                {
+                    return super.get_image(pbmp)
+                }
+                return false
+            }
+
+        } ; end of image_provider.gdip.memory class
+
+    } ; end of image_provider.gdip class
+
+    ; gdi screen capture provider
+    class gdi_screen extends image_provider {
+
+        dibsection := 0             ; the gdi object returned from CreateDIBSection
+
+        __New() {
+            super.__New()
+        }
+
+        __Delete() {
+            if (this.dibsection) {
+                DllCall("gdi32\DeleteObject", "ptr", this.dibsection)
+                this.dibsection := 0
+            }            
+            super.__Delete()    
+        }
+
+        get_image(rect := 0) {
+            ret := false
+            if !rect
+                rect := imgutil.rect(0, 0, A_ScreenWidth, A_ScreenHeight)
+
+            ; note: this is the slow '90s way, trudging through getdc/bit+blt
+            if hdc := DllCall("gdi32\CreateCompatibleDC", "ptr", 0, "ptr") {
+                bmi := Buffer(40, 0)
+                NumPut("int",   40,     bmi,  0) ; sizeof(BITMAPINFOHEADER)
+                NumPut("int",   rect.w, bmi,  4) ; width
+                NumPut("int",  -rect.h, bmi,  8) ; negative height means top-down bitmap
+                NumPut("short", 1,      bmi, 12) ; planes
+                NumPut("short", 32,     bmi, 14) ; bit depth
+                bmp := DllCall("gdi32\CreateDIBSection", "ptr", hdc, "ptr", bmi, 
+                    "uint", 0, "ptr*", &bits := 0, "ptr", 0, "uint", 0, "ptr")
+                if bmp {
+                    if oldbmp := DllCall("gdi32\SelectObject", "ptr", hdc, "ptr", bmp, "ptr") {
+                        if screen_dc := DllCall("user32\GetDC", "ptr", 0, "ptr") {
+                            DllCall("gdi32\BitBlt", "ptr", hdc, "int", 0, "int", 0, "int", rect.w, "int", rect.h,
+                                        "ptr", screen_dc, "int", rect.x, "int", rect.y, 
+                                        "uint", 0x40CC0020) ; SRCCOPY | CAPTUREBLT
+                            ; our job here is done
+                            this.dibsection := bmp
+                            super.get_image(bits, rect.w, rect.h, rect.w * 4, 0, 0)
+                            ret := {x: rect.x, y: rect.y}
+                
+                            DllCall("user32\ReleaseDC", "ptr", 0, "ptr", screen_dc)
+                        }                        
+                        DllCall("gdi32\SelectObject", "ptr", hdc, "ptr", oldbmp)
+                    }
+                }
+                DllCall("gdi32\DeleteDC", "ptr", hdc)        
+            }
+            return ret
+        }
+    } ; end of image_provider.gdi_screen class
+
+    ; directx screen capture provider
+    class dx_screen extends image_provider {
+
+        static hmod_dxgi            := 0
+        static hmod_d3d11           := 0
+        static ptr_dxgi_factory     := 0
+        static ptr_dxgi_adapter     := 0
+        static ptr_dxgi_output      := 0
+        static d3d_device  := 0
+        static d3d_context := 0
+        static ptr_dxgi_output1 := 0
+        static ptr_dxgi_dup := 0
+        static using_system_memory := 0
+
+        static init_successful := 0
+        static last_init_attempt := 0
+        static last_monitor_rect := 0
+
+        static D3D11_TEXTURE2D_DESC            := Buffer(44, 0)
+        static D3D11_TEXTURE2D_DESC_subregion  := Buffer(44, 0)
+        static DXGI_OUTDUPL_FRAME_INFO         := Buffer(48, 0)
+        static D3D11_MAPPED_SUBRESOURCE        := Buffer(16, 0)
+        static DXGI_OUTPUT_DESC                := Buffer(96, 0)
+        static DXGI_OUTDUPL_DESC               := Buffer(36, 0)
+        static riid                            := Buffer(16, 0)
+
+        ptr_dxgi_resource := 0
+        buffer_subregion := 0
+
+        __New() {
+            super.__New()
+        }
+
+        __Delete() {
+            this.cleanup()
+            super.__Delete()    
+        }
+
+        init(rect) {
+            static D3D_DRIVER_TYPE_UNKNOWN      := 0
+            static D3D11_SDK_VERSION            := 7
+            static DXGI_FORMAT_B8G8R8A8_UNORM   := 87
+            static D3D11_USAGE_STAGING          := 3
+            static D3D11_CPU_ACCESS_WRITE       := 0x10000
+            static D3D11_CPU_ACCESS_READ        := 0x20000
+            static IDXGIFactory_EnumAdapters    := 7
+            static IDXGIAdapter_EnumOutputs     := 7
+            static IDXGIOutput_GetDesc          := 7
+
+            ; we don't need to do anything if we're already initialized and the monitor isn't changing
+            if  image_provider.dx_screen.init_successful && 
+                image_provider.dx_screen.last_monitor_rect && 
+                image_provider.dx_screen.last_monitor_rect.contains(rect)
+                return true
+
+            ; if the user is asking for a rectangle from a different monitor, we do a fast reinit.
+            ; note that this is not optimal, reinit takes ages; the ideal solution would be to prepare
+            ; an instance of the environment for each monitor that get_image touches. TODO
+            if !(image_provider.dx_screen.last_monitor_rect && image_provider.dx_screen.last_monitor_rect.contains(rect))
+                image_provider.dx_screen.last_init_attempt := 0
+
+            ; we're already initialized, but something is wrong (access lost, monitor change, etc)
+            if image_provider.dx_screen.init_successful
+                this.cleanup(true)
+
+            ; this whole thing is expensive, so don't try it too often unless the user just wants a screenshot from a different monitor
+            if A_TickCount - image_provider.dx_screen.last_init_attempt < 2000
+                return false
+            image_provider.dx_screen.last_init_attempt := A_TickCount
+
+            ; load DLLs
+            if !image_provider.dx_screen.hmod_dxgi
+                image_provider.dx_screen.hmod_dxgi  := DllCall("LoadLibrary", "str", "DXGI")
+            if !image_provider.dx_screen.hmod_d3d11
+                image_provider.dx_screen.hmod_d3d11 := DllCall("LoadLibrary", "str", "D3D11")
+            if !(image_provider.dx_screen.hmod_dxgi && image_provider.dx_screen.hmod_d3d11)
+                return false
+            ret := false
+            DllCall("ole32\CLSIDFromString", "wstr", "{7b7166ec-21c7-44ae-b21a-c9ae321ae369}", "ptr", image_provider.dx_screen.riid , "int")
+            if DllCall("DXGI\CreateDXGIFactory1", "ptr", image_provider.dx_screen.riid, "ptr*", &p:=0, "int") >= 0 {
+                image_provider.dx_screen.ptr_dxgi_factory := p
+                loop {
+                    if ComCall(IDXGIFactory_EnumAdapters, image_provider.dx_screen.ptr_dxgi_factory, "uint", A_Index-1, "ptr*", &IDXGIAdapter:=0, "int") >= 0 {
+                        loop {
+                            if ComCall(IDXGIAdapter_EnumOutputs, IDXGIAdapter, "uint", A_Index-1, "ptr*", &IDXGIOutput:=0, "int") >= 0 {
+                                if ComCall(IDXGIOutput_GetDesc, IDXGIOutput, "ptr", image_provider.dx_screen.DXGI_OUTPUT_DESC, "int") >= 0 {
+                                    x                 := NumGet(image_provider.dx_screen.DXGI_OUTPUT_DESC, 64, "int")
+                                    y                 := NumGet(image_provider.dx_screen.DXGI_OUTPUT_DESC, 68, "int")
+                                    Width             := NumGet(image_provider.dx_screen.DXGI_OUTPUT_DESC, 72, "int")
+                                    Height            := NumGet(image_provider.dx_screen.DXGI_OUTPUT_DESC, 76, "int")
+                                    AttachedToDesktop := NumGet(image_provider.dx_screen.DXGI_OUTPUT_DESC, 80, "int")
+                                    if (AttachedToDesktop = 1) {
+                                        rect_monitor := imgutil.rect(x, y, Width, Height)
+                                        ; we can't do rects that are not fully contained within the adapter's output
+                                        if (rect_monitor.contains(rect)) {
+                                            image_provider.dx_screen.ptr_dxgi_adapter   := IDXGIAdapter
+                                            image_provider.dx_screen.ptr_dxgi_output    := IDXGIOutput
+                                            image_provider.dx_screen.last_monitor_rect  := rect_monitor
+                                            break 2
+                                        }
+                                    }
+                                }
+                                ObjRelease(IDXGIOutput)
+                            } else {
+                                break
+                            }
+                        }
+                        ObjRelease(IDXGIAdapter)
+                    } else {
+                        break
+                    }
+                }
+                if !image_provider.dx_screen.ptr_dxgi_output {
+                    ; don't release DLLs
+                    this.cleanup(true)
+                    return false
+                }
+
+                if DllCall("D3D11\D3D11CreateDevice",
+                    "ptr",  image_provider.dx_screen.ptr_dxgi_adapter,   ; pAdapter
+                    "int",  D3D_DRIVER_TYPE_UNKNOWN,                     ; DriverType
+                    "ptr",  0,                                           ; Software
+                    "uint", 0,                                           ; Flags
+                    "ptr",  0,                                           ; pFeatureLevels
+                    "uint", 0,                                           ; FeatureLevels
+                    "uint", D3D11_SDK_VERSION,                           ; SDKVersion
+                    "ptr*", &d3d_device:=0,                              ; ppDevice
+                    "ptr*", 0,                                           ; pFeatureLevel
+                    "ptr*", &d3d_context:=0,                             ; ppImmediateContext
+                    "int") >= 0 
+                {
+                    image_provider.dx_screen.d3d_device  := d3d_device
+                    image_provider.dx_screen.d3d_context := d3d_context
+                    ; Retrieve the desktop duplication API
+                    if image_provider.dx_screen.ptr_dxgi_output1 := ComObjQuery(image_provider.dx_screen.ptr_dxgi_output, "{00cddea8-939b-4b83-a340-a685226666cc}") {
+                        if ComCall(IDXGIOutput1_DuplicateOutput := 22, image_provider.dx_screen.ptr_dxgi_output1, "ptr", image_provider.dx_screen.d3d_device, "ptr*", &dup:=0, "int") >= 0 {
+                            image_provider.dx_screen.ptr_dxgi_dup := dup
+                            if ComCall(IDXGIOutputDuplication_GetDesc := 7, image_provider.dx_screen.ptr_dxgi_dup, "ptr", image_provider.dx_screen.DXGI_OUTDUPL_DESC) >= 0 {
+                                image_provider.dx_screen.using_system_memory := NumGet(image_provider.dx_screen.DXGI_OUTDUPL_DESC, 32, "uint")
+                                ; this is the texture buffer that will receive our subregion of interest from the buffer
+                                ; defined above (which is the entire screen). note that this is only useful if the data
+                                ; is in GPU memory.
+                                static access_flags := D3D11_CPU_ACCESS_READ ;| D3D11_CPU_ACCESS_WRITE
+                                NumPut("uint",                          1, image_provider.dx_screen.D3D11_TEXTURE2D_DESC_subregion,  8)   ; MipLevels
+                                NumPut("uint",                          1, image_provider.dx_screen.D3D11_TEXTURE2D_DESC_subregion, 12)   ; ArraySize
+                                NumPut("uint", DXGI_FORMAT_B8G8R8A8_UNORM, image_provider.dx_screen.D3D11_TEXTURE2D_DESC_subregion, 16)   ; Format
+                                NumPut("uint",                          1, image_provider.dx_screen.D3D11_TEXTURE2D_DESC_subregion, 20)   ; SampleDescCount
+                                NumPut("uint",        D3D11_USAGE_STAGING, image_provider.dx_screen.D3D11_TEXTURE2D_DESC_subregion, 28)   ; Usage
+                                NumPut("uint",               access_flags, image_provider.dx_screen.D3D11_TEXTURE2D_DESC_subregion, 36)   ; CPUAccessFlags
+                                ret := true
+                            }
+                        }
+                    }
+                }
+            }
+            image_provider.dx_screen.init_successful := ret
+            if !ret
+                this.cleanup(true)
+            return ret
+        }
+
+        cleanup(partial := false) {
+            image_provider.dx_screen.last_monitor_rect := 0
+            image_provider.dx_screen.init_successful := 0
+            image_provider.dx_screen.using_system_memory := 0
+            if this.ptr_dxgi_resource {
+                ObjRelease(this.ptr_dxgi_resource)
+                this.ptr_dxgi_resource := 0
+            }
+            if this.buffer_subregion {
+                ObjRelease(this.buffer_subregion)
+                this.buffer_subregion := 0
+            }
+            if image_provider.dx_screen.ptr_dxgi_dup {
+                ObjRelease(image_provider.dx_screen.ptr_dxgi_dup)
+                image_provider.dx_screen.ptr_dxgi_dup := 0
+            }
+            ; this came from ComQuery and that returns wrappers, so we need to release them
+            image_provider.dx_screen.ptr_dxgi_output1 := 0
+            if image_provider.dx_screen.d3d_context {
+                ObjRelease(image_provider.dx_screen.d3d_context)
+                image_provider.dx_screen.d3d_context := 0
+            }
+            if image_provider.dx_screen.d3d_device {
+                ObjRelease(image_provider.dx_screen.d3d_device)
+                image_provider.dx_screen.d3d_device := 0
+            }
+            if image_provider.dx_screen.ptr_dxgi_output {
+                ObjRelease(image_provider.dx_screen.ptr_dxgi_output)
+                image_provider.dx_screen.ptr_dxgi_output := 0
+            }
+            if image_provider.dx_screen.ptr_dxgi_adapter {
+                ObjRelease(image_provider.dx_screen.ptr_dxgi_adapter)
+                image_provider.dx_screen.ptr_dxgi_adapter := 0
+            }
+            if image_provider.dx_screen.ptr_dxgi_factory {
+                ObjRelease(image_provider.dx_screen.ptr_dxgi_factory)
+                image_provider.dx_screen.ptr_dxgi_factory := 0
+            }
+            ; don't release DLLs if we're not done for good
+            if partial
+                return
+            if image_provider.dx_screen.hmod_d3d11 {
+                DllCall("FreeLibrary", "ptr", image_provider.dx_screen.hmod_d3d11)
+                image_provider.dx_screen.hmod_d3d11 := 0
+            }
+            if image_provider.dx_screen.hmod_dxgi {
+                DllCall("FreeLibrary", "ptr", image_provider.dx_screen.hmod_dxgi)
+                image_provider.dx_screen.hmod_dxgi := 0
+            }
+        }
+
+        get_image(rect := 0) {
+
+            static IDXGIOutputDuplication_AcquireNextFrame  := 8
+            static DXGI_ERROR_WAIT_TIMEOUT                  := 0x887a0027
+            static ID3D11DeviceContext_Unmap                := 15
+            static D3D11_MAP_READ                           := 1
+            static D3D11_MAP_WRITE                          := 2
+            static D3D11_MAP_READ_WRITE                     := 3
+            ret := false
+            if !rect
+                rect := imgutil.rect(0, 0, A_ScreenWidth, A_ScreenHeight)
+
+            ; initialize the environment if needed
+            if this.init(rect) {
+
+                can_reuse_resource := false
+                ; call the duplication API to get the next frame
+                hr := ComCall(IDXGIOutputDuplication_AcquireNextFrame, image_provider.dx_screen.ptr_dxgi_dup, 
+                    ; if we have not called it before we need to give it a timeout value to actually return non-blank data
+                    "uint", this.ptr_dxgi_resource ? 0 : 500,
+                    "ptr", image_provider.dx_screen.DXGI_OUTDUPL_FRAME_INFO, 
+                    "ptr*", &ptr_dxgi_res:=0, 
+                    "int")
+
+                ; have we previously succeeded here? if so, we can reuse the old resource
+                if this.ptr_dxgi_resource {
+                    if (hr = DXGI_ERROR_WAIT_TIMEOUT) {
+                        can_reuse_resource := true
+                        hr := 0
+                    } else if (hr >= 0) && (NumGet(image_provider.dx_screen.DXGI_OUTDUPL_FRAME_INFO, 0, "int64") > 0) {
+                        can_reuse_resource := true
+                    }
+                }
+                if can_reuse_resource {
+                    ObjRelease(ptr_dxgi_res)
+                } else {
+                    if (this.ptr_dxgi_resource)
+                        ObjRelease(this.ptr_dxgi_resource)
+                    this.ptr_dxgi_resource := ptr_dxgi_res
+                }
+
+                ; if we flat out failed, we'll need to reinit; the assumption is that the
+                ; monitor, desktop, lock state, etc. changed}
+                if hr < 0 {
+                    OutputDebug "IDXGIOutputDuplication_AcquireNextFrame failed: " hr
+                    this.cleanup(true)
+                    return false
+                }
+
+                if !image_provider.dx_screen.using_system_memory {
+                    if (this.buffer_subregion) {
+                        ComCall(ID3D11DeviceContext_Unmap, image_provider.dx_screen.d3d_context, "ptr", this.buffer_subregion, "uint", 0)
+                        ObjRelease(this.buffer_subregion)
+                        this.buffer_subregion := 0
+                    }
+                    ; create the texture that holds only the subregion of interest
+                    NumPut("uint", rect.w, image_provider.dx_screen.D3D11_TEXTURE2D_DESC_subregion, 0)
+                    NumPut("uint", rect.h, image_provider.dx_screen.D3D11_TEXTURE2D_DESC_subregion, 4)
+                    if ComCall(ID3D11Device_CreateTexture2D := 5, image_provider.dx_screen.d3d_device, "ptr", image_provider.dx_screen.D3D11_TEXTURE2D_DESC_subregion, "ptr", 0, "ptr*", &buffer_subregion:=0, "int") >= 0 {
+                        this.buffer_subregion := buffer_subregion
+                        ; get the texture from the resource
+                        texture_buffer2 := ComObjQuery(this.ptr_dxgi_resource, "{6f15aaf2-d208-4e89-9ab4-489535d34f9c}") ; ID3D11Texture2D
+                        if texture_buffer2 {
+                            region_box := rect.d3d_box()
+                            ; copy the resource texture's relevant parts into the subregion texture
+                            if ComCall(ID3D11DeviceContext_CopySubresourceRegion := 46, image_provider.dx_screen.d3d_context, 
+                                "ptr", buffer_subregion, "uint", 0, "uint", 0, "uint", 0, "uint", 0, 
+                                "ptr", texture_buffer2, "uint", 0, "ptr", region_box.ptr, "int") >= 0 
+                            {
+                                ; map the subregion texture
+                                if (hr := ComCall(ID3D11DeviceContext_Map := 14, image_provider.dx_screen.d3d_context, 
+                                    "ptr", buffer_subregion, "uint", 0, 
+                                    "uint", D3D11_MAP_READ_WRITE, "uint", 0, 
+                                    "ptr", image_provider.dx_screen.D3D11_MAPPED_SUBRESOURCE, "int")) >= 0
+                                {
+                                    ptr    := NumGet(image_provider.dx_screen.D3D11_MAPPED_SUBRESOURCE, 0, "ptr")
+                                    stride := NumGet(image_provider.dx_screen.D3D11_MAPPED_SUBRESOURCE, 8, "int")
+                                    super.get_image(ptr, rect.w, rect.h, stride, 0, 0)
+                                    ret := {x: rect.x, y: rect.y}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return ret
+        } ; end of get_image
+    } ; end of image_provider.dx_screen class
+} ; end of image_provider class
