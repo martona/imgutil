@@ -347,7 +347,7 @@ class imgutil {
     i_get_mcode_map_v4() {
         static b64 := ""
     . "" ; imgutil_all.c
-    . "" ; 2224 bytes
+    . "" ; 2432 bytes
     . "" ; gcc.exe (Rev2, Built by MSYS2 project) 13.2.0
     . "" ; flags: -march=x86-64-v4 -D MARCH_x86_64_v4 -O3
     . "" ; GNU assembler (GNU Binutils) 2.41
@@ -374,13 +374,16 @@ class imgutil {
     . "RCRAD75DSESJRCQwiUQkOItDQIlEJChIi0M4SIlEJCBMi0sw6P76//9IhcB1IbgBAAAA8A/BA0SLQ0SLUyxEKcI5wn2iSIPEaFteww8fAEiNUxRBuAEAAABmDx9EAABEicGG"
     . "CoTJdfdEi0QkXEQ5QxB9CESJQxBIiUMIhgqLQ0APr0NEO0QkXH+ki0MshwPrnWYPH0QAAFNIg+xwSIuEJKAAAABIi5wk0AAAAEiJRCRQSIuEJKgAAABIiVQkQEiNFQL///9I"
     . "iUQkWIuEJLAAAABEiUQkSEyNRCQgiUQkYIuEJLgAAADHRCQgAAAAAIlEJGSLhCTAAAAASMdEJCgAAAAAiEQkaIuEJMgAAABIx0QkMAAAAABIiUwkOESJTCRMiUQkbP+RsAAA"
-    . "AEiF23QGi0QkMIkDSItEJChIg8RwW8MPH4AAAAAAuAQAAADDkJCQkJCQkJCQkA=="
+    . "AEiF23QGi0QkMIkDSItEJChIg8RwW8MPH4AAAAAAVVdWUzH/RItcJHCLXCRYSGN0JFBMY9KLVCRoidBECdgJ2EQJwAnwRAnQD4iMAAAARYXbD45+AAAARInIKdBIY+iLRCRg"
+    . "KdBIY/iF0n5pRQ+vwUxjyg+vXCRgScHhAkljwEwB0EUx0kyNBIFIY8NIi0wkSEgB8EiNDIGNQv9IjXQFAUiNXAcBSMHmAkjB4wKQMcBmDx9EAACLFAFBiRQASIPABEk5wXXw"
+    . "QYPCAUkB8EgB2UU503XZvwEAAACJ+FteX13DZmYuDx+EAAAAAABmkLgEAAAAw5CQkJCQkJCQkJA="
     mcode_imgutil_column_uniform := 0x000000 ; u32 imgutil_column_uniform (argb *ptr, i32 width, i32 height, argb refc, i32 x, i32 tolerance, i32 ymin, i32 ymax);
     mcode_imgutil_row_uniform    := 0x000120 ; i32 imgutil_row_uniform (argb *ptr, i32 width, i32 height, argb refc, i32 y, i32 tolerance, i32 xmin, i32 xmax);
     mcode_imgutil_make_sat_masks := 0x0001c0 ; u32 imgutil_make_sat_masks (u32 *needle, i32 pixelcount, u32 *needle_lo, u32 *needle_hi, u8 t);
     mcode_imgutil_imgsrch        := 0x000280 ; argb *imgutil_imgsrch (argb *haystack, i32 haystack_w, i32 haystack_h, argb *needle_lo, argb *needle_hi, i32 needle_w, i32 needle_h, i8 pctmatchreq, i32 force_topleft, i32 *ppixels_matched);
     mcode_imgutil_imgsrch_multi  := 0x0007f0 ; argb *imgutil_imgsrch_multi (mt_ctx *ctx, argb *haystack, i32 haystack_w, i32 haystack_h, argb *needle_lo, argb *needle_hi, i32 needle_w, i32 needle_h, i8 pctmatchreq, i32 force_topleft, i32 *ppixels_matched);
-    mcode_get_blob_psabi_level   := 0x0008a0 ; u32 get_blob_psabi_level (void);
+    mcode_imgutil_blit           := 0x0008a0 ; i32 imgutil_blit (argb *dst, i32 dx, i32 dy, i32 dstride, argb *src, i32 sx, i32 sy, i32 sstride, i32 w, i32 h);
+    mcode_get_blob_psabi_level   := 0x000970 ; u32 get_blob_psabi_level (void);
     ;----------------- end of ahkmcodegen auto-generated section ------------------
                                                 
         static code := this.i_b64decode(b64)
@@ -389,6 +392,7 @@ class imgutil {
                     , "imgutil_make_sat_masks",    code + mcode_imgutil_make_sat_masks
                     , "imgutil_imgsrch",           code + mcode_imgutil_imgsrch
                     , "imgutil_imgsrch_multi",     code + mcode_imgutil_imgsrch_multi
+                    , "imgutil_blit",              code + mcode_imgutil_blit
                     , "get_blob_psabi_level",      code + mcode_get_blob_psabi_level
                     )
     }
@@ -894,7 +898,7 @@ class imgutil {
             }
             return ret
         } 
-    } ;; end of img class
+    } ; end of img class
 
     ; a simple rectangle class to wrap up all the x/y/w/h nonsense
     class rect {
@@ -929,9 +933,9 @@ class imgutil {
             d3dbox := Buffer(24, 0)
             NumPut("int", this.x,   d3dbox.ptr +  0)
             NumPut("int", this.y,   d3dbox.ptr +  4)
-            NumPut("int", this.r(), d3dbox.ptr +  8)
-            NumPut("int", this.b(), d3dbox.ptr + 12)
-            NumPut("int", 0,        d3dbox.ptr + 16)
+            NumPut("int", 0,        d3dbox.ptr +  8)
+            NumPut("int", this.r(), d3dbox.ptr + 12)
+            NumPut("int", this.b(), d3dbox.ptr + 16)
             NumPut("int", 1,        d3dbox.ptr + 20)
             return d3dbox
         }
@@ -948,12 +952,6 @@ class image_provider {
     w       := 0            ; image width
     h       := 0            ; image height
     stride  := 0            ; image stride
-    ; with dx11 screengrabs, we get a copy of the entire screen (really fast). we could muck around and
-    ; copy the rectangle of interest into a new buffer, or we can just keep track of the coordinate
-    ; offsets and have caller do the math. we have caller do the math. this is the origin of the image 
-    ; relative to the screen.
-    offs_x  := 0            ; x offset of image 
-    offs_y  := 0            ; y offset of image 
 
     __New() {
     }
@@ -1169,37 +1167,36 @@ class image_provider {
         static ptr_dxgi_factory     := 0
         static ptr_dxgi_adapter     := 0
         static ptr_dxgi_output      := 0
-        static d3d_device  := 0
-        static d3d_context := 0
-        static ptr_dxgi_output1 := 0
-        static ptr_dxgi_dup := 0
-        static using_system_memory := 0
+        static d3d_device           := 0
+        static d3d_context          := 0
+        static ptr_dxgi_output1     := 0
+        static ptr_dxgi_dup         := 0
+        static using_system_memory  := 0
 
-        static init_successful := 0
-        static last_init_attempt := 0
-        static last_monitor_rect := 0
+        static init_successful      := 0
+        static last_init_attempt    := 0
+        static last_monitor_rect    := 0
 
-        static D3D11_TEXTURE2D_DESC            := Buffer(44, 0)
-        static D3D11_TEXTURE2D_DESC_subregion  := Buffer(44, 0)
-        static DXGI_OUTDUPL_FRAME_INFO         := Buffer(48, 0)
-        static D3D11_MAPPED_SUBRESOURCE        := Buffer(16, 0)
-        static DXGI_OUTPUT_DESC                := Buffer(96, 0)
-        static DXGI_OUTDUPL_DESC               := Buffer(36, 0)
-        static riid                            := Buffer(16, 0)
+        static D3D11_TEXTURE2D_DESC        := Buffer(44, 0)
+        static DXGI_OUTDUPL_FRAME_INFO     := Buffer(48, 0)
+        static D3D11_MAPPED_SUBRESOURCE    := Buffer(16, 0)
+        static DXGI_OUTPUT_DESC            := Buffer(96, 0)
+        static DXGI_OUTDUPL_DESC           := Buffer(36, 0)
+        static riid                        := Buffer(16, 0)
 
-        ptr_dxgi_resource := 0
-        buffer_subregion := 0
+        static texture_screen    := 0
+        static texture_subregion := 0
 
         __New() {
             super.__New()
         }
 
         __Delete() {
-            this.cleanup()
             super.__Delete()    
         }
 
         init(rect) {
+
             static D3D_DRIVER_TYPE_UNKNOWN      := 0
             static D3D11_SDK_VERSION            := 7
             static DXGI_FORMAT_B8G8R8A8_UNORM   := 87
@@ -1300,73 +1297,105 @@ class image_provider {
                             image_provider.dx_screen.ptr_dxgi_dup := dup
                             if ComCall(IDXGIOutputDuplication_GetDesc := 7, image_provider.dx_screen.ptr_dxgi_dup, "ptr", image_provider.dx_screen.DXGI_OUTDUPL_DESC) >= 0 {
                                 image_provider.dx_screen.using_system_memory := NumGet(image_provider.dx_screen.DXGI_OUTDUPL_DESC, 32, "uint")
-                                ; this is the texture buffer that will receive our subregion of interest from the buffer
-                                ; defined above (which is the entire screen). note that this is only useful if the data
-                                ; is in GPU memory.
-                                static access_flags := D3D11_CPU_ACCESS_READ ;| D3D11_CPU_ACCESS_WRITE
-                                NumPut("uint",                          1, image_provider.dx_screen.D3D11_TEXTURE2D_DESC_subregion,  8)   ; MipLevels
-                                NumPut("uint",                          1, image_provider.dx_screen.D3D11_TEXTURE2D_DESC_subregion, 12)   ; ArraySize
-                                NumPut("uint", DXGI_FORMAT_B8G8R8A8_UNORM, image_provider.dx_screen.D3D11_TEXTURE2D_DESC_subregion, 16)   ; Format
-                                NumPut("uint",                          1, image_provider.dx_screen.D3D11_TEXTURE2D_DESC_subregion, 20)   ; SampleDescCount
-                                NumPut("uint",        D3D11_USAGE_STAGING, image_provider.dx_screen.D3D11_TEXTURE2D_DESC_subregion, 28)   ; Usage
-                                NumPut("uint",               access_flags, image_provider.dx_screen.D3D11_TEXTURE2D_DESC_subregion, 36)   ; CPUAccessFlags
-                                ret := true
+
+                                NumPut("uint", image_provider.dx_screen.last_monitor_rect.w, image_provider.dx_screen.D3D11_TEXTURE2D_DESC,  0)   ; Width
+                                NumPut("uint", image_provider.dx_screen.last_monitor_rect.h, image_provider.dx_screen.D3D11_TEXTURE2D_DESC,  4)   ; Height
+                                NumPut("uint",                                            1, image_provider.dx_screen.D3D11_TEXTURE2D_DESC,  8)   ; MipLevels
+                                NumPut("uint",                                            1, image_provider.dx_screen.D3D11_TEXTURE2D_DESC,  8)   ; MipLevels
+                                NumPut("uint",                                            1, image_provider.dx_screen.D3D11_TEXTURE2D_DESC, 12)   ; ArraySize
+                                NumPut("uint",                   DXGI_FORMAT_B8G8R8A8_UNORM, image_provider.dx_screen.D3D11_TEXTURE2D_DESC, 16)
+                                NumPut("uint",                                            1, image_provider.dx_screen.D3D11_TEXTURE2D_DESC, 20)   ; SampleDescCount
+                                NumPut("uint",                          D3D11_USAGE_STAGING, image_provider.dx_screen.D3D11_TEXTURE2D_DESC, 28)
+                                NumPut("uint",                        D3D11_CPU_ACCESS_READ, image_provider.dx_screen.D3D11_TEXTURE2D_DESC, 36)
+
+                                ; the thing about IDXGIOutputDuplication_AcquireNextFrame is that the first call to it always
+                                ; immediately returns with success and a blank frame, no matter the timeout. the second call
+                                ; will also return a blank frame, no matter how much time elapses between those two calls.
+                                ; it works properly from the third call onwards. these two dummy calls look weird but help.
+                                ComCall(IDXGIOutputDuplication_AcquireNextFrame := 8, image_provider.dx_screen.ptr_dxgi_dup, 
+                                    "uint", 0, "ptr", image_provider.dx_screen.DXGI_OUTDUPL_FRAME_INFO, 
+                                    "ptr*", &ptr_dxgi_resource:=0, "int")
+                                if ptr_dxgi_resource
+                                    ObjRelease(ptr_dxgi_resource)
+                                ptr_dxgi_resource := 0
+                                ComCall(IDXGIOutputDuplication_ReleaseFrame := 14, image_provider.dx_screen.ptr_dxgi_dup, "uint")
+                                ComCall(IDXGIOutputDuplication_AcquireNextFrame, image_provider.dx_screen.ptr_dxgi_dup, 
+                                    "uint", 0, "ptr", image_provider.dx_screen.DXGI_OUTDUPL_FRAME_INFO, 
+                                    "ptr*", &ptr_dxgi_resource:=0, "int")
+                                if ptr_dxgi_resource
+                                    ObjRelease(ptr_dxgi_resource)
+                                ptr_dxgi_resource := 0
+                                ; create a permanent buffer to hold the screen capture. 
+                                if ComCall(ID3D11Device_CreateTexture2D := 5, image_provider.dx_screen.d3d_device, "ptr", image_provider.dx_screen.D3D11_TEXTURE2D_DESC, "ptr", 0, "ptr*", &texture_screen:=0, "int") >= 0 {
+                                    image_provider.dx_screen.texture_screen := texture_screen
+                                    image_provider.dx_screen.init_successful := true
+                                    ret := true
+                                }
                             }
                         }
                     }
                 }
             }
-            image_provider.dx_screen.init_successful := ret
             if !ret
-                this.cleanup(true)
+                this.cleanup_static(true)
             return ret
         }
 
-        cleanup(partial := false) {
-            image_provider.dx_screen.last_monitor_rect := 0
-            image_provider.dx_screen.init_successful := 0
-            image_provider.dx_screen.using_system_memory := 0
-            if this.ptr_dxgi_resource {
-                ObjRelease(this.ptr_dxgi_resource)
-                this.ptr_dxgi_resource := 0
+        cleanup_static(partial := false) {
+
+
+            if image_provider.dx_screen.texture_screen {
+                ObjRelease(image_provider.dx_screen.texture_screen)
+                image_provider.dx_screen.texture_screen := 0
             }
-            if this.buffer_subregion {
-                ObjRelease(this.buffer_subregion)
-                this.buffer_subregion := 0
-            }
+
+            image_provider.dx_screen.last_monitor_rect      := 0
+            image_provider.dx_screen.init_successful        := 0
+            image_provider.dx_screen.using_system_memory    := 0
+
             if image_provider.dx_screen.ptr_dxgi_dup {
                 ObjRelease(image_provider.dx_screen.ptr_dxgi_dup)
                 image_provider.dx_screen.ptr_dxgi_dup := 0
             }
-            ; this came from ComQuery and that returns wrappers, so we need to release them
+
+            ; this came from ComQuery and that returns wrappers, 
+            ; so removing the script reference will release the object
             image_provider.dx_screen.ptr_dxgi_output1 := 0
+
             if image_provider.dx_screen.d3d_context {
                 ObjRelease(image_provider.dx_screen.d3d_context)
                 image_provider.dx_screen.d3d_context := 0
             }
+
             if image_provider.dx_screen.d3d_device {
                 ObjRelease(image_provider.dx_screen.d3d_device)
                 image_provider.dx_screen.d3d_device := 0
             }
+
             if image_provider.dx_screen.ptr_dxgi_output {
                 ObjRelease(image_provider.dx_screen.ptr_dxgi_output)
                 image_provider.dx_screen.ptr_dxgi_output := 0
             }
+
             if image_provider.dx_screen.ptr_dxgi_adapter {
                 ObjRelease(image_provider.dx_screen.ptr_dxgi_adapter)
                 image_provider.dx_screen.ptr_dxgi_adapter := 0
             }
+
             if image_provider.dx_screen.ptr_dxgi_factory {
                 ObjRelease(image_provider.dx_screen.ptr_dxgi_factory)
                 image_provider.dx_screen.ptr_dxgi_factory := 0
             }
+
             ; don't release DLLs if we're not done for good
             if partial
                 return
+
             if image_provider.dx_screen.hmod_d3d11 {
                 DllCall("FreeLibrary", "ptr", image_provider.dx_screen.hmod_d3d11)
                 image_provider.dx_screen.hmod_d3d11 := 0
             }
+
             if image_provider.dx_screen.hmod_dxgi {
                 DllCall("FreeLibrary", "ptr", image_provider.dx_screen.hmod_dxgi)
                 image_provider.dx_screen.hmod_dxgi := 0
@@ -1375,12 +1404,12 @@ class image_provider {
 
         get_image(rect := 0) {
 
-            static IDXGIOutputDuplication_AcquireNextFrame  := 8
-            static DXGI_ERROR_WAIT_TIMEOUT                  := 0x887a0027
-            static ID3D11DeviceContext_Unmap                := 15
-            static D3D11_MAP_READ                           := 1
-            static D3D11_MAP_WRITE                          := 2
-            static D3D11_MAP_READ_WRITE                     := 3
+            static IDXGIOutputDuplication_AcquireNextFrame := 8
+            static DXGI_ERROR_WAIT_TIMEOUT                 := 0x887a0027
+            static ID3D11DeviceContext_Unmap               := 15
+            static D3D11_MAP_READ                          := 1
+            static D3D11_MAP_WRITE                         := 2
+            static D3D11_MAP_READ_WRITE                    := 3
             ret := false
             if !rect
                 rect := imgutil.rect(0, 0, A_ScreenWidth, A_ScreenHeight)
@@ -1388,71 +1417,75 @@ class image_provider {
             ; initialize the environment if needed
             if this.init(rect) {
 
-                can_reuse_resource := false
-                ; call the duplication API to get the next frame
+                reuse_resource := false
+                ; call the duplication API to get the next frame. don't wait for any new updates;
+                ; if there are none, we'll use our permanent buffer from the last frame
+                hr := ComCall(IDXGIOutputDuplication_ReleaseFrame := 14, image_provider.dx_screen.ptr_dxgi_dup, "uint")
                 hr := ComCall(IDXGIOutputDuplication_AcquireNextFrame, image_provider.dx_screen.ptr_dxgi_dup, 
-                    ; if we have not called it before we need to give it a timeout value to actually return non-blank data
-                    "uint", this.ptr_dxgi_resource ? 0 : 500,
+                    "uint", 0,
                     "ptr", image_provider.dx_screen.DXGI_OUTDUPL_FRAME_INFO, 
-                    "ptr*", &ptr_dxgi_res:=0, 
-                    "int")
+                    "ptr*", &ptr_dxgi_resource:=0, 
+                    "uint")
 
-                ; have we previously succeeded here? if so, we can reuse the old resource
-                if this.ptr_dxgi_resource {
-                    if (hr = DXGI_ERROR_WAIT_TIMEOUT) {
-                        can_reuse_resource := true
-                        hr := 0
-                    } else if (hr >= 0) && (NumGet(image_provider.dx_screen.DXGI_OUTDUPL_FRAME_INFO, 0, "int64") > 0) {
-                        can_reuse_resource := true
+                if !(hr & 0x80000000) {
+                    if NumGet(image_provider.dx_screen.DXGI_OUTDUPL_FRAME_INFO, 0, "int64") > 0 {
+                        ; copy the texture we just received into our permanent buffer
+                        texture_screen_update := ComObjQuery(ptr_dxgi_resource, "{6f15aaf2-d208-4e89-9ab4-489535d34f9c}") ; ID3D11Texture2D
+                        ObjRelease(ptr_dxgi_resource)
+                        hr := ComCall(ID3D11DeviceContext_CopyResource := 47, image_provider.dx_screen.d3d_context, 
+                            "ptr", image_provider.dx_screen.texture_screen, 
+                            "ptr", texture_screen_update, 
+                            "int")
                     }
-                }
-                if can_reuse_resource {
-                    ObjRelease(ptr_dxgi_res)
-                } else {
-                    if (this.ptr_dxgi_resource)
-                        ObjRelease(this.ptr_dxgi_resource)
-                    this.ptr_dxgi_resource := ptr_dxgi_res
-                }
-
-                ; if we flat out failed, we'll need to reinit; the assumption is that the
-                ; monitor, desktop, lock state, etc. changed}
-                if hr < 0 {
-                    OutputDebug "IDXGIOutputDuplication_AcquireNextFrame failed: " hr
-                    this.cleanup(true)
+                } else if hr = DXGI_ERROR_WAIT_TIMEOUT {
+                    ; ; if we timed out and we don't yet have a valid resource returned, 
+                    ; ; we can't do anything. return failure but DO NOT reinit the environment
+                    ; ; as the gdi fallback will take care of the screenshot, and eventually
+                    ; ; dxgi will start working. sigh.
+                    ; if !image_provider.dx_screen.ptr_dxgi_resource
+                    ;     return false
+                } else if hr & 0x80000000 {
+                    ; if we flat out failed, we'll need to reinit; the assumption is that the
+                    ; monitor, desktop, lock state, etc. changed}
+                    OutputDebug "IDXGIOutputDuplication_AcquireNextFrame failed: " Format("0x{:8x}", hr)
+                    this.cleanup_static(true)
                     return false
                 }
 
-                if !image_provider.dx_screen.using_system_memory {
-                    if (this.buffer_subregion) {
-                        ComCall(ID3D11DeviceContext_Unmap, image_provider.dx_screen.d3d_context, "ptr", this.buffer_subregion, "uint", 0)
-                        ObjRelease(this.buffer_subregion)
-                        this.buffer_subregion := 0
+                if !image_provider.dx_screen.using_system_memory {  ; TODO what if system memory is used?
+                    if (image_provider.dx_screen.texture_subregion) {
+                        ComCall(ID3D11DeviceContext_Unmap, image_provider.dx_screen.d3d_context, "ptr", image_provider.dx_screen.texture_subregion, "uint", 0)
+                        ObjRelease(image_provider.dx_screen.texture_subregion)
+                        image_provider.dx_screen.texture_subregion := 0
                     }
                     ; create the texture that holds only the subregion of interest
-                    NumPut("uint", rect.w, image_provider.dx_screen.D3D11_TEXTURE2D_DESC_subregion, 0)
-                    NumPut("uint", rect.h, image_provider.dx_screen.D3D11_TEXTURE2D_DESC_subregion, 4)
-                    if ComCall(ID3D11Device_CreateTexture2D := 5, image_provider.dx_screen.d3d_device, "ptr", image_provider.dx_screen.D3D11_TEXTURE2D_DESC_subregion, "ptr", 0, "ptr*", &buffer_subregion:=0, "int") >= 0 {
-                        this.buffer_subregion := buffer_subregion
-                        ; get the texture from the resource
-                        texture_buffer2 := ComObjQuery(this.ptr_dxgi_resource, "{6f15aaf2-d208-4e89-9ab4-489535d34f9c}") ; ID3D11Texture2D
-                        if texture_buffer2 {
-                            region_box := rect.d3d_box()
-                            ; copy the resource texture's relevant parts into the subregion texture
-                            if ComCall(ID3D11DeviceContext_CopySubresourceRegion := 46, image_provider.dx_screen.d3d_context, 
-                                "ptr", buffer_subregion, "uint", 0, "uint", 0, "uint", 0, "uint", 0, 
-                                "ptr", texture_buffer2, "uint", 0, "ptr", region_box.ptr, "int") >= 0 
+                    NumPut("uint", rect.w, image_provider.dx_screen.D3D11_TEXTURE2D_DESC, 0)
+                    NumPut("uint", rect.h, image_provider.dx_screen.D3D11_TEXTURE2D_DESC, 4)
+                    if ComCall(ID3D11Device_CreateTexture2D := 5, image_provider.dx_screen.d3d_device, "ptr", image_provider.dx_screen.D3D11_TEXTURE2D_DESC, "ptr", 0, "ptr*", &texture_subregion:=0, "int") >= 0 {
+                        image_provider.dx_screen.texture_subregion := texture_subregion
+                        region_box := rect.d3d_box()
+                        ; copy the resource texture's relevant parts into the subregion texture
+                        if ComCall(ID3D11DeviceContext_CopySubresourceRegion := 46, image_provider.dx_screen.d3d_context, 
+                            "ptr", texture_subregion, "uint", 0, "uint", 0, "uint", 0, "uint", 0, 
+                            "ptr", image_provider.dx_screen.texture_screen, "uint", 0, "ptr", region_box.ptr, "int") >= 0 
+                        {
+                            ; map the subregion texture
+                            if (hr := ComCall(ID3D11DeviceContext_Map := 14, image_provider.dx_screen.d3d_context, 
+                                "ptr", texture_subregion, "uint", 0, 
+                                "uint", D3D11_MAP_READ, "uint", 0, 
+                                "ptr", image_provider.dx_screen.D3D11_MAPPED_SUBRESOURCE, "int")) >= 0
                             {
-                                ; map the subregion texture
-                                if (hr := ComCall(ID3D11DeviceContext_Map := 14, image_provider.dx_screen.d3d_context, 
-                                    "ptr", buffer_subregion, "uint", 0, 
-                                    "uint", D3D11_MAP_READ_WRITE, "uint", 0, 
-                                    "ptr", image_provider.dx_screen.D3D11_MAPPED_SUBRESOURCE, "int")) >= 0
-                                {
-                                    ptr    := NumGet(image_provider.dx_screen.D3D11_MAPPED_SUBRESOURCE, 0, "ptr")
-                                    stride := NumGet(image_provider.dx_screen.D3D11_MAPPED_SUBRESOURCE, 8, "int")
-                                    super.get_image(ptr, rect.w, rect.h, stride, 0, 0)
-                                    ret := {x: rect.x, y: rect.y}
-                                }
+                                ptr    := NumGet(image_provider.dx_screen.D3D11_MAPPED_SUBRESOURCE, 0, "ptr")
+                                stride := NumGet(image_provider.dx_screen.D3D11_MAPPED_SUBRESOURCE, 8, "int")
+                                imgdata := Buffer(rect.w * rect.h * 4)
+                                DllCall(imgu.i_mcode_map["imgutil_blit"], 
+                                     "ptr", imgdata.ptr, "int", 0, "int", 0, "int", rect.w, 
+                                     "ptr",         ptr, "int", 0, "int", 0, "int", stride//4, 
+                                     "int",      rect.w, "int", rect.h, "int")
+                                super.get_image(imgdata, rect.w, rect.h, rect.w * rect.h, 0, 0)
+                                ; ;super.get_image(ptr, rect.w, rect.h, stride, 0, 0)
+                                ret := {x: rect.x, y: rect.y}
+                                ComCall(ID3D11DeviceContext_Unmap, image_provider.dx_screen.d3d_context, "ptr", texture_subregion, "uint", 0)
                             }
                         }
                     }
@@ -1462,3 +1495,25 @@ class image_provider {
         } ; end of get_image
     } ; end of image_provider.dx_screen class
 } ; end of image_provider class
+
+;########################################################################################################
+; a global instance of the dx_screen provider, to keep the capture loop alive, and ensure cleanup on
+; program exit
+;########################################################################################################
+_dx_screen_helper := dx_screen_helper()
+class dx_screen_helper {
+    provider := 0
+    __New() {
+        this.provider := image_provider.dx_screen()
+        this.provider.init(imgutil.rect(0, 0, A_ScreenWidth, A_ScreenHeight))
+    }
+    __Delete() {
+        ; clean up completely
+        this.provider.cleanup_static()
+    }
+}
+
+
+
+
+

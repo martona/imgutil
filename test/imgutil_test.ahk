@@ -119,7 +119,16 @@ class imgutilTest {
 
     test() {
 
-        imgutil.img(imgu).grab_screen(imgutil.rect(0, 0, 200, 200)).save("imgutil_test.tmp.png")
+        imgutil.img(imgu).grab_screen(imgutil.rect(0, 0, 200, 200)).save("imgutil_test01.tmp.png")
+        Sleep 50
+        imgutil.img(imgu).grab_screen(imgutil.rect(0, 0, 200, 200)).save("imgutil_test02.tmp.png")
+        Sleep 50
+        imgutil.img(imgu).grab_screen(imgutil.rect(0, 0, 200, 200)).save("imgutil_test03.tmp.png")
+        Sleep 50
+        imgutil.img(imgu).grab_screen(imgutil.rect(0, 0, 200, 200)).save("imgutil_test04.tmp.png")
+        Sleep 50
+        imgutil.img(imgu).grab_screen(imgutil.rect(0, 0, 200, 200)).save("imgutil_test05.tmp.png")
+        Sleep 50
         img1 := ImagePutBuffer("imgutil_test.tmp.png")
         img2 := ImagePutBuffer("imgutil_test.tmp.png")
         FileDelete("imgutil_test.tmp.png")

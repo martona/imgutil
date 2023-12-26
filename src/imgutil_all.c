@@ -7,6 +7,7 @@
 #include "i_imgutil_pixelscan.c"
 #include "i_imgutil_imgsrch.c"
 #include "i_imgutil_imgsrch_multi.c"
+#include "i_imgutil_blit.c"
 
 // an exported function to allow the caller to verify that this object file
 // contains the correct psabi level implementation
