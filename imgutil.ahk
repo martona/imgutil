@@ -1318,7 +1318,9 @@ class image_provider {
                                 if ptr_dxgi_resource
                                     ObjRelease(ptr_dxgi_resource)
                                 ptr_dxgi_resource := 0
+                                ; release "frame" (yeah right)
                                 ComCall(IDXGIOutputDuplication_ReleaseFrame := 14, image_provider.dx_screen.ptr_dxgi_dup, "uint")
+                                ; pretend to give a crap about the next one
                                 ComCall(IDXGIOutputDuplication_AcquireNextFrame, image_provider.dx_screen.ptr_dxgi_dup, 
                                     "uint", 0, "ptr", image_provider.dx_screen.DXGI_OUTDUPL_FRAME_INFO, 
                                     "ptr*", &ptr_dxgi_resource:=0, "int")
@@ -1418,9 +1420,11 @@ class image_provider {
             if this.init(rect) {
 
                 reuse_resource := false
+                ; we want to hold the previous frame as long as possible to disallow gpu access to the buffer, 
+                ; and let data accumulate. (docs say so.)
+                hr := ComCall(IDXGIOutputDuplication_ReleaseFrame := 14, image_provider.dx_screen.ptr_dxgi_dup, "uint")
                 ; call the duplication API to get the next frame. don't wait for any new updates;
                 ; if there are none, we'll use our permanent buffer from the last frame
-                hr := ComCall(IDXGIOutputDuplication_ReleaseFrame := 14, image_provider.dx_screen.ptr_dxgi_dup, "uint")
                 hr := ComCall(IDXGIOutputDuplication_AcquireNextFrame, image_provider.dx_screen.ptr_dxgi_dup, 
                     "uint", 0,
                     "ptr", image_provider.dx_screen.DXGI_OUTDUPL_FRAME_INFO, 
@@ -1438,56 +1442,35 @@ class image_provider {
                             "int")
                     }
                 } else if hr = DXGI_ERROR_WAIT_TIMEOUT {
-                    ; ; if we timed out and we don't yet have a valid resource returned, 
-                    ; ; we can't do anything. return failure but DO NOT reinit the environment
-                    ; ; as the gdi fallback will take care of the screenshot, and eventually
-                    ; ; dxgi will start working. sigh.
-                    ; if !image_provider.dx_screen.ptr_dxgi_resource
-                    ;     return false
+                    ; nop, we'll use the last frame from the buffer
                 } else if hr & 0x80000000 {
                     ; if we flat out failed, we'll need to reinit; the assumption is that the
-                    ; monitor, desktop, lock state, etc. changed}
+                    ; monitor, desktop, lock state, etc. changed
                     OutputDebug "IDXGIOutputDuplication_AcquireNextFrame failed: " Format("0x{:8x}", hr)
                     this.cleanup_static(true)
                     return false
                 }
 
                 if !image_provider.dx_screen.using_system_memory {  ; TODO what if system memory is used?
-                    if (image_provider.dx_screen.texture_subregion) {
-                        ComCall(ID3D11DeviceContext_Unmap, image_provider.dx_screen.d3d_context, "ptr", image_provider.dx_screen.texture_subregion, "uint", 0)
-                        ObjRelease(image_provider.dx_screen.texture_subregion)
-                        image_provider.dx_screen.texture_subregion := 0
-                    }
-                    ; create the texture that holds only the subregion of interest
-                    NumPut("uint", rect.w, image_provider.dx_screen.D3D11_TEXTURE2D_DESC, 0)
-                    NumPut("uint", rect.h, image_provider.dx_screen.D3D11_TEXTURE2D_DESC, 4)
-                    if ComCall(ID3D11Device_CreateTexture2D := 5, image_provider.dx_screen.d3d_device, "ptr", image_provider.dx_screen.D3D11_TEXTURE2D_DESC, "ptr", 0, "ptr*", &texture_subregion:=0, "int") >= 0 {
-                        image_provider.dx_screen.texture_subregion := texture_subregion
-                        region_box := rect.d3d_box()
-                        ; copy the resource texture's relevant parts into the subregion texture
-                        if ComCall(ID3D11DeviceContext_CopySubresourceRegion := 46, image_provider.dx_screen.d3d_context, 
-                            "ptr", texture_subregion, "uint", 0, "uint", 0, "uint", 0, "uint", 0, 
-                            "ptr", image_provider.dx_screen.texture_screen, "uint", 0, "ptr", region_box.ptr, "int") >= 0 
-                        {
-                            ; map the subregion texture
-                            if (hr := ComCall(ID3D11DeviceContext_Map := 14, image_provider.dx_screen.d3d_context, 
-                                "ptr", texture_subregion, "uint", 0, 
-                                "uint", D3D11_MAP_READ, "uint", 0, 
-                                "ptr", image_provider.dx_screen.D3D11_MAPPED_SUBRESOURCE, "int")) >= 0
-                            {
-                                ptr    := NumGet(image_provider.dx_screen.D3D11_MAPPED_SUBRESOURCE, 0, "ptr")
-                                stride := NumGet(image_provider.dx_screen.D3D11_MAPPED_SUBRESOURCE, 8, "int")
-                                imgdata := Buffer(rect.w * rect.h * 4)
-                                DllCall(imgu.i_mcode_map["imgutil_blit"], 
-                                     "ptr", imgdata.ptr, "int", 0, "int", 0, "int", rect.w, 
-                                     "ptr",         ptr, "int", 0, "int", 0, "int", stride//4, 
-                                     "int",      rect.w, "int", rect.h, "int")
-                                super.get_image(imgdata, rect.w, rect.h, rect.w * rect.h, 0, 0)
-                                ; ;super.get_image(ptr, rect.w, rect.h, stride, 0, 0)
-                                ret := {x: rect.x, y: rect.y}
-                                ComCall(ID3D11DeviceContext_Unmap, image_provider.dx_screen.d3d_context, "ptr", texture_subregion, "uint", 0)
-                            }
-                        }
+                    ; map the texture into system memory
+                    if (hr := ComCall(ID3D11DeviceContext_Map := 14, image_provider.dx_screen.d3d_context, 
+                        "ptr", image_provider.dx_screen.texture_screen, "uint", 0, 
+                        "uint", D3D11_MAP_READ, "uint", 0, 
+                        "ptr", image_provider.dx_screen.D3D11_MAPPED_SUBRESOURCE, "int")) >= 0
+                    {
+                        ptr    := NumGet(image_provider.dx_screen.D3D11_MAPPED_SUBRESOURCE, 0, "ptr")
+                        stride := NumGet(image_provider.dx_screen.D3D11_MAPPED_SUBRESOURCE, 8, "int")
+                        ; allocate the buffer we'll hold the data in
+                        imgdata := Buffer(rect.w * rect.h * 4)
+                        ; TODO: we need to rebase the rect to the monitor's origin
+                        DllCall(imgu.i_mcode_map["imgutil_blit"], 
+                                "ptr", imgdata.ptr, "int",      0, "int",      0, "int", rect.w,    ; destination, top left corner of bufer with stride=width
+                                "ptr",         ptr, "int", rect.x, "int", rect.y, "int", stride//4, ; source, the screen buffer, stride in pixels
+                                "int",      rect.w, "int", rect.h, "int")                           ; dimensions
+                        super.get_image(imgdata, rect.w, rect.h, rect.w * rect.h, 0, 0)
+                        ; return the origins to caller
+                        ret := {x: rect.x, y: rect.y}
+                        ComCall(ID3D11DeviceContext_Unmap, image_provider.dx_screen.d3d_context, "ptr", image_provider.dx_screen.texture_screen, "uint", 0)
                     }
                 }
             }
