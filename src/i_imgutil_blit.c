@@ -12,7 +12,7 @@ static inline i32 imgutil_blit_line_v0 (argb* d, argb* s, i32 w) {
 }
 
 #if defined(MARCH_x86_64_v1) || defined(MARCH_x86_64_v2) || defined(MARCH_x86_64_v3) || defined(MARCH_x86_64_v4)
-static inline i32 imgutil_blit_line_v12 (argb* d, argb* s, i32 w) {
+static inline void imgutil_blit_line_v12 (argb* d, argb* s, i32 w) {
     i32 vecsize = (sizeof(__m128i) / sizeof(i32));
     while (w >= vecsize) {
         __m128i s128 = _mm_loadu_si128((__m128i*)s);
@@ -21,12 +21,12 @@ static inline i32 imgutil_blit_line_v12 (argb* d, argb* s, i32 w) {
         s += vecsize;
         w -= vecsize;
     }
-    return imgutil_blit_line_v0(d, s, w);
+    imgutil_blit_line_v0(d, s, w);
 }
 #endif
 
 #if defined(MARCH_x86_64_v3)
-static inline i32 imgutil_blit_line_v3 (argb* d, argb* s, i32 w) {
+static inline void imgutil_blit_line_v3 (argb* d, argb* s, i32 w) {
     i32 vecsize = (sizeof(__m256i) / sizeof(i32));
     while (w >= vecsize) {
         __m256i s256 = _mm256_loadu_si256((__m256i*)s);
@@ -37,12 +37,12 @@ static inline i32 imgutil_blit_line_v3 (argb* d, argb* s, i32 w) {
     }
     // there are 256-bit masked loads and stores, but they require
     // avx512, so we just fall back to the v12 code
-    return imgutil_blit_line_v12(d, s, w);
+    imgutil_blit_line_v12(d, s, w);
 }
 #endif
 
 #if defined(MARCH_x86_64_v4)
-static inline i32 imgutil_blit_line_v4 (argb* d, argb* s, i32 w) {
+static inline void imgutil_blit_line_v4 (argb* d, argb* s, i32 w) {
     i32 vecsize = (sizeof(__m512i) / sizeof(i32));
     while (w >= vecsize) {
         __m512i s512 = _mm512_loadu_si512((__m512i*)s);
@@ -60,7 +60,6 @@ static inline i32 imgutil_blit_line_v4 (argb* d, argb* s, i32 w) {
         __m512i s512 = _mm512_maskz_loadu_epi32(_cvtu32_mask16(mask), s);
         _mm512_mask_storeu_epi32(d, _cvtu32_mask16(mask), s512);
     }
-    return 1;
 }
 #endif
 
@@ -74,6 +73,8 @@ static inline i32 imgutil_blit_line_v4 (argb* d, argb* s, i32 w) {
 #define imgutil_blit_line imgutil_blit_line_v3
 #elif defined(MARCH_x86_64_v4)
 #define imgutil_blit_line imgutil_blit_line_v4
+#else
+#error "No implementation for imgutil_blit_line"
 #endif
 
 #endif // _IMGUTIL_BLIT_INCLUDED

@@ -43,7 +43,7 @@ typedef struct {
     i32     force_topleft;
 } thread_ctx;
 
-static void __stdcall imgutil_imgsrch_worker(ptr param) {
+static void __stdcall imgutil_imgsrch_worker(ptr param, i32 thread_idx) {
     thread_ctx* ctx = (thread_ctx*)param;
     // we get the quality of the match in here
     i32 pixels_matched = 0;

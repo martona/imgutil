@@ -45,13 +45,17 @@ class imgutilTest {
         
         v := 0
         while v < 5 {
-            this.gui.Add("Text", "section xs w0 h0")
-            this.gui.Add("Button", "ys", "X86_X64_V" . v . "N" ).OnEvent("Click", this.benchmark.Bind(this, v, 0))
-            this.gui.Add("Text", "ys wp vbenchdisplay0" . v, "")
-            this.gui.Add("Button", "ys", "X86_X64_V" . v . "F" ).OnEvent("Click", this.benchmark.Bind(this, v, 1))
-            this.gui.Add("Text", "ys wp vbenchdisplay1" . v, "")
-            this.gui.Add("Button", "ys", "X86_X64_V" . v . "B" ).OnEvent("Click", this.benchmark.Bind(this, v, 2))
-            this.gui.Add("Text", "ys wp vbenchdisplay2" . v, "")
+            this.gui.Add("Text", "section xs", "X86_X64_V" . v)
+            this.gui.Add("Button", "ys", "srch (brute)"  ).OnEvent("Click", this.benchmark.Bind(this, v, 0))
+            this.gui.Add("Edit", "ys w70 vbenchdisplay0" . v, "")
+            this.gui.Add("Button", "ys", "srch (pixel)"  ).OnEvent("Click", this.benchmark.Bind(this, v, 1))
+            this.gui.Add("Edit", "ys w70 vbenchdisplay1" . v, "")
+            this.gui.Add("Button", "ys", "blit"          ).OnEvent("Click", this.benchmark.Bind(this, v, 2))
+            this.gui.Add("Edit", "ys w70 vbenchdisplay2" . v, "")
+            this.gui.Add("Button", "ys", "gdi_scrshot"   ).OnEvent("Click", this.benchmark.Bind(this, v, 3))
+            this.gui.Add("Edit", "ys w70 vbenchdisplay3" . v, "")
+            this.gui.Add("Button", "ys", "dxgi_scrshot"  ).OnEvent("Click", this.benchmark.Bind(this, v, 4))
+            this.gui.Add("Edit", "ys w70 vbenchdisplay4" . v, "")
             v++
         }
         this.ctlbench := this.gui.Add("Text", "section xs w300 +Multi h40", "")
@@ -63,6 +67,7 @@ class imgutilTest {
         this.benchmarkThreadCtlText.Value := DllCall(imgu.i_mcode_map["mt_get_cputhreads"], "ptr", imgu.i_multithread_ctx,  "int")
         this.benchmarkThreadCtlEdit := this.gui.Add("Edit", "ys w40", this.benchmarkThreadCtlText.Text)
         this.gui.Add("Button", "ys", "Set").OnEvent("Click", this.benchmarkThreadCtl.Bind(this))
+        this.gui.Add("Button", "ys", "Find blt muti/single sweet spot").OnEvent("Click", this.blitSweetSpotFinder.Bind(this))
 
         this.gui.Show()
     }
@@ -97,6 +102,20 @@ class imgutilTest {
                 imgu.blit(haystack.ptr, 0, 0, haystack.width, needle.ptr, 0, 0, needle.width, needle.width, needle.height)
                 time_taken := A_TickCount - start
             }
+        } else if target = 3 {
+            ;;; benchmark screenshots (gdi)
+            while time_taken < 5000 {
+                iterations++
+                image_provider.gdi_screen().get_image()
+                time_taken := A_TickCount - start
+            }
+        } else if target = 4 {
+            ;;; benchmark screenshots (dxgi)
+            while time_taken < 5000 {
+                iterations++
+                image_provider.dx_screen().get_image()
+                time_taken := A_TickCount - start
+            }
         }
         iter_time := time_taken / iterations
         if (iter_time < 10)
@@ -107,7 +126,7 @@ class imgutilTest {
         this.ctlbench.Text := "Benchmark: " . iterations . " iterations in " . time_taken . "ms" . "`n" . "Average: " . iter_text . " per iteration"
         for ctl in this.gui {
             if ctl.Name ~= "benchdisplay" . target . benchTarget {
-                ctl.Text := iter_text
+                ctl.Value := iter_text
             }
         }
         return
@@ -120,8 +139,7 @@ class imgutilTest {
         if t > DllCall(imgu.i_mcode_map["mt_get_cputhreads"], "ptr", imgu.i_multithread_ctx,  "int")
             t := DllCall(imgu.i_mcode_map["mt_get_cputhreads"], "ptr", imgu.i_multithread_ctx,  "int")
         this.benchmarkThreadCtlText.Text := t
-        DllCall(imgu.i_mcode_map["mt_deinit"], "ptr", imgu.i_multithread_ctx)
-        imgu.i_multithread_ctx := DllCall(imgu.i_mcode_map["mt_init"], "int", t, "ptr")
+        imgu.set_threads(t)
     }
 
     benchmarkMulti(ctl, *) {
@@ -135,6 +153,87 @@ class imgutilTest {
     benchmarkFile(selection, ctl, *) {
         this.benchmarkFileCtl.Text := "Currently selected: " . selection
         this.benchmarkFileSelection := selection
+    }
+
+    blitSweetSpotFinder(*) {
+        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+        ; find the optimal thread count to use with blit
+        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+        threads_lo := 1
+        threads_hi := DllCall(imgu.i_mcode_map["mt_get_cputhreads"], "ptr", imgu.i_multithread_ctx,  "int")
+        b := Buffer(4096 * 4096 * 4)
+        imgu.set_threads(threads_lo)
+        iters_lo := timeblit(4096, b)
+        imgu.set_threads(threads_hi)
+        iters_hi := timeblit(4096, b)
+        iters := 0
+        while(1) {
+            OutputDebug iters . ": threads_lo: " . threads_lo . ", threads_hi: " . threads_hi . ", iters_lo: " . iters_lo . ", iters_hi: " . iters_hi . "`r`n"
+            if (threads_lo = threads_hi) || iters > 20 {
+                MsgBox("sweet spot found: " . threads_hi)
+                break
+            }
+            threads_test := (threads_lo + threads_hi)//2
+            imgu.set_threads(threads_test)
+            iters_test := timeblit(4096, b)
+            if (iters_test >= iters_lo) {
+                threads_lo := threads_test
+                iters_lo := iters_test
+            } else if (iters_test >= iters_hi) {
+                threads_hi := threads_test
+                iters_hi := iters_test
+            } else {
+                OutputDebug "wtf: " . iters_test . ", " . iters_lo . ", " . iters_hi . "`r`n"
+            }
+            iters++
+        }
+        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+        ; find the cutoff point between single/multi thread performance with blit
+        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+        size_lo := 128
+        size_hi := 4096
+        ratio_lo := get_ratio(size_lo)
+        ratio_hi := get_ratio(size_hi)
+        iters := 0
+        while (1) {
+            OutputDebug iters . ": size_lo: " . size_lo . ", size_hi: " . size_hi . ", ratio_lo: " . ratio_lo . ", ratio_hi: " . ratio_hi . "`r`n"
+            if (abs(size_lo - size_hi) < 2) || iters > 20 {
+                MsgBox("sweet spot found: " . size_lo . "/" . size_hi)
+                return floor(size_lo)
+            }
+            size_test := (size_lo + size_hi) / 2
+            ratio_test := get_ratio(size_test)
+            if (ratio_test > 1) {
+                size_lo := size_test
+                ratio_lo := ratio_test
+            } else {
+                size_hi := size_test
+                ratio_hi := ratio_test
+            }
+            iters++
+        }
+
+        get_ratio(size) {
+            size := floor(size)
+            b := Buffer(size * size * 4)
+            imgu.i_use_single_thread := true
+            iters_single := timeblit(size, b)
+            imgu.i_use_single_thread := false
+            iters_multi := timeblit(size, b)
+            return iters_single / iters_multi
+        }
+
+        timeblit(size, buffer) {
+            iterations := 0
+            start := A_TickCount
+            time_taken := 0
+            while time_taken < 1000 {
+                iterations++
+                imgu.blit(buffer.ptr, 0, 0, size, buffer.ptr, 0, 0, size, size, size)
+                time_taken := A_TickCount - start
+            }
+            return iterations
+        }
     }
 
     runTests(testTarget, ctl, *) {

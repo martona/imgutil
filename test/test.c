@@ -4,20 +4,20 @@
 #include <limits.h>
 
 #define MARCH_x86_64_v0
-#define _MULTITHREAD_GOOD_IMPL
+#define _MULTITHREAD_MSPOOL_IMPL
 #define DEBUG 1
 #include "../submodules/multithread/multithread_mspool.c"
 #include "../submodules/multithread/multithread_good.c"
 #include "../src/imgutil_all.c"
 #include "../submodules/leanloader/leanloader.c"
 
-void __stdcall testworker(ptr param) {
+void __stdcall testworker(ptr param, i32 thread_idx) {
     mt_ctx *ctx = (mt_ctx*)param;
     u64 now, freq;
     ctx->QueryPerformanceCounter(&now);
     ctx->QueryPerformanceFrequency(&freq);
     now = now * 10000000 / freq;
-    //printf("%llu\n", now);
+    printf("%d %llu\n", thread_idx, now);
 }
 
 int main(int argc, char* argv[])
@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
 
     mt_ctx* ctx = mt_init(0);
     if (ctx) {
-        for (int i=0; i<1000; i++) {
+        for (int i=0; i<10; i++) {
             mt_run(ctx, testworker, ctx);
         }
         mt_deinit(ctx);
