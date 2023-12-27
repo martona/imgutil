@@ -184,4 +184,3 @@ static inline u8 addu8(u8 a, u8 b) {
     u8 c = a + b;
     return c | -(u8)(c < a);
 }
-

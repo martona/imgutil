@@ -40,15 +40,18 @@ class imgutilTest {
         this.gui.Add("Button", "ys", "Haystack/needle 01").OnEvent("Click", this.benchmarkFile.Bind(this, "01"))
         this.gui.Add("Button", "ys", "Haystack/needle 02").OnEvent("Click", this.benchmarkFile.Bind(this, "02"))
         this.gui.Add("Button", "ys", "Haystack/needle 03").OnEvent("Click", this.benchmarkFile.Bind(this, "03"))
+        this.gui.Add("Button", "ys", "Haystack/needle 04").OnEvent("Click", this.benchmarkFile.Bind(this, "04"))
         this.benchmarkFileCtl := this.gui.Add("Text", "section xs", "Currently selected: " . this.benchmarkFileSelection)
         
         v := 0
         while v < 5 {
             this.gui.Add("Text", "section xs w0 h0")
             this.gui.Add("Button", "ys", "X86_X64_V" . v . "N" ).OnEvent("Click", this.benchmark.Bind(this, v, 0))
-            this.gui.Add("Text", "ys wp vbenchdisplayN" . v, "")
+            this.gui.Add("Text", "ys wp vbenchdisplay0" . v, "")
             this.gui.Add("Button", "ys", "X86_X64_V" . v . "F" ).OnEvent("Click", this.benchmark.Bind(this, v, 1))
-            this.gui.Add("Text", "ys wp vbenchdisplayF" . v, "")
+            this.gui.Add("Text", "ys wp vbenchdisplay1" . v, "")
+            this.gui.Add("Button", "ys", "X86_X64_V" . v . "B" ).OnEvent("Click", this.benchmark.Bind(this, v, 2))
+            this.gui.Add("Text", "ys wp vbenchdisplay2" . v, "")
             v++
         }
         this.ctlbench := this.gui.Add("Text", "section xs w300 +Multi h40", "")
@@ -64,24 +67,47 @@ class imgutilTest {
         this.gui.Show()
     }
 
-    benchmark(benchTarget, forcepixel, ctl, *) {
+    benchmark(benchTarget, target, ctl, *) {
         imgu.i_mcode_map := imgu.i_get_mcode_map(benchTarget)
         this.ctlbench.Text := "Benchmarking..."
         this.ctlbench.Redraw()
-        haystack := ImagePutBuffer("imgutil_test_haystack_with_needle" . this.benchmarkFileSelection . ".png")
-        needle := ImagePutBuffer("imgutil_test_needle" . this.benchmarkFileSelection . ".png")
         iterations := 0
         start := A_TickCount
         time_taken := 0
-        while time_taken < 5000 {
-            iterations++
-            imgu.srch(&x, &y, haystack, needle, 8, 95, forcepixel)
-            time_taken := A_TickCount - start
+        haystack := ImagePutBuffer("imgutil_test_haystack_with_needle" . this.benchmarkFileSelection . ".png")
+        needle := ImagePutBuffer("imgutil_test_needle" . this.benchmarkFileSelection . ".png")
+        if target = 0 {
+            ;;; benchmark imgu.srch without forced top left pixel
+            while time_taken < 5000 {
+                iterations++
+                imgu.srch(&x, &y, haystack, needle, 8, 95, 0)
+                time_taken := A_TickCount - start
+            }
+        } else if target = 1 {
+            ;;; benchmark imgu.srch with forced top left pixel
+            while time_taken < 5000 {
+                iterations++
+                imgu.srch(&x, &y, haystack, needle, 8, 95, 1)
+                time_taken := A_TickCount - start
+            }
+        } else if target = 2 {
+            ;;; benchmark imgu.blit
+            while time_taken < 5000 {
+                iterations++
+                imgu.blit(haystack.ptr, 0, 0, haystack.width, needle.ptr, 0, 0, needle.width, needle.width, needle.height)
+                time_taken := A_TickCount - start
+            }
         }
-        this.ctlbench.Text := "Benchmark: " . iterations . " iterations in " . time_taken . "ms" . "`n" . "Average: " . Format("{:2.2f}", time_taken / iterations)  . "ms per iteration"
+        iter_time := time_taken / iterations
+        if (iter_time < 10)
+            iter_text := Format("{:2.2f}", time_taken * 1000 / iterations) . "us"
+        else
+            iter_text := Format("{:2.2f}", time_taken / iterations) . "ms"
+
+        this.ctlbench.Text := "Benchmark: " . iterations . " iterations in " . time_taken . "ms" . "`n" . "Average: " . iter_text . " per iteration"
         for ctl in this.gui {
-            if ctl.Name ~= "benchdisplay" . ((forcepixel) ? "F" : "N") . benchTarget {
-                ctl.Text := Format("{:2.2f}", time_taken / iterations)  . "ms"
+            if ctl.Name ~= "benchdisplay" . target . benchTarget {
+                ctl.Text := iter_text
             }
         }
         return

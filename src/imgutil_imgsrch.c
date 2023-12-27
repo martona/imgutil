@@ -1,6 +1,28 @@
-/* VERY important: if we can ensure that needle, needle_lo, needle_hi AND haystack
+/*
+    notes on performance:
+
+    on my xeon gold 6256 (cascade lake), with a 3840x2160 haystack and a 64x64 needle
+    located in the bottom right corner of haystack, the following timings were observed 
+    on average over 5000 runs:
+
+    psabi level 4 (avx512):              167.2ms
+    psabi level 3 (avx2):                297.8ms
+    psabi level 2 (sse4.1):              511.0ms
+    psabi level 1 (sse2, no popcnt):    1234.4ms
+    psabi level 0 (scalar only code):   1078.2ms
+
+    on intel core i9 12900h (alder lake), with the same inputs:
+
+    psabi level 4 (avx512):                  n/a
+    psabi level 3 (avx2):                214.9ms
+    psabi level 2 (sse4.1):              366.1ms
+    psabi level 1 (sse2, no popcnt):     779.0ms
+    psabi level 0 (scalar only code):    725.4ms
+*/
+
+/*  important: if we can ensure that needle, needle_lo, needle_hi AND haystack
     are all allocated to a size that is a multiple of the vector size (so 64 bytes 
-    covers all of them), then we can vastly simplify the cleanup code in the vector
+    covers all of them), then we can simplify the cleanup code in the vector
     loops. pixelmatchcount, pixelscan and make_sat_masks all would benefit from this. */
 
 argb* imgutil_imgsrch (

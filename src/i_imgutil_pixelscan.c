@@ -1,12 +1,9 @@
 #include "i_imgutil.h"
 
-
-
-
 // the basic version that doesn't require a special CPU
-// instruction set. returns a pointer to the first
-// occurrence of a pixel within the given values,
-// or zero if none found.
+// instruction set.
+// returns a pointer to the first occurrence of a pixel 
+// on the given scanline, or zero if none found.
 
 static inline argb* i_imgutil_pixel_scan_v0
 (   

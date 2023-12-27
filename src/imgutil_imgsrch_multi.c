@@ -1,3 +1,28 @@
+/*
+    notes on performance:
+
+    on my 2-socket xeon gold 6256 (cascade lake) with 12 cores each, using a 
+    3840x2160 haystack and a 64x64 needle located in the bottom right corner 
+    of the haystack, the following timings were observed on average over 5000 
+    runs:
+
+    threads:                                  24       12        8        4
+    psabi level 4 (avx512):              14.12ms  15.53ms  21.74ms  43.14ms
+    psabi level 3 (avx2):                25.51ms  28.90ms  38.46ms  76.23ms
+    psabi level 2 (sse4.1):              43.86ms  47.02ms  66.00ms 130.20ms
+    psabi level 1 (sse2, no popcnt):     89.29ms 110.39ms 158.22ms 313.44ms
+    psabi level 0 (scalar only code):    81.40ms  98.35ms 138.05ms 273.84ms
+
+    on intel core i9 12900h (alder lake, 6p&8e cores), with the same inputs:
+
+    threads:                                  14        7        4
+    psabi level 4 (avx512):                  n/a      n/a      n/a
+    psabi level 3 (avx2):                31.75ms  42.28ms  65.34ms
+    psabi level 2 (sse4.1):              48.53ms  67.57ms 105.81ms
+    psabi level 1 (sse2, no popcnt):     96.46ms 138.89ms 217.39ms
+    psabi level 0 (scalar only code):    89.84ms 130.62ms 203.12ms
+*/
+
 #include "i_imgutil.h"
 #include "../submodules/multithread/multithread.h"
 
@@ -18,7 +43,7 @@ typedef struct {
     i32     force_topleft;
 } thread_ctx;
 
-static void imgutil_imgsrch_worker(ptr param) {
+static void __stdcall imgutil_imgsrch_worker(ptr param) {
     thread_ctx* ctx = (thread_ctx*)param;
     // we get the quality of the match in here
     i32 pixels_matched = 0;

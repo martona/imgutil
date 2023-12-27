@@ -1,13 +1,18 @@
 #include "i_imgutil.h"
 
+// note: these must match what we have in imgutil_all.c
+//#define _MULTITHREAD_MSPOOL_IMPL
+#define _MULTITHREAD_GOOD_IMPL
+
 // include every implementation file so we can produce a single object file
 #include "imgutil_various.c"
 #include "i_imgutil_make_sat_masks.c"
 #include "i_imgutil_pixelmatchcount.c"
 #include "i_imgutil_pixelscan.c"
-#include "i_imgutil_imgsrch.c"
-#include "i_imgutil_imgsrch_multi.c"
-#include "i_imgutil_blit.c"
+#include "imgutil_imgsrch.c"
+#include "imgutil_imgsrch_multi.c"
+#include "imgutil_blit.c"
+#include "imgutil_blit_multi.c"
 
 // an exported function to allow the caller to verify that this object file
 // contains the correct psabi level implementation

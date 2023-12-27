@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "i_imgutil.h": "c"
+        "i_imgutil.h": "c",
+        "multithread.h": "c"
     }
 }
