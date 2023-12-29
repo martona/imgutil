@@ -41,6 +41,8 @@ static inline void imgutil_blit_line_v3 (argb* d, argb* s, i32 w) {
 }
 #endif
 
+// to me it's very surprising that this is about 20% slower than the v3 code
+// on the only system i was able to benchmark it on (xeon gold 6256). 
 #if defined(MARCH_x86_64_v4)
 static inline void imgutil_blit_line_v4 (argb* d, argb* s, i32 w) {
     i32 vecsize = (sizeof(__m512i) / sizeof(i32));

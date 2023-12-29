@@ -42,7 +42,9 @@ class imgutil {
     i_tolerance := 8                                ; tolerance used by all pixel matching functions
     i_gdip_token := 0                               ; gdiplus token
 
+    ;############################################################################################################
     ; initialize the library
+    ;############################################################################################################
     __New() {
         ; set up the mcode blocks
         this.i_mcode_map        := this.i_get_mcode_map()
@@ -56,7 +58,9 @@ class imgutil {
         this.i_gdip_token := token
     }
 
+    ;############################################################################################################
     ; deinit
+    ;############################################################################################################
     __Delete() {
         DllCall(this.i_mcode_map["mt_deinit"], "ptr", this.i_multithread_ctx)
         DllCall("Gdiplus.dll\GdiplusShutdown", "ptr", this.i_gdip_token)
@@ -210,7 +214,9 @@ class imgutil {
                 )
     }
 
-    ; -march=x86-64 baseline optimized machine code blob (mmx huh)
+    ;############################################################################################################
+    ; -march=x86-64 baseline optimized machine code blob
+    ;############################################################################################################
     i_get_mcode_map_v1() {
         static b64 := ""
     . "" ; imgutil_all.c
@@ -272,7 +278,9 @@ class imgutil {
                 )
     }
 
+    ;############################################################################################################
     ; -march=x86-64-v2 optimized SSE4 machine code blob
+    ;############################################################################################################
     i_get_mcode_map_v2() {
         static b64 := ""
     . "" ; imgutil_all.c
@@ -334,7 +342,9 @@ class imgutil {
                 )
     }
 
+    ;############################################################################################################
     ; -march=x86-64-v3 optimized AVX2 machine code blob
+    ;############################################################################################################
     i_get_mcode_map_v3() {
         static b64 := ""
     . "" ; imgutil_all.c
@@ -400,7 +410,9 @@ class imgutil {
                 )
     } 
 
+    ;############################################################################################################
     ; -march=x86-64-v4 optimized AVX512 machine code blob
+    ;############################################################################################################
     i_get_mcode_map_v4() {
         static b64 := ""
     . "" ; imgutil_all.c
@@ -462,6 +474,9 @@ class imgutil {
                     )
     }
 
+    ;############################################################################################################
+    ; base code, independent of optimization level/architecture
+    ;############################################################################################################
     i_get_mcode_map_base() {
         ; this can't be part of the main blob as we don't want GCC to taint it with
         ; vectorization or the use of other instructions that may not be available
@@ -538,7 +553,8 @@ class imgutil {
     }
 
     ;########################################################################################################
-    ; get/set tolerance
+    ; get/set tolerance (a value between 0 and 255 that can relax pixel matching criteria on a per-color 
+    ; channel basis.)
     ;########################################################################################################
     tolerance_set(t) {
         this.i_tolerance := t
@@ -669,52 +685,52 @@ class imgutil {
         t := this.get_row_match(pic, refc, 0)
         h := pic.height - t
         if h <= 0
-            Throw Error("Fail", -1)
+            return pic
         return this.crop(pic, 0, t, pic.width, h)
     }
     chop_mism_b(pic, refc) {
         b := this.get_row_match_rev(pic, refc, pic.height-1)
         if b <= 0
-            Throw Error("Fail", -1)
+            return pic
         return this.crop(pic, 0, 0, pic.width, b)
     }
     chop_match_t(pic, refc) {
         t := this.get_row_mism(pic, refc, 0)
         h := pic.height - t
         if h <= 0
-            Throw Error("Fail", -1)
+            return pic
         return this.crop(pic, 0, t, pic.width, pic.height - t)
     }
     chop_match_b(pic, refc) {
         b := this.get_row_mism_rev(pic, refc, pic.height-1)
         if b <= 0
-            Throw Error("Fail", -1)
+            return pic
         return this.crop(pic, 0, 0, pic.width, b)
     }
     chop_match_l(pic, refc) {
         t := this.get_col_mism(pic, refc, 0)
         w := pic.width - t
         if w <= 0
-            Throw Error("Fail", -1)
+            return pic
         return this.crop(pic, t, 0, w, pic.height)
     }
     chop_mism_l(pic, refc) {
         t := this.get_col_match(pic, refc, 0)
         w := pic.width - t
         if t <= 0
-            Throw Error("Fail", -1)
+            return pic
         return this.crop(pic, t, 0, w, pic.height)
     }
     chop_match_r(pic, refc) {
         t := this.get_col_mism_rev(pic, refc, pic.width - 1)
         if t <= 0
-            Throw Error("Fail", -1)
+            return pic
         return this.crop(pic, 0, 0, t, pic.height)
     }
     chop_mism_r(pic, refc) {
         t := this.get_col_match_rev(pic, refc, pic.width - 1)
         if t <= 0
-            Throw Error("Fail", -1)
+            return pic
         return this.crop(pic, 0, 0, t, pic.height)
     }
     chop_mism_then_match_l(pic, refc, minimumGap := 1) {
@@ -722,14 +738,14 @@ class imgutil {
         t := this.get_col_mism(pic, refc, t)
         w := pic.width - t
         if w <= 0
-            Throw Error("Fail", -1)
+            return pic
         return this.crop(pic, t, 0, w, pic.height)
     }
     chop_mism_then_match_r(pic, refc, minimumGap := 1) {
         t := imgu.get_col_match_rev(pic, refc, pic.width - 1,,, minimumGap)
         t := imgu.get_col_mism_rev(pic, refc, t)
         if t <= 0
-            Throw Error("Fail", -1)
+            return pic
         return this.crop(pic, 0, 0, t, pic.height)
     }
 
@@ -771,8 +787,8 @@ class imgutil {
     ;########################################################################################################
     crop(img, x, y, w, h) {
         new := img.crop(x, y, w, h)
-        if img.HasOwnProp("origins")
-            new.origins := [img.origins[1] + x, img.origins[2] + y]
+        if img.HasOwnProp("origin")
+            new.origin := {x: img.origin.x + x, y: img.origin.y + y}
         return new
     }
     
@@ -781,7 +797,7 @@ class imgutil {
     ;########################################################################################################
     screengrab(x, y, w, h) {
         img := ImagePutBuffer([x, y, w, h])
-        img.origins := [x, y]
+        img.origin := {x: x, y: y}
         return img
     }
 
@@ -795,64 +811,70 @@ class imgutil {
         min_percent_match := 100,       ; percentage of pixels needed to return a match
         force_topleft_pixel_match := 1) ; top left pixel must match? (tolerance applies)
     {
-        if !isImagePutBuffer(haystack)
-            haystack := ImagePutBuffer(haystack)
-        if (!isImagePutBuffer(needle))
-            needle := ImagePutBuffer(needle)
+        haystack := checkInputImg(haystack)
+        needle   := checkInputImg(needle)
         
-        imgutil_mask_lo := Buffer(needle.width * needle.height * 4)
-        imgutil_mask_hi := Buffer(needle.width * needle.height * 4)
+        imgutil_mask_lo := Buffer(needle.w * needle.h * 4)
+        imgutil_mask_hi := Buffer(needle.w * needle.h * 4)
         DllCall(this.i_mcode_map["imgutil_make_sat_masks"], 
-            "ptr", needle.ptr, "uint", needle.width * needle.height, 
+            "ptr", needle.ptr, "uint", needle.w * needle.h, 
             "ptr", imgutil_mask_lo, "ptr", imgutil_mask_hi, "char", tolerance, "int")
 
         pixels_matched := 0
         result := 0
         if (this.i_use_single_thread) {
             result := DllCall(this.i_mcode_map["imgutil_imgsrch"],
-                "ptr", haystack.ptr, "int", haystack.width, "int", haystack.height,
-                "ptr", imgutil_mask_lo, "ptr", imgutil_mask_hi, "int", needle.width, "int", needle.height,
+                "ptr", haystack.ptr, "int", haystack.w, "int", haystack.h,
+                "ptr", imgutil_mask_lo, "ptr", imgutil_mask_hi, "int", needle.w, "int", needle.h,
                 "char", min_percent_match, "int", force_topleft_pixel_match, "int*", pixels_matched, "ptr") 
         } else {
             result := DllCall(this.i_mcode_map["imgutil_imgsrch_multi"], "ptr", imgu.i_multithread_ctx,
-                "ptr", haystack.ptr, "int", haystack.width, "int", haystack.height,
-                "ptr", imgutil_mask_lo, "ptr", imgutil_mask_hi, "int", needle.width, "int", needle.height,
+                "ptr", haystack.ptr, "int", haystack.w, "int", haystack.h,
+                "ptr", imgutil_mask_lo, "ptr", imgutil_mask_hi, "int", needle.w, "int", needle.h,
                 "char", min_percent_match, "int", force_topleft_pixel_match, "int*", pixels_matched, "ptr")
         }
 
         if result {
             offset := (result - haystack.ptr) // 4
-            fx := mod(offset, haystack.width)
-            fy := offset // haystack.width
+            fx := mod(offset, haystack.w)
+            fy := offset // haystack.w
         }
         return result
 
-        isImagePutBuffer(x) {
-            return Type(x) = "ImagePut.BitmapBuffer"
+        checkInputImg(x) {
+            if Type(x) = "imgutil.img"
+                return x
+            if Type(x) = "ImagePut.BitmapBuffer"
+                return this.from_imageputbuffer(x)
+            if Type(x) = "Array" && x.Length = 4
+                return this.from_screen(imgutil.rect(x[1], x[2], x[3], x[4]))
+            if Type(x) = "String"
+                return this.from_file(x)
+            Throw "Invalid input to imgutil.srch: " . x
         }
     }
 
     ;########################################################################################################
     ; copy a rectangle from one image to another
     ; 
-    ;   dst     - destination pointer
-    ;   dx      - destination x
-    ;   dy      - destination y
-    ;   dstride - destination stride in pixels
-    ;   src     - source pointer
-    ;   sx      - source x
-    ;   sy      - source y
-    ;   sstride - source stride in pixels
-    ;   w       - width of the rectangle
-    ;   h       - height of the rectangle
-    ; 
+    ;   dst       - destination pointer
+    ;   dx        - destination x
+    ;   dy        - destination y
+    ;   dstride   - destination stride in pixels
+    ;   src       - source pointer
+    ;   sx        - source x
+    ;   sy        - source y
+    ;   sstride   - source stride in pixels
+    ;   w         - width of the rectangle
+    ;   h         - height of the rectangle
+    ;   _force_mt - testing/benchmarking, 1 for single-threaded, 2 for multithreaded
     ;########################################################################################################
-    blit(dst, dx, dy, dstride, src, sx, sy, sstride, w, h) {
+    blit(dst, dx, dy, dstride, src, sx, sy, sstride, w, h, _force_mt := 0) {
         ; both on my laptop and my desktop, the break-even point for multithreading is around 600x600 pixels.
         ; below that, single-threaded is faster, above that, multithreaded is faster.
         ; i'm not sure how you'd determine this efficently for the current processor on the fly, so i'm just
         ; going to use a fixed value which does more good than harm.
-        if w*h < 360000 {
+        if (_force_mt = 1) || (w*h < 360000 && _force_mt != 2) {
             return DllCall(this.i_mcode_map["imgutil_blit"], 
                 "ptr", dst, "int", dx, "int", dy, "int", dstride, 
                 "ptr", src, "int", sx, "int", sy, "int", sstride, 
@@ -868,15 +890,29 @@ class imgutil {
     ;########################################################################################################
     ; load an image from disk
     ;########################################################################################################
-    load(fname) {
-        return imgutil.img(this).load(fname)
+    from_file(fname) {
+        return imgutil.img(this).from_file(fname)
     }
 
     ;########################################################################################################
     ; capture the screen
     ;########################################################################################################
-    grab_screen(rect := 0) {
-        return imgutil.img(this).grab_screen(rect)
+    from_screen(rect := 0) {
+        return imgutil.img(this).from_screen(rect)
+    }
+
+    ;########################################################################################################
+    ; convert any in-memory source
+    ;########################################################################################################
+    from_memory(ptr, w, h, stride) {
+        return imgutil.img(this).from_memory(ptr, w, h, stride)
+    }
+
+    ;########################################################################################################
+    ; convert an ImagePutBuffer 
+    ;########################################################################################################
+    from_imageputbuffer(obj) {
+        return imgutil.img(this).from_imageputbuffer(obj)
     }
 
     ;########################################################################################################
@@ -890,9 +926,7 @@ class imgutil {
     }
 
     ;########################################################################################################
-    ;########################################################################################################
     ; the img class, does a lot of the heavy lifting
-    ;########################################################################################################
     ;########################################################################################################
     class img {
         ptr     := 0     ; pointer to ARGB flat pixel data
@@ -900,6 +934,8 @@ class imgutil {
         h       := 0     ; height of image
         stride  := 0     ; stride of image in bytes (usually equals to w*4)
         origin  := 0     ; origin of image relative to screen(0,0)
+        width   := 0     ; alias for w
+        height  := 0     ; alias for h
 
         i_imgu      := 0     ; internal variable holding a reference to the imgutil object                    
         i_provider  := 0     ; provider object
@@ -915,60 +951,73 @@ class imgutil {
         }
 
         ;########################################################################################################
+        ; 
+        ;########################################################################################################
+        from_provider(provider, origin := 0) {
+            this.i_provider       := provider
+            this.ptr              := provider.ptr
+            this.w := this.width  := provider.w
+            this.h := this.height := provider.h
+            this.stride           := provider.stride
+            if origin
+                this.origin := origin
+            return this
+        }
+
+        ;########################################################################################################
         ; object from file
         ;########################################################################################################
-        load(fname) {
+        from_file(fname) {
             i_provider := image_provider.gdip.file()
-            if i_provider.get_image(fname) {
-                this.i_provider := i_provider
-                this.ptr        := i_provider.ptr
-                this.w          := i_provider.w
-                this.h          := i_provider.h
-                this.stride     := i_provider.stride
-                return this
-            }
+            if i_provider.get_image(fname)
+                return this.from_provider(i_provider)
             return false
         }
 
         ;########################################################################################################
+        ; access individual pixel valus
+        ;########################################################################################################
+        __Item[x, y] {
+            get => NumGet(this.ptr + y * this.stride + x * 4, "uint")
+            set => NumPut("uint", value, this.ptr + y * this.stride + x * 4)
+         }  
+
+        ;########################################################################################################
         ; object from memory location
         ;########################################################################################################
-        grab_memory(ptr, w, h, stride) {
+        from_memory(ptr, w, h, stride) {
             i_provider := image_provider.gdip.memory()
-            if i_provider.get_image(ptr, w, h, stride) {
-                this.i_provider := i_provider
-                this.ptr        := i_provider.ptr
-                this.w          := i_provider.w
-                this.h          := i_provider.h
-                this.stride     := i_provider.stride
-                return this
-            }
+            if i_provider.get_image(ptr, w, h, stride)
+                return this.from_provider(i_provider)
             return false
         }
         
         ;########################################################################################################
         ; object from screen
         ;########################################################################################################
-        grab_screen(rect := 0) { 
+        from_screen(rect := 0) { 
             ; try with directx first (fast), otherwise try with gdi (sloooow)
             providers := [image_provider.dx_screen(), image_provider.gdi_screen()]
             for provider in providers {
-                if origin := provider.get_image(rect) {
-                    this.i_provider := provider
-                    this.ptr        := provider.ptr
-                    this.w          := provider.w
-                    this.h          := provider.h
-                    this.origin     := origin
-                    this.stride     := provider.stride
-                    return this
-                }
+                if origin := provider.get_image(rect)
+                    return this.from_provider(provider, origin)
             }
         }
-        
+
+        ;########################################################################################################
+        ; object from ImagePutBuffer
+        ;########################################################################################################
+        from_imageputbuffer(obj) {
+            i_provider := image_provider.imageputbuffer()
+            if i_provider.get_image(obj)
+                return this.from_provider(i_provider)
+            return false
+        }
+
         ;########################################################################################################
         ; save the image to a file, the type is based on the extension  
         ;########################################################################################################
-        save(fname) {
+        to_file(fname) {
             ret  := false
             pbmp := 0
             ; create a gdiplus bitmap object from our memory buffer
@@ -1006,10 +1055,24 @@ class imgutil {
                 DllCall("gdiplus\GdipDisposeImage", "ptr", pbmp)
             }
             return ret
-        } 
+        }
+
+        ;############################################################################################################
+        ; crop the image
+        ;############################################################################################################
+        crop(x, y, w, h) {
+            obj := this.i_imgu.from_memory(this.ptr + (y * this.stride) + (x * 4), w, h, this.stride)
+            if this.origin {
+                obj.origin := {x: this.origin.x + x, y: this.origin.y + y}
+            }
+            return obj
+        }
+
     } ; end of img class
 
+    ;############################################################################################################
     ; a simple rectangle class to wrap up all the x/y/w/h nonsense
+    ;############################################################################################################
     class rect {
         x := 0
         y := 0
@@ -1055,6 +1118,7 @@ class imgutil {
 ; a series of image providers that make it transparent to imgutil how various images are
 ; acquired; from a file, from a screenshot, etc.
 ;########################################################################################################
+; abstract-ish base class
 class image_provider {
 
     ptr     := 0            ; pointer to ARGB flat pixel data
@@ -1068,6 +1132,8 @@ class image_provider {
     __Delete() {
     }
 
+    ; all derived providers end up calling this to provide the 4 basic image properties that we need
+    ; to define an image
     get_image(ptr, w, h, stride) {
         this.ptr    := ptr
         this.w      := w
@@ -1076,8 +1142,11 @@ class image_provider {
         return true
     }
 
+    ;############################################################################################################
     ; image provider for anything gdi+ based (file & memory)
+    ;############################################################################################################
     class gdip extends image_provider {
+
         gdip_pBitmap        := 0
         gdip_bits_locked    := 0
         bits_buffer         := 0
@@ -1096,6 +1165,8 @@ class image_provider {
             super.__Delete()
         }
 
+        ; pry out the good bits from the gdi+ cruft
+        ; (j/k gdi+ is ok)
         get_image(gdip_pBitmap) {
             ret := false
             if this.gdip_pBitmap := gdip_pBitmap {
@@ -1150,7 +1221,9 @@ class image_provider {
             return false
         }
 
+        ;############################################################################################################
         ; gdiplus image provider for file sources
+        ;############################################################################################################
         class file extends image_provider.gdip {
 
             __New() {
@@ -1186,9 +1259,14 @@ class image_provider {
 
     } ; end of image_provider.gdip class
 
+
+    ;############################################################################################################
     ; image provider for memory sources
+    ;############################################################################################################
     class memory extends image_provider {
-        buffer := 0
+
+        buff := 0
+
         __New() {
             super.__New()
         }
@@ -1198,14 +1276,36 @@ class image_provider {
         }
 
         get_image(ptr, w, h, stride) {
-            this.buffer := Buffer(w * h * 4)
-            imgu.blit(this.buffer.ptr, 0, 0, w, ptr, 0, 0, stride//4, w, h)
-            return super.get_image(this.buffer.ptr, w, h, w * 4)
+            this.buff := Buffer(w * h * 4)
+            imgu.blit(this.buff.ptr, 0, 0, w, ptr, 0, 0, stride//4, w, h)
+            return super.get_image(this.buff.ptr, w, h, w * 4)
         }
 
     } ; end of image_provider.memory class
 
+    ;############################################################################################################
+    ; image provider for ImagePutBuffer sources
+    ;############################################################################################################
+    class imageputbuffer extends image_provider {
+        obj := 0
+        __New() {
+            super.__New()
+        }
+
+        __Delete() {
+            super.__Delete()    
+        }
+
+        get_image(obj) {
+            this.obj := obj
+            return super.get_image(obj.ptr, obj.width, obj.height, obj.width * 4)
+        }
+
+    } ; end of image_provider.memory class
+
+    ;############################################################################################################
     ; gdi screen capture provider
+    ;############################################################################################################
     class gdi_screen extends image_provider {
 
         dibsection := 0             ; the gdi object returned from CreateDIBSection
@@ -1247,7 +1347,7 @@ class image_provider {
                             this.dibsection := bmp
                             super.get_image(bits, rect.w, rect.h, rect.w * 4)
                             ret := {x: rect.x, y: rect.y}
-                
+
                             DllCall("user32\ReleaseDC", "ptr", 0, "ptr", screen_dc)
                         }                        
                         DllCall("gdi32\SelectObject", "ptr", hdc, "ptr", oldbmp)
@@ -1259,8 +1359,14 @@ class image_provider {
         }
     } ; end of image_provider.gdi_screen class
 
+    ;############################################################################################################
     ; directx screen capture provider
+    ;############################################################################################################
+    ; PREPARE FOR A MASSIVE WALL OF CODE
+    ;############################################################################################################
     class dx_screen extends image_provider {
+
+        buff := 0
 
         static hmod_dxgi            := 0
         static hmod_d3d11           := 0
@@ -1297,6 +1403,9 @@ class image_provider {
             super.__Delete()    
         }
 
+        ;############################################################################################################
+        ; initialize dxgi
+        ;############################################################################################################
         init(rect) {
 
             static D3D_DRIVER_TYPE_UNKNOWN      := 0
@@ -1414,27 +1523,7 @@ class image_provider {
                                 NumPut("uint",                          1, this.s.D3D11_TEXTURE2D_DESC, 20)   ; SampleDescCount
                                 NumPut("uint",        D3D11_USAGE_STAGING, this.s.D3D11_TEXTURE2D_DESC, 28)
                                 NumPut("uint",      D3D11_CPU_ACCESS_READ, this.s.D3D11_TEXTURE2D_DESC, 36)
-
-                                ; the thing about IDXGIOutputDuplication_AcquireNextFrame is that the first call to it always
-                                ; immediately returns with success and a blank frame, no matter the timeout. the second call
-                                ; will also return a blank frame, no matter how much time elapses between those two calls.
-                                ; it works properly from the third call onwards. these two dummy calls look weird but help.
-                                ComCall(IDXGIOutputDuplication_AcquireNextFrame := 8, this.s.ptr_dxgi_dup, 
-                                    "uint", 0, "ptr", this.s.DXGI_OUTDUPL_FRAME_INFO, 
-                                    "ptr*", &ptr_dxgi_resource:=0, "int")
-                                if ptr_dxgi_resource
-                                    ObjRelease(ptr_dxgi_resource)
-                                ptr_dxgi_resource := 0
-                                ; release "frame" (yeah right)
-                                ComCall(IDXGIOutputDuplication_ReleaseFrame := 14, this.s.ptr_dxgi_dup, "uint")
-                                ; pretend to give a crap about the next one
-                                ComCall(IDXGIOutputDuplication_AcquireNextFrame, this.s.ptr_dxgi_dup, 
-                                    "uint", 0, "ptr", this.s.DXGI_OUTDUPL_FRAME_INFO, 
-                                    "ptr*", &ptr_dxgi_resource:=0, "int")
-                                if ptr_dxgi_resource
-                                    ObjRelease(ptr_dxgi_resource)
-                                ptr_dxgi_resource := 0
-                                ; create a permanent buffer to hold the screen capture. 
+                                ; create a permanent buffer to hold the screen captures going forward
                                 if ComCall(ID3D11Device_CreateTexture2D := 5, this.s.d3d_device, "ptr", this.s.D3D11_TEXTURE2D_DESC, "ptr", 0, "ptr*", &texture_screen:=0, "int") >= 0 {
                                     this.s.texture_screen  := texture_screen
                                     ; map the texture into system memory. it might seem odd to do this here, but it's the "natural" state
@@ -1461,6 +1550,9 @@ class image_provider {
             return ret
         }
 
+        ;############################################################################################################
+        ; cleanup the environment (the statics, that is.)
+        ;############################################################################################################
         cleanup_static(partial := false) {
 
             if this.s.texture_screen_ptr {
@@ -1526,14 +1618,23 @@ class image_provider {
             }
         }
 
+        ;############################################################################################################
+        ; paydirt, basically
+        ;############################################################################################################
         get_image(rect := 0) {
 
-            static IDXGIOutputDuplication_AcquireNextFrame := 8
-            static DXGI_ERROR_WAIT_TIMEOUT                 := 0x887a0027
-            static ID3D11DeviceContext_Unmap               := 15
-            static D3D11_MAP_READ                          := 1
-            static D3D11_MAP_WRITE                         := 2
-            static D3D11_MAP_READ_WRITE                    := 3
+            static IDXGIOutputDuplication_AcquireNextFrame  := 8
+            static IDXGIOutputDuplication_ReleaseFrame      := 14
+            ID3D11DeviceContext_Map                         := 14
+            ID3D11DeviceContext_Unmap                       := 15
+            ID3D11DeviceContext_CopyResource                := 47
+            static DXGI_ERROR_WAIT_TIMEOUT                  := 0x887a0027
+            static ID3D11DeviceContext_Unmap                := 15
+            static D3D11_MAP_READ                           := 1
+            static D3D11_MAP_WRITE                          := 2
+            static D3D11_MAP_READ_WRITE                     := 3
+            static release_frame_early                      := false
+            static last_screenshot_taken                    := 0 
             ret := false
             if !rect
                 rect := imgutil.rect(0, 0, A_ScreenWidth, A_ScreenHeight)
@@ -1541,65 +1642,87 @@ class image_provider {
             ; initialize the environment if needed
             if this.init(rect) {
 
-                reuse_resource := false
-                ; we want to hold the previous frame as long as possible to disallow gpu access to the buffer, 
-                ; and let data accumulate. (docs say so.)
-                hr := ComCall(IDXGIOutputDuplication_ReleaseFrame := 14, this.s.ptr_dxgi_dup, "uint")
-                ; call the duplication API to get the next frame. don't wait for any new updates;
-                ; if there are none, we'll use our permanent buffer from the last frame
-                hr := ComCall(IDXGIOutputDuplication_AcquireNextFrame, this.s.ptr_dxgi_dup, 
-                    "uint", 0,
-                    "ptr", this.s.DXGI_OUTDUPL_FRAME_INFO, 
-                    "ptr*", &ptr_dxgi_resource:=0, 
-                    "uint")
+                while true {
+                    if !release_frame_early
+                        ComCall(IDXGIOutputDuplication_ReleaseFrame, this.s.ptr_dxgi_dup, "uint")
+                    ; call the duplication API to get the next frame. don't wait for any new updates;
+                    ; if there are none, we'll use our permanent buffer from the last frame
+                    time_start := A_TickCount
+                    hr := ComCall(IDXGIOutputDuplication_AcquireNextFrame, this.s.ptr_dxgi_dup, 
+                        "uint", release_frame_early ? 0 : 50,
+                        "ptr", this.s.DXGI_OUTDUPL_FRAME_INFO, 
+                        "ptr*", &ptr_dxgi_resource:=0, 
+                        "uint")
+                    OutputDebug "IDXGIOutputDuplication_AcquireNextFrame took " Format("{:016d}", A_TickCount - time_start) . " ms`r`n"
 
-                if !(hr & 0x80000000) {
-                    ; has this frame been presented (i.e. is it an actual update that needs to be processed?)
-                    if NumGet(this.s.DXGI_OUTDUPL_FRAME_INFO, 0, "int64") > 0 {
+                    if !(hr & 0x80000000) {
+
+                        ; has this frame been presented (i.e. is it an actual update that needs to be processed?)
+                        if NumGet(this.s.DXGI_OUTDUPL_FRAME_INFO, 0, "int64")  = 0 {
+                            OutputDebug "IDXGIOutputDuplication_AcquireNextFrame: update has never been presented, retrying`r`n"
+                            Sleep 10
+                            continue
+                        }
                         ; copy the texture we just received into our permanent buffer
 
                         ; get the texture interface from the frame data
                         texture_screen_update := ComObjQuery(ptr_dxgi_resource, "{6f15aaf2-d208-4e89-9ab4-489535d34f9c}") ; ID3D11Texture2D
                         ObjRelease(ptr_dxgi_resource)
                         ; unmap the screen texture
-                        hr := ComCall(ID3D11DeviceContext_Unmap := 15, this.s.d3d_context, 
+                        hr := ComCall(ID3D11DeviceContext_Unmap, this.s.d3d_context, 
                             "ptr", this.s.texture_screen, "uint", 0, "int")
                         ; copy the new frame into our permanent buffer
-                        hr := ComCall(ID3D11DeviceContext_CopyResource := 47, this.s.d3d_context, 
+                        hr := ComCall(ID3D11DeviceContext_CopyResource, this.s.d3d_context, 
                             "ptr", this.s.texture_screen, 
                             "ptr", texture_screen_update, 
                             "int")
                         ; and map the texture again
-                        hr := ComCall(ID3D11DeviceContext_Map := 14, this.s.d3d_context, 
+                        hr := ComCall(ID3D11DeviceContext_Map, this.s.d3d_context, 
                             "ptr", this.s.texture_screen, "uint", 0, 
                             "uint", D3D11_MAP_READ, "uint", 0, 
                             "ptr", this.s.D3D11_MAPPED_SUBRESOURCE, "int")
-                            this.s.texture_screen_ptr     := NumGet(this.s.D3D11_MAPPED_SUBRESOURCE, 0, "ptr")
-                            this.s.texture_screen_stride  := NumGet(this.s.D3D11_MAPPED_SUBRESOURCE, 8, "int")
-                    }
-                } else if hr = DXGI_ERROR_WAIT_TIMEOUT {
-                    ; nop, we'll use the last frame from the buffer
-                } else if hr & 0x80000000 {
-                    ; if we flat out failed, we'll need to reinit; the assumption is that the
-                    ; monitor, desktop, lock state, etc. changed
-                    OutputDebug "IDXGIOutputDuplication_AcquireNextFrame failed: " Format("0x{:8x}", hr)
-                    this.cleanup_static(true)
-                    return false
-                }
+                        this.s.texture_screen_ptr     := NumGet(this.s.D3D11_MAPPED_SUBRESOURCE, 0, "ptr")
+                        this.s.texture_screen_stride  := NumGet(this.s.D3D11_MAPPED_SUBRESOURCE, 8, "int")
 
-                if !this.s.using_system_memory {  ; TODO what if system memory is used?
-                    ; map the texture into system memory
-                    ; allocate the buffer we'll hold the data in
-                    imgdata := Buffer(rect.w * rect.h * 4)
-                    ; TODO: we need to rebase the rect to the monitor's origin
-                    imgu.blit(imgdata.ptr, 0, 0, rect.w,      ; destination, top left corner of bufer with stride=width
-                            this.s.texture_screen_ptr,        ; source, the screen buffer
-                            rect.x, rect.y,                   ; source coordinates, whatever the user asked for
-                            this.s.texture_screen_stride//4,  ; stride in pixels
-                            rect.w, rect.h)                   ; dimensions as per user
-                    super.get_image(imgdata, rect.w, rect.h, rect.w * 4)
-                    ; return the origins to caller
-                    ret := {x: rect.x, y: rect.y}
+                    } else if hr = DXGI_ERROR_WAIT_TIMEOUT {
+                        time_from_last_screenshot := A_TickCount - last_screenshot_taken
+                        OutputDebug "IDXGIOutputDuplication_AcquireNextFrame timed out, using last frame from " Format("{:016d}", time_from_last_screenshot) . " ms ago`r`n"
+                    } else if hr & 0x80000000 {
+                        ; if we flat out failed, we'll need to reinit; the assumption is that the
+                        ; monitor, desktop, lock state, etc. changed
+                        OutputDebug "IDXGIOutputDuplication_AcquireNextFrame failed: " Format("0x{:8x}", hr)
+                        this.cleanup_static(true)
+                        return false
+                    }
+
+                    ; a legit buffer should never return 0x00000000 pixels due to the 0xff alpha channel value
+                    if (c := NumGet(this.s.texture_screen_ptr, 0, "uint")) = 0 {
+                        OutputDebug "Bamboozled! Got a null framebuffer at " Format("{:016d}", A_TickCount) . " ms`r`n"
+                        if release_frame_early
+                            ComCall(IDXGIOutputDuplication_ReleaseFrame, this.s.ptr_dxgi_dup, "uint")
+                        Sleep 10
+                        continue
+                    }
+
+                    if !this.s.using_system_memory {  ; TODO what if system memory is used?
+                        ; map the texture into system memory
+                        ; allocate the buffer we'll hold the data in
+                        imgdata := Buffer(rect.w * rect.h * 4)
+                        ; TODO: we need to rebase the rect to the monitor's origin
+                        imgu.blit(imgdata.ptr, 0, 0, rect.w,      ; destination, top left corner of bufer with stride=width
+                                this.s.texture_screen_ptr,        ; source, the screen buffer
+                                rect.x, rect.y,                   ; source coordinates, whatever the user asked for
+                                this.s.texture_screen_stride//4,  ; stride in pixels
+                                rect.w, rect.h)                   ; dimensions as per user
+                        this.buff := imgdata
+                        super.get_image(imgdata.ptr, rect.w, rect.h, rect.w * 4)
+                        ; return the origin to caller
+                        ret := {x: rect.x, y: rect.y}
+                    }
+                    if release_frame_early
+                        ComCall(IDXGIOutputDuplication_ReleaseFrame, this.s.ptr_dxgi_dup, "uint")
+                    last_screenshot_taken := A_TickCount
+                    break
                 }
             }
             return ret
@@ -1616,41 +1739,9 @@ class dx_screen_helper {
     provider := 0
     __New() {
         this.provider := image_provider.dx_screen()
-        this.provider.init(imgutil.rect(0, 0, A_ScreenWidth, A_ScreenHeight))
     }
     __Delete() {
         ; clean up completely
         this.provider.cleanup_static()
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
