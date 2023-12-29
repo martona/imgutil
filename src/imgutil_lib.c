@@ -4,5 +4,4 @@
 
 #include "imgutil_cpuid.c"
 
-#include "../submodules/multithread/multithread_good.c"
-#include "../submodules/multithread/multithread_mspool.c"
+#include "../submodules/multithread/multithread.c"

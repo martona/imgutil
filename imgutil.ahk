@@ -123,7 +123,7 @@ class imgutil {
     . "" ; flags: -march=core2 -D MARCH_x86_64_v0 -O3
     . "" ; GNU assembler (GNU Binutils) 2.41
     . "" ; flags: -O2
-    . "VlNEi0FASItBCEhjcSBBD6/QRIuQwAAAAEGJ0YnQMdJB9/Ix0kGJw0ONBAhEi0E0QffySGNROExjSTBMY1EYRQHYRA+vwk1jwE0ByEyLSShPjQSBRItJHEUB2UQPr85NY8lN"
+    . "VlNEi0FASItBCEhjcSBBD6/QRIuQyAAAAEGJ0YnQMdJB9/Ix0kGJw0ONBAhEi0E0QffySGNROExjSTBMY1EYRQHYRA+vwk1jwE0ByEyLSShPjQSBRItJHEUB2UQPr85NY8lN"
     . "AdFMi1EQT40MikE5w31GRItRPEiNHJUAAAAASMHmAkWF0nQxZg8fhAAAAAAAMdJmDx9EAABBiwyQQYkMkUiDwgFMOdJ170GDwwFJAdhJAfFEOdh12Fteww8fRAAAV1ZTi1wk"
     . "SESJyEhj8kiJz0hjTCRAD7bERYnIQYnCi0QkWEHB6BAPr8ZImEgByEyNHIeLRCRQD6/GSJhIAchIjQyHTDnZc2mD/gFFD7bARQ+20kUPtsl0EetmZg8fRAAASIPBBEw52XNH"
     . "D7ZBAUQp0Jkx0CnQD7ZRAkQpwonWwf4fMfIp8jnQD0zCD7YRRCnKidbB/h8x8inyOdAPTMI5w32+McBbXl/DDx+EAAAAAAC4AQAAAFteX8MPH4AAAAAASMHmAusSZi4PH4QA"
@@ -183,11 +183,11 @@ class imgutil {
     . "Xl9dQVxBXUFeQV/DTInI6en3//+QVlNIg+xox0QkXAAAAABIjXQkXEiJy+tPDx+EAAAAAACLUyhIi0sgSIl0JEgPr8JImEiNDIGLQ0yJRCRAD75DSESJRCQwiUQkOItDQIlE"
     . "JChIi0M4SIlEJCBMi0sw6D71//9IhcB1IbgBAAAA8A/BA0SLQ0SLUyxEKcI5wn2iSIPEaFteww8fAEiNUxRBuAEAAABmDx9EAABEicGGCoTJdfdEi0QkXEQ5QxB9CESJQxBI"
     . "iUMIhgqLQ0APr0NEO0QkXH+ki0MshwPrnWYPH0QAAFNIg+xwi4QkwAAAAEiLnCTQAAAAZg9ujCS4AAAAZkgPbtJmSA9uwYhEJGhmQQ9u2WYPbMIPEUQkOGZBD27Ai4QkyAAA"
-    . "AGYPYsNmD9ZEJEjzD36EJKAAAABMjUQkIMdEJCAAAAAASI0VxP7//w8WhCSoAAAASMdEJCgAAAAADxFEJFBmD26EJLAAAABIx0QkMAAAAABmD2LBiUQkbGYP1kQkYP+RyAAA"
+    . "AGYPYsNmD9ZEJEjzD36EJKAAAABMjUQkIMdEJCAAAAAASI0VxP7//w8WhCSoAAAASMdEJCgAAAAADxFEJFBmD26EJLAAAABIx0QkMAAAAABmD2LBiUQkbGYP1kQkYP+R0AAA"
     . "AEiF23QGi0QkMIkDSItEJChIg8RwW8NmkFZTMfZEi1QkSExjXCRAi1wkYESJwEQJ0EQJ2AnQD4iBAAAAi0QkWIXAD46BAAAAhdt+fUUPr8FIY9JNY8lED69UJFBKjTSNAAAA"
     . "AExjTCRQSWPASAHQSItUJDhMjQSBSWPCRItUJFhMAdhJweECRTHbSI0Mgg8fADHAZg8fRAAAixSBQYkUgEiDwAFJOcJ18EGDwwFJAfBMAclEOdt/2b4BAAAAifBbXsMPH4AA"
     . "AAAAMfaJ8Ftew2YPH4QAAAAAAEiD7HiLhCSgAAAAZg9ujCTAAAAAZg9ulCS4AAAAiUQkQGZID27aZkgPbsFIi4QkqAAAAGYPbMNmQQ9u4Q8RRCQoZkEPbsBmD2LEZg/WRCQ4"
-    . "Zg9uhCTIAAAATI1EJCDHRCQgAAAAAEiNFSPn//9IiUQkSIuEJNAAAABmD2LIZg9uhCSwAAAAZg9iwmYPbMEPEUQkUIlEJGD/kcgAAAC4AQAAAEiDxHjDZg8fhAAAAAAAMcDD"
+    . "Zg9uhCTIAAAATI1EJCDHRCQgAAAAAEiNFSPn//9IiUQkSIuEJNAAAABmD2LIZg9uhCSwAAAAZg9iwmYPbMEPEUQkUIlEJGD/kdAAAAC4AQAAAEiDxHjDZg8fhAAAAAAAMcDD"
     . "ZmYuDx+EAAAAAABmkAABAgQFBggJCgwNDoCAgICAgICAgICAgICAgIAAAQIEBQYICQoMDQ6AgICAgICAgICAgICAgICAAAECBAUGCAkKDA0OgICAgICAgICAgICAgICAgAAB"
     . "AgQFBggJCgwNDgMEAgMEBQYHCAkKCwwNDg8JCgIDBAUGBwgJCgsMDQ4PD4CAgICAgICAgICAgICAgIAAAgMEBQYHCAkKCwwNDg8FBgIDBAUGBwgJCgsMDQ4PCwwCAwQFBgcI"
     . "CQoLDA0ODwECAgMEBQYHCAkKCwwNDg8HCAIDBAUGBwgJCgsMDQ4PDQ4CAwQFBgcICQoLDA0OD/8A/wD/AP8A/wD/AP8A/wABAQEBAQEBAQEBAQEBAQEBBAUGB4CAgICAgICA"
@@ -225,7 +225,7 @@ class imgutil {
     . "" ; flags: -march=x86-64 -D MARCH_x86_64_v1 -O3
     . "" ; GNU assembler (GNU Binutils) 2.41
     . "" ; flags: -O2
-    . "QVZVV1ZTSYnLi0lASYtDCEGLazgPr9FBi3MgRIuIwAAAAEGJ0InQMdJB9/Ex0kGJwkKNBAFJY0swQffxQYtTNEQB0g+v1Uhj0kgBykmLSyhMjQSRQYtTHEljSxhEAdIPr9ZI"
+    . "QVZVV1ZTSYnLi0lASYtDCEGLazgPr9FBi3MgRIuIyAAAAEGJ0InQMdJB9/Ex0kGJwkKNBAFJY0swQffxQYtTNEQB0g+v1Uhj0kgBykmLSyhMjQSRQYtTHEljSxhEAdIPr9ZI"
     . "Y9JIAcpJi0sQTI0MkUE5wg+N1QAAAA8fgAAAAABBi1s8g/sDD47LAAAAjWv8MdKJ7sHuAo1OAUjB4QRmkPNBD28EEEEPEQQRSIPCEEg50XXs995JjTwJTAHBjVS1AEGLazhB"
     . "i3MghdJ0HkSLMUSJN4P6AXQTRItxBESJdwSD+gJ0BotRCIlXCEhj1UhjzkGDwgFIweICSMHhAkkB0EkByUQ50HRGg/sDD49v////RYtbPA8fAEWF23QiQYsYQYkZQYP7AXQW"
     . "QYtYBEGJWQRBg/sCdAhBi1gIQYlZCEGDwgFJAdBJAclEOdB/ylteX11BXsMPHwCJ2kyJz0yJwelk////ZmYuDx+EAAAAAABXVlOLXCRIRInISGPySGNUJEBFicgPtsRBwegQ"
@@ -250,12 +250,12 @@ class imgutil {
     . "i0QkIEmJz+nn/P//ZpBWU0iD7GjHRCRcAAAAAEiJy0iNdCRc608PH4QAAAAAAItTKEiLSyBIiXQkSA+vwkiYSI0MgYtDTIlEJEAPvkNIRIlEJDCJRCQ4i0NAiUQkKEiLQzhI"
     . "iUQkIEyLSzDoHvv//0iFwHUhuAEAAADwD8EDRItDRItTLEQpwjnCfaJIg8RoW17DDx8ASI1TFEG4AQAAAGYPH0QAAESJwYYKhMl190SLRCRcRDlDEH0IRIlDEEiJQwiGCotD"
     . "QA+vQ0Q7RCRcf6SLQyyHA+udZg8fRAAAU0iD7HBIi4QkoAAAAEiLnCTQAAAASIlEJFBIi4QkqAAAAEiJVCRASI0VAv///0iJRCRYi4QksAAAAESJRCRITI1EJCCJRCRgi4Qk"
-    . "uAAAAMdEJCAAAAAAiUQkZIuEJMAAAABIx0QkKAAAAACIRCRoi4QkyAAAAEjHRCQwAAAAAEiJTCQ4RIlMJEyJRCRs/5HIAAAASIXbdAaLRCQwiQNIi0QkKEiDxHBbww8fgAAA"
+    . "uAAAAMdEJCAAAAAAiUQkZIuEJMAAAABIx0QkKAAAAACIRCRoi4QkyAAAAEjHRCQwAAAAAEiJTCQ4RIlMJEyJRCRs/5HQAAAASIXbdAaLRCQwiQNIi0QkKEiDxHBbww8fgAAA"
     . "AABBVkFUVVdWUzH/RItUJGhMY1wkYItcJHiLtCSAAAAARInARAnQRAnYCdAPiMcAAACF2w+O0AAAAIX2D47IAAAARQ+vwUhj0k1jyUhjfCRwRA+vVCRwSo0sjQAAAABEjUv8"
     . "SMHnAkljwEgB0EiLVCRYSI0MgUljwkwB2EUx20iNFIJEicjB6AJEjUAB99hJweAERY0kgQ8fADHAg/sDfnmQ8w9vBAIPEQQBSIPAEEw5wHXuSo0EAk6NFAFFheR0JEWJ4USL"
     . "MEWJMkGD+QF0FUSLcARFiXIEQYP5AnQHi0AIQYlCCEGDwwFIAelIAfpEOd5/pr8BAAAAifhbXl9dQVxBXsNmDx9EAAAx/4n4W15fXUFcQV7DDx8AQYnZSYnKSInQ659mZi4P"
     . "H4QAAAAAAGaQSIPseGYPbowkwAAAAIuEJKAAAABmD26UJMgAAABmD26EJLAAAABmD26cJLgAAABmD2LKiUQkQEiLhCSoAAAAZg9iw2YPbMFIiVQkMEiNFW30//9IiUQkSIuE"
-    . "JNAAAABEiUQkOEyNRCQgx0QkIAAAAABIiUwkKESJTCQ8iUQkYA8RRCRQ/5HIAAAAuAEAAABIg8R4w2ZmLg8fhAAAAAAAkLgBAAAAw5CQkJCQkJCQkJA="
+    . "JNAAAABEiUQkOEyNRCQgx0QkIAAAAABIiUwkKESJTCQ8iUQkYA8RRCRQ/5HQAAAAuAEAAABIg8R4w2ZmLg8fhAAAAAAAkLgBAAAAw5CQkJCQkJCQkJA="
     mcode_imgutil_column_uniform := 0x000170 ; u32 imgutil_column_uniform(argb *ptr, i32 width, i32 height, argb refc, i32 x, i32 tolerance, i32 ymin, i32 ymax)
     mcode_imgutil_row_uniform    := 0x000290 ; i32 imgutil_row_uniform(argb *ptr, i32 width, i32 height, argb refc, i32 y, i32 tolerance, i32 xmin, i32 xmax)
     mcode_imgutil_make_sat_masks := 0x000330 ; u32 imgutil_make_sat_masks(u32 *__restrict needle, i32 pixelcount, u32 *__restrict needle_lo, u32 *__restrict needle_hi, u8 t)
@@ -289,7 +289,7 @@ class imgutil {
     . "" ; flags: -march=x86-64-v2 -D MARCH_x86_64_v2 -O3
     . "" ; GNU assembler (GNU Binutils) 2.41
     . "" ; flags: -O2
-    . "QVZVV1ZTSYnLi0lASYtDCEGLazgPr9FBi3MgRIuIwAAAAEGJ0InQMdJB9/Ex0kGJwkKNBAFJY0swQffxQYtTNEQB0g+v1Uhj0kgBykmLSyhMjQSRQYtTHEljSxhEAdIPr9ZI"
+    . "QVZVV1ZTSYnLi0lASYtDCEGLazgPr9FBi3MgRIuIyAAAAEGJ0InQMdJB9/Ex0kGJwkKNBAFJY0swQffxQYtTNEQB0g+v1Uhj0kgBykmLSyhMjQSRQYtTHEljSxhEAdIPr9ZI"
     . "Y9JIAcpJi0sQTI0MkUE5wg+N1QAAAA8fgAAAAABBi1s8g/sDD47LAAAAjWv8MdKJ7sHuAo1OAUjB4QRmkPNBD28EEEEPEQQRSIPCEEg50XXs995JjTwJTAHBjVS1AEGLazhB"
     . "i3MghdJ0HkSLMUSJN4P6AXQTRItxBESJdwSD+gJ0BotRCIlXCEhj1UhjzkGDwgFIweICSMHhAkkB0EkByUQ50HRGg/sDD49v////RYtbPA8fAEWF23QiQYsYQYkZQYP7AXQW"
     . "QYtYBEGJWQRBg/sCdAhBi1gIQYlZCEGDwgFJAdBJAclEOdB/ylteX11BXsMPHwCJ2kyJz0yJwelk////ZmYuDx+EAAAAAABXVlOLXCRIRInISGPySGNUJEBFicgPtsRBwegQ"
@@ -314,12 +314,12 @@ class imgutil {
     . "jXQkXOtPDx+EAAAAAACLUyhIi0sgSIl0JEgPr8JImEiNDIGLQ0yJRCRAD75DSESJRCQwiUQkOItDQIlEJChIi0M4SIlEJCBMi0sw6D77//9IhcB1IbgBAAAA8A/BA0SLQ0SL"
     . "UyxEKcI5wn2iSIPEaFteww8fAEiNUxRBuAEAAABmDx9EAABEicGGCoTJdfdEi0QkXEQ5QxB9CESJQxBIiUMIhgqLQ0APr0NEO0QkXH+ki0MshwPrnWYPH0QAAFNIg+xwSIuE"
     . "JKAAAABIi5wk0AAAAEiJRCRQSIuEJKgAAABIiVQkQEiNFQL///9IiUQkWIuEJLAAAABEiUQkSEyNRCQgiUQkYIuEJLgAAADHRCQgAAAAAIlEJGSLhCTAAAAASMdEJCgAAAAA"
-    . "iEQkaIuEJMgAAABIx0QkMAAAAABIiUwkOESJTCRMiUQkbP+RyAAAAEiF23QGi0QkMIkDSItEJChIg8RwW8MPH4AAAAAAQVZBVFVXVlMx/0SLVCRoTGNcJGCLXCR4i7QkgAAA"
+    . "iEQkaIuEJMgAAABIx0QkMAAAAABIiUwkOESJTCRMiUQkbP+R0AAAAEiF23QGi0QkMIkDSItEJChIg8RwW8MPH4AAAAAAQVZBVFVXVlMx/0SLVCRoTGNcJGCLXCR4i7QkgAAA"
     . "AESJwEQJ0EQJ2AnQD4jHAAAAhdsPjtAAAACF9g+OyAAAAEUPr8FIY9JNY8lIY3wkcEQPr1QkcEqNLI0AAAAARI1L/EjB5wJJY8BIAdBIi1QkWEiNDIFJY8JMAdhFMdtIjRSC"
     . "RInIwegCRI1AAffYScHgBEWNJIEPHwAxwIP7A355kPMPbwQCDxEEAUiDwBBMOcB17kqNBAJOjRQBRYXkdCRFieFEizBFiTJBg/kBdBVEi3AERYlyBEGD+QJ0B4tACEGJQghB"
     . "g8MBSAHpSAH6RDnef6a/AQAAAIn4W15fXUFcQV7DZg8fRAAAMf+J+FteX11BXEFeww8fAEGJ2UmJykiJ0OufZmYuDx+EAAAAAABmkEiD7HhmD26MJMAAAACLhCSgAAAAZg86"
     . "IowkyAAAAAFmD26EJLAAAABmDzoihCS4AAAAAYlEJEBIi4QkqAAAAGYPbMFIiVQkMEiNFZH0//9IiUQkSIuEJNAAAABEiUQkOEyNRCQgx0QkIAAAAABIiUwkKESJTCQ8iUQk"
-    . "YA8RRCRQ/5HIAAAAuAEAAABIg8R4w7gCAAAAw5CQkJCQkJCQkJA="
+    . "YA8RRCRQ/5HQAAAAuAEAAABIg8R4w7gCAAAAw5CQkJCQkJCQkJA="
     mcode_imgutil_column_uniform := 0x000170 ; u32 imgutil_column_uniform(argb *ptr, i32 width, i32 height, argb refc, i32 x, i32 tolerance, i32 ymin, i32 ymax)
     mcode_imgutil_row_uniform    := 0x000290 ; i32 imgutil_row_uniform(argb *ptr, i32 width, i32 height, argb refc, i32 y, i32 tolerance, i32 xmin, i32 xmax)
     mcode_imgutil_make_sat_masks := 0x000330 ; u32 imgutil_make_sat_masks(u32 *__restrict needle, i32 pixelcount, u32 *__restrict needle_lo, u32 *__restrict needle_hi, u8 t)
@@ -353,7 +353,7 @@ class imgutil {
     . "" ; flags: -march=x86-64-v3 -D MARCH_x86_64_v3 -O3
     . "" ; GNU assembler (GNU Binutils) 2.41
     . "" ; flags: -O2
-    . "V1ZTSInLi0lASItDCA+v0USLiMAAAABBidCJ0DHSQffxMdKJx0KNBAFIY0swQffxi1M0AfoPr1M4SGPSSAHKSItLKEyNFJGLUxxIY0sYAfoPr1MgSGPSSAHKSItLEEyNDJE5"
+    . "V1ZTSInLi0lASItDCA+v0USLiMgAAABBidCJ0DHSQffxMdKJx0KNBAFIY0swQffxi1M0AfoPr1M4SGPSSAHKSItLKEyNFJGLUxxIY0sYAfoPr1MgSGPSSAHKSItLEEyNDJE5"
     . "xw+NowAAAGYPH0QAAItTPIP6Bw+OnAAAAESNQvgx0kSJxsHuA41OAUjB4QWQxMF+bwQSxMF+fwQRSIPCIEg50XXr995NjRwKTAHJQY0U8IP6A34VxMF6bwtIg8EQSYPDEIPq"
     . "BMX6f0nwhdJ0H0WLA0SJAYP6AXQURYtDBESJQQSD+gJ0B0GLUwiJUQhIY1M4g8cBTY0UkkhjUyBNjQyROfgPhWb////F+HdbXl/DDx+AAAAAAEyJyU2J0+uSV1ZTi1wkSESJ"
     . "yEhj8khjVCRARYnID7bEQcHoEEGJwotEJFgPr8ZImEgB0EyNHIGLRCRQD6/GSJhIAdBIjRSBTDnac2xFD7bARQ+20kUPtsmD/gF0FOtpZg8fhAAAAAAASIPCBEw52nNHD7ZK"
@@ -381,12 +381,12 @@ class imgutil {
     . "AAAASInLSI10JFzrTw8fhAAAAAAAi1MoSItLIEiJdCRID6/CSJhIjQyBi0NMiUQkQA++Q0hEiUQkMIlEJDiLQ0CJRCQoSItDOEiJRCQgTItLMOje+f//SIXAdSG4AQAAAPAP"
     . "wQNEi0NEi1MsRCnCOcJ9okiDxGhbXsMPHwBIjVMUQbgBAAAAZg8fRAAARInBhgqEyXX3RItEJFxEOUMQfQhEiUMQSIlDCIYKi0NAD69DRDtEJFx/pItDLIcD651mDx9EAABT"
     . "SIPscEiLhCSgAAAASIucJNAAAABIiUQkUEiLhCSoAAAASIlUJEBIjRUC////SIlEJFiLhCSwAAAARIlEJEhMjUQkIIlEJGCLhCS4AAAAx0QkIAAAAACJRCRki4QkwAAAAEjH"
-    . "RCQoAAAAAIhEJGiLhCTIAAAASMdEJDAAAAAASIlMJDhEiUwkTIlEJGz/kcgAAABIhdt0BotEJDCJA0iLRCQoSIPEcFvDDx+AAAAAAEFWQVRVV1ZTMf9Ei1QkaExjXCRgi1wk"
+    . "RCQoAAAAAIhEJGiLhCTIAAAASMdEJDAAAAAASIlMJDhEiUwkTIlEJGz/kdAAAABIhdt0BotEJDCJA0iLRCQoSIPEcFvDDx+AAAAAAEFWQVRVV1ZTMf9Ei1QkaExjXCRgi1wk"
     . "eIu0JIAAAABEicBECdBECdgJ0A+I8AAAAIXbD474AAAAhfYPjvAAAABFD6/BSGPSTWPJSGN8JHBED69UJHBKjSyNAAAAAESNS/hIwecCSWPASAHQSItUJFhIjQyBSWPCTAHY"
     . "SI0UgkSJyMHoA0SNQAH32EWNJMFJweAFRTHJDx8AMcCD+wcPjp0AAAAPH0QAAMX+bwQCxf5/BAFIg8AgSTnAde1OjRQCSo0EAUWJ40GD/AN+FsTBem8KSIPAEEmDwhBBg+sE"
     . "xfp/SPBFhdt0IkWLMkSJMEGD+wF0FkWLcgREiXAEQYP7AnQIRYtSCESJUAhBg8EBSAHpSAH6RDnOf4C/AQAAAMX4d4n4W15fXUFcQV7DDx9EAAAx/4n4W15fXUFcQV7DDx8A"
     . "QYnbSInISYnSg/sDD496////65NmZi4PH4QAAAAAAJBIg+x4xflulCTAAAAAi4QkoAAAAMTjaSKMJMgAAAABxflunCSwAAAAxONhIoQkuAAAAAGJRCRASIuEJKgAAADF+WzB"
-    . "SIlUJDBIjRUx8///SIlEJEiLhCTQAAAARIlEJDhMjUQkIMdEJCAAAAAASIlMJChEiUwkPIlEJGDF+n9EJFD/kcgAAAC4AQAAAEiDxHjDZmYuDx+EAAAAAAAPH0AAuAMAAADD"
+    . "SIlUJDBIjRUx8///SIlEJEiLhCTQAAAARIlEJDhMjUQkIMdEJCAAAAAASIlMJChEiUwkPIlEJGDF+n9EJFD/kdAAAAC4AQAAAEiDxHjDZmYuDx+EAAAAAAAPH0AAuAMAAADD"
     . "kJCQkJCQkJCQkA=="
     mcode_imgutil_column_uniform := 0x000120 ; u32 imgutil_column_uniform(argb *ptr, i32 width, i32 height, argb refc, i32 x, i32 tolerance, i32 ymin, i32 ymax)
     mcode_imgutil_row_uniform    := 0x000240 ; i32 imgutil_row_uniform(argb *ptr, i32 width, i32 height, argb refc, i32 y, i32 tolerance, i32 xmin, i32 xmax)
@@ -421,7 +421,7 @@ class imgutil {
     . "" ; flags: -march=x86-64-v4 -D MARCH_x86_64_v4 -O3
     . "" ; GNU assembler (GNU Binutils) 2.41
     . "" ; flags: -O2
-    . "VVdWU0SLQUBIi0EIRIuQwAAAAEEPr9BBidGJ0DHSQffyMdKJw0ONBAhMY0EwQffyi1E0AdoPr1E4SGPSTAHCTItBKE2NDJCLURxMY0EYAdoPr1EgSGPSTAHCTItBEE2NFJA5"
+    . "VVdWU0SLQUBIi0EIRIuQyAAAAEEPr9BBidGJ0DHSQffyMdKJw0ONBAhMY0EwQffyi1E0AdoPr1E4SGPSTAHCTItBKE2NDJCLURxMY0EYAdoPr1EgSGPSTAHCTItBEE2NFJA5"
     . "ww+NgwAAAL4BAAAAkItRPIP6Dw+OnwAAAESNWvAx0kSJ38HvBESNRwFJweAGYtH+SG8MEWLR/kh/DBJIg8JASTnQdenB5wREidpLjSwBTQHQKfqF0nQ+xOJp99aNev+DwwHF"
     . "+JLPYvF+yW9FAGLRfkl/AEhjUThNjQyRSGNRIE2NFJI5w3WGxfh3W15fXcNmDx9EAABIY1E4g8MBTY0MkUhjUSBNjRSSOdh024tRPIP6Dw+PYf///02J0EyJzeuTZmYuDx+E"
     . "AAAAAABmkFdWU0SLVCRITGPCi1QkWESJyEWJy0xjTCRAD7bcQcHrEEEPr9BIY9JMAcpIjTSRi1QkUEEPr9BIY9JMAcpIjRSRSDnyc2pFD7bbD7bbRA+2yEGD+AF0EutnDx+A"
@@ -446,11 +446,11 @@ class imgutil {
     . "jQyBi0NMiUQkQA++Q0hEiUQkMIlEJDiLQ0CJRCQoSItDOEiJRCQgTItLMOj++v//SIXAdSG4AQAAAPAPwQNEi0NEi1MsRCnCOcJ9okiDxGhbXsMPHwBIjVMUQbgBAAAAZg8f"
     . "RAAARInBhgqEyXX3RItEJFxEOUMQfQhEiUMQSIlDCIYKi0NAD69DRDtEJFx/pItDLIcD651mDx9EAABTSIPscEiLhCSgAAAASIucJNAAAABIiUQkUEiLhCSoAAAASIlUJEBI"
     . "jRUC////SIlEJFiLhCSwAAAARIlEJEhMjUQkIIlEJGCLhCS4AAAAx0QkIAAAAACJRCRki4QkwAAAAEjHRCQoAAAAAIhEJGiLhCTIAAAASMdEJDAAAAAASIlMJDhEiUwkTIlE"
-    . "JGz/kcgAAABIhdt0BotEJDCJA0iLRCQoSIPEcFvDDx+AAAAAAEFVQVRVV1ZTMf9Ei1QkaEhjdCRgRItcJHiLnCSAAAAARInARAnQCfAJ0A+IsgAAAEWF2w+OtwAAAIXbD46v"
+    . "JGz/kdAAAABIhdt0BotEJDCJA0iLRCQoSIPEcFvDDx+AAAAAAEFVQVRVV1ZTMf9Ei1QkaEhjdCRgRItcJHiLnCSAAAAARInARAnQCfAJ0A+IsgAAAEWF2w+OtwAAAIXbD46v"
     . "AAAARQ+vwUhj0kGNe/BNY8lED69UJHBBvAEAAABJY8BIAdBIi1QkWEiNDIFJY8JFMdJIAfBKjTSNAAAAAExjTCRwSI0Ugon4wegEScHhAkSNQAHB4ARJweAGKcdmDx9EAAAx"
     . "wEGD+w8PjoQAAAAPH0AAYvH+SG8MAmLx/kh/DAFIg8BASTnAdemF/3U1QYPCAUgB8UwBykQ503/GvwEAAADF+HeJ+FteX11BXEFdww8fADH/ifhbXl9dQVxBXcMPHwBOjSwC"
     . "So0sAYn4xMJ598SD6AHF+JLIYtF+yW9FAGLxfkl/RQDrpWYuDx+EAAAAAABEidhIic1JidXrzw8fRAAASIPseIuEJKAAAADF+W6UJMAAAADF+W6cJLAAAADE42kijCTIAAAA"
-    . "AcTjYSKEJLgAAAABiUQkQEiLhCSoAAAAxflswUiJVCQwSI0VofT//0iJRCRIi4Qk0AAAAESJRCQ4TI1EJCDHRCQgAAAAAEiJTCQoRIlMJDyJRCRgxfp/RCRQ/5HIAAAAuAEA"
+    . "AcTjYSKEJLgAAAABiUQkQEiLhCSoAAAAxflswUiJVCQwSI0VofT//0iJRCRIi4Qk0AAAAESJRCQ4TI1EJCDHRCQgAAAAAEiJTCQoRIlMJDyJRCRgxfp/RCRQ/5HQAAAAuAEA"
     . "AABIg8R4w2ZmLg8fhAAAAAAADx9AALgEAAAAw5CQkJCQkJCQkJA="
     mcode_imgutil_column_uniform := 0x000130 ; u32 imgutil_column_uniform(argb *ptr, i32 width, i32 height, argb refc, i32 x, i32 tolerance, i32 ymin, i32 ymax)
     mcode_imgutil_row_uniform    := 0x000250 ; i32 imgutil_row_uniform(argb *ptr, i32 width, i32 height, argb refc, i32 y, i32 tolerance, i32 xmin, i32 xmax)
@@ -483,45 +483,49 @@ class imgutil {
         ; on older CPUs
         static b64 := ""
     . "" ; imgutil_lib.c
-    . "" ; 2656 bytes
+    . "" ; 2944 bytes
     . "" ; gcc.exe (Rev2, Built by MSYS2 project) 13.2.0
     . "" ; flags: -mabi=ms -m64 -D __HEADLESS__ -O3
     . "" ; GNU assembler (GNU Binutils) 2.41
     . "" ; flags: -O2
-    . "VVdWU0iD7Di/AQAAAEiJy/APwbnEAAAASIuRiAAAAEhjx0iNdCQg8w9+BMJIjSzFAAAAAA8WgZAAAAAPEUQkIOsjZg8fRAAASIuLuAAAAIn6/5OwAAAASIuDmAAAAEiLDCj/"
-    . "U2hFMcBBuf////9IifK5AgAAAP+TgAAAAIXAdMgxwEiDxDhbXl9dww8fRAAAVlNIg+woMcBIictIhcl1EEiDxChbXsNmDx+EAAAAAABIh5GwAAAATIeBuAAAAIuJwAAAAIXJ"
-    . "dCQx9mYPH0QAAEiLg4gAAABIiwzwSIPGAf9TaIuLwAAAADnOcuRIi5OYAAAAQbn/////QbgBAAAA/5OAAAAAuAEAAABIg8QoW17DZmYuDx+EAAAAAAAPH0AAQVVBVFVXVlNI"
-    . "g+wYRTHJnJxngTQkAAAgAJ2cWGczBCSdJQAAIACFwA+EgQAAAEyNFSsHAABEichEickx/w+iSY2q0AEAAEGJxESJybgAAACAD6JBicVBi0IMRYsCQTnBRA9CyEGB+AAAAIB2"
-    . "U0U5xXJYRDsFtwgAAEWLWghJY3IEdB1EicCJ+USJBaEIAAAPookEJIlcJASJTCQIiVQkDEQjHLR0JEmDwhBJOep1p0SJyEiDxBhbXl9dQVxBXcOQRTnEc61FhcB4qEGD6QFE"
+    . "VVdWU0iD7Di/AQAAAEiJy/APwbnMAAAASIuRkAAAAEhjx0iNdCQg8w9+BMJIjSzFAAAAAA8WgZgAAAAPEUQkIOsjZg8fRAAASIuLwAAAAIn6/5O4AAAASIuDoAAAAEiLDCj/"
+    . "U3BFMcBBuf////9IifK5AgAAAP+TiAAAAIXAdMgxwEiDxDhbXl9dww8fRAAAVlNIg+woMcBIictIhcl1EEiDxChbXsNmDx+EAAAAAABIh5G4AAAATIeBwAAAAIuJyAAAAIXJ"
+    . "dCQx9mYPH0QAAEiLg5AAAABIiwzwSIPGAf9TcIuLyAAAADnOcuRIi5OgAAAAQbn/////QbgBAAAA/5OIAAAAuAEAAABIg8QoW17DZmYuDx+EAAAAAAAPH0AAQVVBVFVXVlNI"
+    . "g+wYRTHJnJxngTQkAAAgAJ2cWGczBCSdJQAAIACFwA+EgQAAAEyNFUsIAABEichEickx/w+iSY2q0AEAAEGJxESJybgAAACAD6JBicVBi0IMRYsCQTnBRA9CyEGB+AAAAIB2"
+    . "U0U5xXJYRDsF1wkAAEWLWghJY3IEdB1EicCJ+USJBcEJAAAPookEJIlcJASJTCQIiVQkDEQjHLR0JEmDwhBJOep1p0SJyEiDxBhbXl9dQVxBXcOQRTnEc61FhcB4qEGD6QFE"
     . "ichIg8QYW15fXUFcQV3DZpBlSIsEJWAAAABIi0AYSItAIEiLAEiLAEiLQCDDR2V0UHJvY0FkZHJlc3MADx9EAABWU0mJy0yJ2YtBPEgByEiNQBhIjUBwSIvAixBIjQQRi1gY"
     . "i1Aghdt0U0Ux0kmNNBNCixSWQbhHAAAATI0Nq////0wB2g+2CoTJdR7rJg8fAEQ4wXUeD7ZKAUiDwgFJg8EBRQ+2AYTJdAVFhMB14kQ4wXQOSYPCAUk52nW0McBbXsOLUCRL"
-    . "jQxTi0AcD7cUEUmNFJOLBAJMAdhbXsMPH0AAV1ZTSIPsMDHbx0QkLAAAAABIic5IjXwkLOswDx9EAAD/VjCD+HoPhYQAAABIhdt0BkiJ2f9WKItUJCy5QAAAAP9WIEiJw0iF"
-    . "wHRlSIn6SInZ/1ZIhcB0yItEJCyD+B92W0SNQOAx0kiJ2EWJwUHB6QVBjUkBSMHhBUgB2Q8fQACDeAgBg9IASIPAIEg5wXXwQcHhBUSJwInXRCnIiUQkLEiJ2f9WKIn4SIPE"
-    . "MFteX8Mx/4n4SIPEMFteX8Mx/+vgR2xvYmFsRnJlZQBHbG9iYWxBbGxvYwBMb2FkTGlicmFyeUEARnJlZUxpYnJhcnkAR2V0TG9naWNhbFByb2Nlc3NvckluZm9ybWF0aW9u"
-    . "AEdldExhc3RFcnJvcgBRdWVyeVBlcmZvcm1hbmNlQ291bnRlcgBRdWVyeVBlcmZvcm1hbmNlRnJlcXVlbmN5AENyZWF0ZVRocmVhZABXYWl0Rm9yU2luZ2xlT2JqZWN0AENy"
-    . "ZWF0ZUV2ZW50QQBTZXRFdmVudABSZXNldEV2ZW50AENsb3NlSGFuZGxlAFdhaXRGb3JNdWx0aXBsZU9iamVjdHMAZmYuDx+EAAAAAABmkEFVQVRVV1ZTSIPsOGVIiwQlYAAA"
-    . "AEiLQBhIi0AgSIsASIsASItAIEiJxonNSIXAD4TSAgAASInB6GP9//9IjRW8/v//SInxSInH/9BIjRW4/v//SInxSYnF/9e60AAAALlAAAAASYnE/9BIicNIhcAPhJECAABI"
-    . "jQWD+///SI0Vk/7//0iJ8UiJM0iJg8gAAABMiWMgSIl7CEyJayj/10iNFX7+//9IifFIiUMQ/9dIjRV6/v//SInxSIlDGP/XSI0Vif7//0iJ8UiJQ0j/10iNFYb+//9IifFI"
-    . "iUMw/9dIjRWO/v//SInxSIlDOP/XSI0VmP7//0iJ8UiJQ0D/10iNFZX+//9IifFIiUNQ/9dIjRWZ/v//SInxSIlDWP/XSI0Vlv7//0iJ8UiJQ2D/10iNFY/+//9IifFIiUNo"
-    . "/9dIjRWK/v//SInxSIlDcP/XSI0Vhv7//0iJ8UiJQ3j/10iJg4AAAACF7Q+EWgEAAI0U7QAAAAC5QAAAAImrwAAAAEH/1LlAAAAASImDoAAAAIuDwAAAAI0UxQAAAABB/9S5"
-    . "QAAAAEiJg4gAAACLg8AAAACNFMUAAAAAQf/UMclFMclFMcBIiYOYAAAAugEAAAD/U2BIg7ugAAAAAEjHg7AAAAAAAAAASImDkAAAAEiLi4gAAABIx4O4AAAAAAAAAMeDxAAA"
-    . "AAAAAAAPhNIAAABIhckPhMkAAABIi4OYAAAASIXAD4S5AAAAi5PAAAAAhdIPhHwAAAAx7UyNJTL5///rB0iLg5gAAABIjTTtAAAAAEUxyUUxwDHSSI08MDHJSIPFAf9TYEUx"
-    . "yUUxwDHSSIkHSIu7iAAAADHJ/1NgSYnZTYngMdJIAfcxyUiJB0gDs6AAAABIx0QkKAAAAADHRCQgAAAAAP9TUEiJBjurwAAAAHKPSInYSIPEOFteX11BXEFdww8fgAAAAABI"
-    . "idnocPv//4nF6Zf+//9mDx+EAAAAAAD/U3hIi4uYAAAA/1MoSIuLoAAAAP9TKEiLi6gAAAD/UyhIidlB/9Ux20iJ2EiDxDhbXl9dQVxBXcMPH4AAAAAAVlNIg+woSInLSIXJ"
-    . "D4SuAAAASIuJkAAAAP9TaEiLk6AAAACLi8AAAABBuf////9BuAEAAAD/k4AAAABIi4uQAAAA/1N4i4PAAAAAhcB0PzH2Dx+AAAAAAEiLg6AAAABIiwzw/1N4SIuDmAAAAEiL"
-    . "DPD/U3hIi4OIAAAASIsM8EiDxgH/U3g7s8AAAAByykiLi5gAAAD/UyhIi4uIAAAA/1MoSIuLoAAAAP9TKEiLQyhIidlIg8QoW15I/+APH0AASIPEKFtew2YPH4QAAAAAAAEA"
-    . "AAADAAAAAQAAAAEAAAABAAAAAwAAAAABAAABAAAAAQAAAAMAAAAACAAAAQAAAAEAAAADAAAAAIAAAAEAAAABAAAAAwAAAAAAAAEBAAAAAQAAAAMAAAAAAIAAAQAAAAEAAAAD"
-    . "AAAAAAAAAQEAAAABAAAAAwAAAAAAAAIBAAAAAQAAAAMAAAAAAAAEAQAAAAEAAAACAAAAAQAAAAIAAAABAAAAAgAAAAAgAAACAAAAAQAAAAIAAAAAAAgAAgAAAAEAAAACAAAA"
-    . "AAAQAAIAAAABAAAAAgAAAAAAgAACAAAAAQAAgAIAAAABAAAAAgAAAAEAAAACAAAAABAAAAMAAAABAAAAAgAAAAAAQAADAAAAAQAAAAIAAAAAAAAIAwAAAAEAAAACAAAAAAAA"
-    . "EAMAAAABAAAAAgAAAAAAACADAAAAAQAAgAIAAAAgAAAAAwAAAAcAAAABAAAACAAAAAMAAAAHAAAAAQAAACAAAAADAAAABwAAAAEAAAAAAQAAAwAAAAcAAAABAAAAAAABAAQA"
-    . "AAAHAAAAAQAAAAAAAgAEAAAABwAAAAEAAAAAAAAQBAAAAAcAAAABAAAAAAAAQAQAAAAHAAAAAQAAAAAAAIAEAAAA/////5CQkJCQkJCQkJCQkA=="
-    mcode_mt_run                := 0x000090 ; u32 mt_run(mt_ctx *ctx, mt_client_worker_t worker, ptr param)
+    . "jQxTi0AcD7cUEUmNFJOLBAJMAdhbXsMPH0AAVlNIg+woSInLSIXJD4S2AAAASIuJmAAAAP9TcEiLk6gAAACLi8gAAABBuf////9BuAEAAAD/k4gAAABIi4uYAAAA/5OAAAAA"
+    . "i4PIAAAAhcB0RTH2Dx9AAEiLg6gAAABIiwzw/5OAAAAASIuDoAAAAEiLDPD/k4AAAABIi4OQAAAASIsM8EiDxgH/k4AAAAA7s8gAAABywUiLi6AAAAD/UyhIi4uQAAAA/1Mo"
+    . "SIuLqAAAAP9TKEiLQyhIidlIg8QoW15I/+APHwBIg8QoW17DkFVXVlNIg+xISItBUMdEJDgAAAAASInOSIXAD4QAAQAASI18JDxFMckx0jHJSYn4x0QkPAAAAABIx0QkIAAA"
+    . "AAD/0ItUJDy5QAAAAP9WIEiJw0iFwA+EtgAAAEUxyYtUJDxJifhIicFIx0QkIAAAAAD/VlCFwA+ElQAAAESLRCQ8RYXAD4QvAQAASInaMclBuv////9FMdsx7UUxyeseZpCD"
+    . "xQFBicJmLg8fhAAAAAAAiwIBwUgBwkQ5wXM0i0IEhcB17Q+2Qg9EOdB05EGDwQGAehIAdMpBicKLAkGDwwEBwUgBwkQ5wXLTDx+AAAAAAESJzynvRYXbQQ9E+UiJ2f9WKIn4"
+    . "SIPESFteX13DDx8AMf+J+EiDxEhbXl9dww8fADHbSI18JDjrLg8fgAAAAAD/VjCD+Hp12EiF23QGSInZ/1Yoi1QkOLlAAAAA/1YgSInDSIXAdLlIifpIidn/VkiFwHTMi0Qk"
+    . "OIP4H3ZLjUjgMf9IidhBichBwegFQY1QAUjB4gVIAdpmDx+EAAAAAACDeAgBg9cASIPAIEg5wnXwQcHgBYnIRCnAiUQkOOlK////Zg8fRAAAMf/pPf///0dsb2JhbEZyZWUA"
+    . "R2xvYmFsQWxsb2MATG9hZExpYnJhcnlBAEZyZWVMaWJyYXJ5AJBHZXRMb2dpY2FsUHJvY2Vzc29ySW5mb3JtYXRpb24AR2V0U3lzdGVtQ3B1U2V0SW5mb3JtYXRpb24AR2V0"
+    . "TGFzdEVycm9yAFF1ZXJ5UGVyZm9ybWFuY2VDb3VudGVyAFF1ZXJ5UGVyZm9ybWFuY2VGcmVxdWVuY3kAQ3JlYXRlVGhyZWFkAFdhaXRGb3JTaW5nbGVPYmplY3QAQ3JlYXRl"
+    . "RXZlbnRBAFNldEV2ZW50AFJlc2V0RXZlbnQAQ2xvc2VIYW5kbGUAV2FpdEZvck11bHRpcGxlT2JqZWN0cwBmkEFVQVRVV1ZTSIPsOGVIiwQlYAAAAEiLQBhIi0AgSIsASIsA"
+    . "SItAIEiJxonNSIXAD4TlAgAASInB6IP7//9IjRWr/v//SInxSInH/9BIjRWn/v//SInxSYnF/9e62AAAALlAAAAASYnE/9BIicNIhcAPhKQCAABIjQWj+f//SI0Vgv7//0iJ"
+    . "8UiJM0iJg9AAAABMiWMgSIl7CEyJayj/10iNFW3+//9IifFIiUMQ/9dIjRVq/v//SInxSIlDGP/XSI0Vef7//0iJ8UiJQ0j/10iNFYT+//9IifFIiUNQ/9dIjRWB/v//SInx"
+    . "SIlDMP/XSI0Vif7//0iJ8UiJQzj/10iNFZP+//9IifFIiUNA/9dIjRWQ/v//SInxSIlDWP/XSI0VlP7//0iJ8UiJQ2D/10iNFZH+//9IifFIiUNo/9dIjRWK/v//SInxSIlD"
+    . "cP/XSI0Vhf7//0iJ8UiJQ3j/10iNFYH+//9IifFIiYOAAAAA/9dIiYOIAAAAhe0PhFcBAACNFO0AAAAAuUAAAACJq8gAAABB/9S5QAAAAEiJg6gAAACLg8gAAACNFMUAAAAA"
+    . "Qf/UuUAAAABIiYOQAAAAi4PIAAAAjRTFAAAAAEH/1DHJRTHJRTHASImDoAAAALoBAAAA/1NoSIO7qAAAAABIx4O4AAAAAAAAAEiJg5gAAABIi4uQAAAASMeDwAAAAAAAAADH"
+    . "g8wAAAAAAAAAD4TPAAAASIXJD4TGAAAASIuDoAAAAEiFwA+EtgAAAIuTyAAAAIXSdH0x7UyNJUP3///rCJBIi4OgAAAASI007QAAAABFMclFMcAx0kiNPDAxyUiDxQH/U2hF"
+    . "MclFMcAx0kiJB0iLu5AAAAAxyf9TaEmJ2U2J4DHSSAH3MclIiQdIA7OoAAAASMdEJCgAAAAAx0QkIAAAAAD/U1hIiQY7q8gAAAByj0iJ2EiDxDhbXl9dQVxBXcMPH4AAAAAA"
+    . "SInZ6FD6//+Jxema/v//Zg8fhAAAAAAA/5OAAAAASIuLoAAAAP9TKEiLi6gAAAD/UyhIi4uwAAAA/1MoSInZQf/VMdtIidhIg8Q4W15fXUFcQV3DDx9AAAEAAAADAAAAAQAA"
+    . "AAEAAAABAAAAAwAAAAABAAABAAAAAQAAAAMAAAAACAAAAQAAAAEAAAADAAAAAIAAAAEAAAABAAAAAwAAAAAAAAEBAAAAAQAAAAMAAAAAAIAAAQAAAAEAAAADAAAAAAAAAQEA"
+    . "AAABAAAAAwAAAAAAAAIBAAAAAQAAAAMAAAAAAAAEAQAAAAEAAAACAAAAAQAAAAIAAAABAAAAAgAAAAAgAAACAAAAAQAAAAIAAAAAAAgAAgAAAAEAAAACAAAAAAAQAAIAAAAB"
+    . "AAAAAgAAAAAAgAACAAAAAQAAgAIAAAABAAAAAgAAAAEAAAACAAAAABAAAAMAAAABAAAAAgAAAAAAQAADAAAAAQAAAAIAAAAAAAAIAwAAAAEAAAACAAAAAAAAEAMAAAABAAAA"
+    . "AgAAAAAAACADAAAAAQAAgAIAAAAgAAAAAwAAAAcAAAABAAAACAAAAAMAAAAHAAAAAQAAACAAAAADAAAABwAAAAEAAAAAAQAAAwAAAAcAAAABAAAAAAABAAQAAAAHAAAAAQAA"
+    . "AAAAAgAEAAAABwAAAAEAAAAAAAAQBAAAAAcAAAABAAAAAAAAQAQAAAAHAAAAAQAAAAAAAIAEAAAA/////5CQkJCQkJCQkJCQkA=="
+    mcode_mt_threadproc         := 0x000000 ; 
+    mcode_mt_run                := 0x000090 ; 
     mcode_get_cpu_psabi_level   := 0x000120 ; int get_cpu_psabi_level()
     mcode_gpa_getkernel32       := 0x000200 ; 
     mcode_gpa_getgetprocaddress := 0x000230 ; 
-    mcode_mt_get_cputhreads     := 0x0002d0 ; 
-    mcode_mt_init               := 0x000490 ; mt_ctx *mt_init(u32 num_threads)
-    mcode_mt_deinit             := 0x0007b0 ; void mt_deinit(mt_ctx *ctx)
+    mcode_mt_deinit             := 0x0002d0 ; 
+    mcode_mt_get_cputhreads     := 0x0003a0 ; int mt_get_cputhreads(mt_ctx *ctx)
+    mcode_mt_init               := 0x000670 ; 
     ;----------------- end of ahkmcodegen auto-generated section ------------------
             
         static code := this.i_b64decode(b64)
@@ -916,6 +920,13 @@ class imgutil {
     }
 
     ;########################################################################################################
+    ; convert a windows bitmap
+    ;########################################################################################################
+    from_hbitmap(hbmp) {
+        return imgutil.img(this).from_hbitmap(hbmp)
+    }
+
+    ;########################################################################################################
     ; pixel brightness (naive, good enough)
     ;########################################################################################################
     get_pixel_magnitude(px) {
@@ -1012,6 +1023,26 @@ class imgutil {
             if i_provider.get_image(obj)
                 return this.from_provider(i_provider)
             return false
+        }
+
+        ;########################################################################################################
+        ; object from hbitmap
+        ;########################################################################################################
+        from_hbitmap(hbmp) {
+            ; TODO
+            ; i_provider := image_provider.gdip.hbitmap()
+            ; if i_provider.get_image(hbmp)
+            ;     return this.from_provider(i_provider)
+            ; return false
+        }
+
+        ;########################################################################################################
+        ; convert the image to an hbitmap
+        ;########################################################################################################
+        to_hbitmap() {
+            if (this.stride != this.w * 4)
+                throw "to_hbitmap() requires stride == width*4"
+            return DllCall("gdi32\CreateBitmap", "int", this.w, "int", this.h, "uint", 1, "uint", 32, "ptr", this.ptr)
         }
 
         ;########################################################################################################
@@ -1329,14 +1360,10 @@ class image_provider {
 
             ; note: this is the slow '90s way, trudging through getdc/bit+blt
             if hdc := DllCall("gdi32\CreateCompatibleDC", "ptr", 0, "ptr") {
-                bmi := Buffer(40, 0)
-                NumPut("int",   40,     bmi,  0) ; sizeof(BITMAPINFOHEADER)
-                NumPut("int",   rect.w, bmi,  4) ; width
-                NumPut("int",  -rect.h, bmi,  8) ; negative height means top-down bitmap
-                NumPut("short", 1,      bmi, 12) ; planes
-                NumPut("short", 32,     bmi, 14) ; bit depth
-                bmp := DllCall("gdi32\CreateDIBSection", "ptr", hdc, "ptr", bmi, 
-                    "uint", 0, "ptr*", &bits := 0, "ptr", 0, "uint", 0, "ptr")
+                bmp := DllCall("gdi32\CreateDIBSection", "ptr", hdc, 
+                            "ptr", i_BITMAPINFOHEADER(rect.w, -rect.h).get(), 
+                            "uint", 0, "ptr*", &bits := 0, 
+                            "ptr", 0, "uint", 0, "ptr")
                 if bmp {
                     if oldbmp := DllCall("gdi32\SelectObject", "ptr", hdc, "ptr", bmp, "ptr") {
                         if screen_dc := DllCall("user32\GetDC", "ptr", 0, "ptr") {
@@ -1635,9 +1662,18 @@ class image_provider {
             static D3D11_MAP_READ_WRITE                     := 3
             static release_frame_early                      := false
             static last_screenshot_taken                    := 0 
+            static perf_freq                                := 0
+            static attempt_start                            := 0
+            static time_start                               := 0
+            static time_now                                 := 0
+            static debug_trace                              := false
             ret := false
             if !rect
                 rect := imgutil.rect(0, 0, A_ScreenWidth, A_ScreenHeight)
+            if (!perf_freq)
+                DllCall("QueryPerformanceFrequency", "int64*", &perf_freq)
+            if debug_trace
+                DllCall("QueryPerformanceCounter", "int64*", &attempt_start)
 
             ; initialize the environment if needed
             if this.init(rect) {
@@ -1647,19 +1683,20 @@ class image_provider {
                         ComCall(IDXGIOutputDuplication_ReleaseFrame, this.s.ptr_dxgi_dup, "uint")
                     ; call the duplication API to get the next frame. don't wait for any new updates;
                     ; if there are none, we'll use our permanent buffer from the last frame
-                    time_start := A_TickCount
                     hr := ComCall(IDXGIOutputDuplication_AcquireNextFrame, this.s.ptr_dxgi_dup, 
-                        "uint", release_frame_early ? 0 : 50,
+                        "uint", release_frame_early ? 0 : 0,
                         "ptr", this.s.DXGI_OUTDUPL_FRAME_INFO, 
                         "ptr*", &ptr_dxgi_resource:=0, 
                         "uint")
-                    OutputDebug "IDXGIOutputDuplication_AcquireNextFrame took " Format("{:016d}", A_TickCount - time_start) . " ms`r`n"
 
                     if !(hr & 0x80000000) {
 
                         ; has this frame been presented (i.e. is it an actual update that needs to be processed?)
                         if NumGet(this.s.DXGI_OUTDUPL_FRAME_INFO, 0, "int64")  = 0 {
-                            OutputDebug "IDXGIOutputDuplication_AcquireNextFrame: update has never been presented, retrying`r`n"
+                            if debug_trace
+                                OutputDebug "IDXGIOutputDuplication_AcquireNextFrame: this fake update has never been presented, retrying`r`n"
+                            if release_frame_early
+                                ComCall(IDXGIOutputDuplication_ReleaseFrame, this.s.ptr_dxgi_dup, "uint")
                             Sleep 10
                             continue
                         }
@@ -1685,19 +1722,31 @@ class image_provider {
                         this.s.texture_screen_stride  := NumGet(this.s.D3D11_MAPPED_SUBRESOURCE, 8, "int")
 
                     } else if hr = DXGI_ERROR_WAIT_TIMEOUT {
-                        time_from_last_screenshot := A_TickCount - last_screenshot_taken
-                        OutputDebug "IDXGIOutputDuplication_AcquireNextFrame timed out, using last frame from " Format("{:016d}", time_from_last_screenshot) . " ms ago`r`n"
+                        DllCall("QueryPerformanceCounter", "int64*", &time_now)
+                        time_from_last_screenshot := (time_now - last_screenshot_taken) * 10000 / perf_freq
+                        ; if the frame is at most 5ms old, we'll use it, otherwise we'll force a new one
+                        if time_from_last_screenshot < 5000 {
+                            if debug_trace                                  
+                                OutputDebug "IDXGIOutputDuplication_AcquireNextFrame timed out, using last frame from " Format("{:d}us ago`r`n", time_from_last_screenshot)
+                        } else {
+                            if debug_trace
+                                OutputDebug "IDXGIOutputDuplication_AcquireNextFrame timed out with a " Format("{:d}us", time_from_last_screenshot) " old frame, retrying`r`n"
+                            Sleep 10
+                            continue
+                        }
                     } else if hr & 0x80000000 {
                         ; if we flat out failed, we'll need to reinit; the assumption is that the
                         ; monitor, desktop, lock state, etc. changed
-                        OutputDebug "IDXGIOutputDuplication_AcquireNextFrame failed: " Format("0x{:8x}", hr)
+                        if debug_trace
+                            OutputDebug "IDXGIOutputDuplication_AcquireNextFrame failed: " Format("0x{:8x}", hr)
                         this.cleanup_static(true)
                         return false
                     }
 
-                    ; a legit buffer should never return 0x00000000 pixels due to the 0xff alpha channel value
-                    if (c := NumGet(this.s.texture_screen_ptr, 0, "uint")) = 0 {
-                        OutputDebug "Bamboozled! Got a null framebuffer at " Format("{:016d}", A_TickCount) . " ms`r`n"
+                    ; a legit framebuffer should never contain 0x00000000 pixels due to the 0xff alpha channel value
+                    if !NumGet(this.s.texture_screen_ptr, 0, "uint") {
+                        if debug_trace
+                            OutputDebug "Got a null framebuffer! Going back to complain to the manager."
                         if release_frame_early
                             ComCall(IDXGIOutputDuplication_ReleaseFrame, this.s.ptr_dxgi_dup, "uint")
                         Sleep 10
@@ -1721,9 +1770,13 @@ class image_provider {
                     }
                     if release_frame_early
                         ComCall(IDXGIOutputDuplication_ReleaseFrame, this.s.ptr_dxgi_dup, "uint")
-                    last_screenshot_taken := A_TickCount
+                    DllCall("QueryPerformanceCounter", "int64*", &last_screenshot_taken)
                     break
                 }
+            }
+            if debug_trace {
+                DllCall("QueryPerformanceCounter", "int64*", &time_now)
+                OutputDebug "get_image took " . Format("{:d}us`r`n", (time_now - attempt_start) * 10000 / perf_freq)
             }
             return ret
         } ; end of get_image
@@ -1731,8 +1784,7 @@ class image_provider {
 } ; end of image_provider class
 
 ;########################################################################################################
-; a global instance of the dx_screen provider, to keep the capture loop alive, and ensure cleanup on
-; program exit
+; a global instance of the dx_screen provider, to ensure cleanup on program exit
 ;########################################################################################################
 _dx_screen_helper := dx_screen_helper()
 class dx_screen_helper {
@@ -1743,5 +1795,49 @@ class dx_screen_helper {
     __Delete() {
         ; clean up completely
         this.provider.cleanup_static()
+    }
+}
+
+;########################################################################################################
+; helper class for bitmap-related functions
+;########################################################################################################
+class i_BITMAPINFOHEADER {
+    __New(w := 0, h := 0) {
+        this.buffer             := Buffer(40, 0)
+        this.biSize             := 40
+        this.biWidth            :=  w
+        this.biHeight           :=  h
+        this.biPlanes           :=  1
+        this.biBitCount         := 32
+        ; stuff below can be left zeroed
+        ; this.biCompression      :=  0 ; BI_RGB=0
+        ; this.biSizeImage        :=  0 ; can be 0 for BI_RGB
+        ; this.biXPelsPerMeter    :=  0 
+        ; this.biYPelsPerMeter    :=  0
+        ; this.biClrUsed          :=  0
+        ; this.biClrImportant     :=  0
+    }
+    __Delete() {
+    }
+    set_w(w) {
+        this.biWidth := w
+        return this
+    }
+    set_h(h) {
+        this.biHeight := h
+        return this
+    }
+    reset() {
+        this.biWidth            :=  0
+        this.biHeight           :=  0
+        return this
+    }
+    get() {
+        NumPut("int",   this.biSize,     this.buffer,  0)
+        NumPut("int",   this.biWidth,    this.buffer,  4)
+        NumPut("int",   this.biHeight,   this.buffer,  8)
+        NumPut("short", this.biPlanes,   this.buffer, 12)
+        NumPut("short", this.biBitCount, this.buffer, 14)
+        return this.buffer        
     }
 }

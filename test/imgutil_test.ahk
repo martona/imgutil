@@ -289,6 +289,7 @@ class imgutilTest {
     test() {
 
         img := imgu.from_file("imgutil_test.png")
+        img.to_hbitmap()
         small := img.crop(1000, 1000, 200, 200)
         if !imgu.srch(&x, &y, img, small, 0, 100, 0)
             throw("test error")
