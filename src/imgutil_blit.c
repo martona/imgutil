@@ -11,13 +11,29 @@
     psabi level 1 (sse2, no popcnt):    4708.10us
     psabi level 0 (scalar only code):   5175.98us
 
-    on intel core i9 12900h (alder lake), with the same inputs:
+    intel core i9 12900h (alder lake), with the same inputs:
 
     psabi level 4 (avx512):                   n/a
     psabi level 3 (avx2):               2585.32us
     psabi level 2 (sse4.1):             2637.13us
     psabi level 1 (sse2, no popcnt):    2608.24us
     psabi level 0 (scalar only code):   3270.11us
+
+    intel xeon e5-2687w (sandy bridge ep)
+
+    psabi level 4 (avx512):                  n/a
+    psabi level 3 (avx2):            
+    psabi level 2 (sse4.1):          
+    psabi level 1 (sse2, no popcnt): 
+    psabi level 0 (scalar only code):
+
+    intel core i5 8250u (kaby lake-r, 4 cores):
+
+    psabi level 4 (avx512):                  n/a
+    psabi level 3 (avx2):              3863.99us
+    psabi level 2 (sse4.1):            3924.65us
+    psabi level 1 (sse2, no popcnt):   3652.30us
+    psabi level 0 (scalar only code):  4317.79us
 */
 
 i32 imgutil_blit (

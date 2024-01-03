@@ -11,13 +11,29 @@
     psabi level 1 (sse2, no popcnt):    1234.4ms
     psabi level 0 (scalar only code):   1078.2ms
 
-    on intel core i9 12900h (alder lake), with the same inputs:
+    intel core i9 12900h (alder lake), with the same inputs:
 
     psabi level 4 (avx512):                  n/a
     psabi level 3 (avx2):                214.9ms
     psabi level 2 (sse4.1):              366.1ms
     psabi level 1 (sse2, no popcnt):     779.0ms
     psabi level 0 (scalar only code):    725.4ms
+
+    intel xeon e5-2687w (sandy bridge ep)
+
+    psabi level 4 (avx512):                  n/a
+    psabi level 3 (avx2):               463.09ms
+    psabi level 2 (sse4.1):             854.17ms
+    psabi level 1 (sse2, no popcnt):   1802.00ms
+    psabi level 0 (scalar only code):  1625.00ms
+
+    intel core i5 8250u (kaby lake-r, 4 cores):
+
+    psabi level 4 (avx512):                  n/a
+    psabi level 3 (avx2):               389.46ms
+    psabi level 2 (sse4.1):             662.00ms
+    psabi level 1 (sse2, no popcnt):   1597.75ms
+    psabi level 0 (scalar only code):  1378.75ms
 */
 
 /*  important: if we can ensure that needle, needle_lo, needle_hi AND haystack

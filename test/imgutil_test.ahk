@@ -26,14 +26,16 @@ class imgutilTest {
     benchmarkMultiCtl := 0
 
     show() {
+
+        psabi_level := DllCall(imgu.i_mcode_map["get_cpu_psabi_level"], "int")
+
         this.gui := Gui()
         this.gui.Add("Text", "section", "Tests")
         this.gui.Add("Text", "section xs w0 h0")
-        this.gui.Add("Button", "", "X86_X64_V0").OnEvent("Click", this.runTests.Bind(this, 0))
-        this.gui.Add("Button", "", "X86_X64_V1").OnEvent("Click", this.runTests.Bind(this, 1))
-        this.gui.Add("Button", "", "X86_X64_V2").OnEvent("Click", this.runTests.Bind(this, 2))
-        this.gui.Add("Button", "", "X86_X64_V3").OnEvent("Click", this.runTests.Bind(this, 3))
-        this.gui.Add("Button", "", "X86_X64_V4").OnEvent("Click", this.runTests.Bind(this, 4))
+        loop 5 {
+            if (psabi_level >= A_Index-1)
+                this.gui.Add("Button", "ys", "X86_X64_V" . (A_Index-1)).OnEvent("Click", this.runTests.Bind(this, (A_Index-1)))
+        }
 
         this.gui.Add("Text", "section xs", "Benchmarks")
         this.gui.Add("Text", "section xs w0 h0")
@@ -45,25 +47,27 @@ class imgutilTest {
         
         v := 0
         while v < 5 {
-            this.gui.Add("Text", "section xs", "X86_X64_V" . v)
-            this.gui.Add("Button", "ys", "srch (brute)"  ).OnEvent("Click", this.benchmark.Bind(this, v, 0))
-            this.gui.Add("Edit", "ys w70 vbenchdisplay0" . v, "")
-            this.gui.Add("Button", "ys", "srch (pixel)"  ).OnEvent("Click", this.benchmark.Bind(this, v, 1))
-            this.gui.Add("Edit", "ys w70 vbenchdisplay1" . v, "")
-            this.gui.Add("Button", "ys", "blit"          ).OnEvent("Click", this.benchmark.Bind(this, v, 2))
-            this.gui.Add("Edit", "ys w70 vbenchdisplay2" . v, "")
-            this.gui.Add("Button", "ys", "gdi_scrshot"   ).OnEvent("Click", this.benchmark.Bind(this, v, 3))
-            this.gui.Add("Edit", "ys w70 vbenchdisplay3" . v, "")
-            this.gui.Add("Button", "ys", "dxgi_scrshot"  ).OnEvent("Click", this.benchmark.Bind(this, v, 4))
-            this.gui.Add("Edit", "ys w70 vbenchdisplay4" . v, "")
-            this.gui.Add("Button", "ys", "builtin.srch"  ).OnEvent("Click", this.benchmark.Bind(this, v, 5))
-            this.gui.Add("Edit", "ys w70 vbenchdisplay5" . v, "")
-            this.gui.Add("Button", "ys", "comp.src"      ).OnEvent("Click", this.benchmark.Bind(this, v, 6))
-            this.gui.Add("Edit", "ys w70 vbenchdisplay6" . v, "")
-            this.gui.Add("Button", "ys", "imp crop"      ).OnEvent("Click", this.benchmark.Bind(this, v, 7))
-            this.gui.Add("Edit", "ys w70 vbenchdisplay7" . v, "")
-            this.gui.Add("Button", "ys", "crop"          ).OnEvent("Click", this.benchmark.Bind(this, v, 8))
-            this.gui.Add("Edit", "ys w70 vbenchdisplay8" . v, "")
+            if (psabi_level >= A_Index-1) {
+                this.gui.Add("Text", "section xs", "X86_X64_V" . v)
+                this.gui.Add("Button", "ys", "srch (brute)"  ).OnEvent("Click", this.benchmark.Bind(this, v, 0))
+                this.gui.Add("Edit", "ys w70 vbenchdisplay0" . v, "")
+                this.gui.Add("Button", "ys", "srch (pixel)"  ).OnEvent("Click", this.benchmark.Bind(this, v, 1))
+                this.gui.Add("Edit", "ys w70 vbenchdisplay1" . v, "")
+                this.gui.Add("Button", "ys", "blit"          ).OnEvent("Click", this.benchmark.Bind(this, v, 2))
+                this.gui.Add("Edit", "ys w70 vbenchdisplay2" . v, "")
+                this.gui.Add("Button", "ys", "gdi_scrshot"   ).OnEvent("Click", this.benchmark.Bind(this, v, 3))
+                this.gui.Add("Edit", "ys w70 vbenchdisplay3" . v, "")
+                this.gui.Add("Button", "ys", "dxgi_scrshot"  ).OnEvent("Click", this.benchmark.Bind(this, v, 4))
+                this.gui.Add("Edit", "ys w70 vbenchdisplay4" . v, "")
+                this.gui.Add("Button", "ys", "builtin.srch"  ).OnEvent("Click", this.benchmark.Bind(this, v, 5))
+                this.gui.Add("Edit", "ys w70 vbenchdisplay5" . v, "")
+                this.gui.Add("Button", "ys", "comp.src"      ).OnEvent("Click", this.benchmark.Bind(this, v, 6))
+                this.gui.Add("Edit", "ys w70 vbenchdisplay6" . v, "")
+                this.gui.Add("Button", "ys", "imp crop"      ).OnEvent("Click", this.benchmark.Bind(this, v, 7))
+                this.gui.Add("Edit", "ys w70 vbenchdisplay7" . v, "")
+                this.gui.Add("Button", "ys", "crop"          ).OnEvent("Click", this.benchmark.Bind(this, v, 8))
+                this.gui.Add("Edit", "ys w70 vbenchdisplay8" . v, "")
+            }
             v++
         }
         this.ctlbench := this.gui.Add("Text", "section xs w300 +Multi h40", "")
@@ -168,6 +172,7 @@ class imgutilTest {
         for ctl in this.gui {
             if ctl.Name ~= "benchdisplay" . target . benchTarget {
                 ctl.Value := iter_text
+                A_Clipboard := substr("    " . iter_text, -10)
             }
         }
         return

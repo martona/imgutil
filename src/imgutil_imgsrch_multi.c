@@ -13,14 +13,33 @@
     psabi level 1 (sse2, no popcnt):     89.29ms 110.39ms 158.22ms 313.44ms
     psabi level 0 (scalar only code):    81.40ms  98.35ms 138.05ms 273.84ms
 
-    on intel core i9 12900h (alder lake, 6p&8e cores), with the same inputs:
+    intel core i9 12900h (alder lake, 6p&8e cores), with the same inputs:
 
     threads:                                  14        7        4
     psabi level 4 (avx512):                  n/a      n/a      n/a
     psabi level 3 (avx2):                31.75ms  42.28ms  65.34ms
     psabi level 2 (sse4.1):              48.53ms  67.57ms 105.81ms
     psabi level 1 (sse2, no popcnt):     96.46ms 138.89ms 217.39ms
-    psabi level 0 (scalar only code):    89.84ms 130.62ms 203.12ms
+    89.84ms 130.62ms 203.12ms
+
+    intel xeon e5-2687w, 2 sockets, 10 cores each:
+
+    threads:                                  20       10        4
+    psabi level 4 (avx512):                  n/a      n/a      n/a
+    psabi level 3 (avx2):                41.24ms  45.33ms 116.63ms
+    psabi level 2 (sse4.1):              77.65ms  88.54ms 214.17ms
+    psabi level 1 (sse2, no popcnt):    163.29ms 183.61ms 458.82ms    
+    psabi level 0 (scalar only code):   140.64ms 170.83ms 400.23ms
+
+    intel core i5 8250u (kaby lake-r, 4 cores):
+
+    threads:                                   4
+    psabi level 4 (avx512):                  n/a
+    psabi level 3 (avx2):               134.87ms
+    psabi level 2 (sse4.1):             233.68ms
+    psabi level 1 (sse2, no popcnt):    537.50ms
+    psabi level 0 (scalar only code):   467.36ms
+
 */
 
 #include "i_imgutil.h"

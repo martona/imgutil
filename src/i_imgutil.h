@@ -129,21 +129,19 @@ typedef union {
         #define i_imgutil_pixelmatchcount   i_imgutil_pixelmatchcount_v12
     #elif defined(MARCH_x86_64_v1)
         // no popcount, no clz, but have bsr and SSE
-        #define imgutil_popcount(a) i_imgutil_popcount(a)
-        #define imgutil_ctz16(a)    __bsfd(a)
-        #define imgutil_ctz32(a)    __bsfd(a)
-        #define imgutil_ctz64(a)    __bsfq(a)
-        #define imgutil_clz16(a)    (15 -  _bit_scan_reverse(a)  )
-        #define imgutil_clz32(a)    (31 -  _bit_scan_reverse(a)  )
-        #define imgutil_clz64(a)    (63 - __builtin_ia32_bsrdi(a)) 
-        #define __mvec              m128i
+        #define imgutil_ctz16(a)      __bsfd(a)
+        #define imgutil_ctz32(a)      __bsfd(a)
+        #define imgutil_ctz64(a)      __bsfq(a)
+        #define imgutil_clz16(a)      (15 -  _bit_scan_reverse(a)  )
+        #define imgutil_clz32(a)      (31 -  _bit_scan_reverse(a)  )
+        #define imgutil_clz64(a)      (63 - __builtin_ia32_bsrdi(a)) 
+        #define __mvec                m128i
         #define _mvec_set1_epi32(a) _mm_set1_epi32(a)
         #define i_imgutil_make_sat_masks    i_imgutil_make_sat_masks_v12
         #define i_imgutil_pixel_scan        i_imgutil_pixel_scan_v12
         #define i_imgutil_pixelmatchcount   i_imgutil_pixelmatchcount_v12
     #elif defined(MARCH_x86_64_v0)
         // scalar only
-        #define imgutil_popcount(a) i_imgutil_popcount(a)
         #define imgutil_ctz16(a)    __bsfd(a)
         #define imgutil_ctz32(a)    __bsfd(a)
         #define imgutil_ctz64(a)    __bsfq(a)
@@ -164,7 +162,30 @@ typedef union {
     #define imgutil_clz64(a)    __lzcnt64(a)
 #endif
 
-static inline u32 i_imgutil_popcount(u32 x) {
+static inline u8 i_imgutil_popcount4( u8 v ) {
+    // lookup table for 4-bit values
+    static const u32 table[16] = {
+        0, 1, 1, 2, 1, 2, 2, 3, 
+        1, 2, 2, 3, 2, 3, 3, 4};
+    return table[v & 0x0F];
+}
+
+static inline u8 i_imgutil_popcount8(u8 x) {
+    x = x - ((x >> 1) & 0x55);
+    x = (x & 0x33) + ((x >> 2) & 0x33);
+    x = (x + (x >> 4)) & 0x0F;
+    return x;
+}
+
+static inline u16 i_imgutil_popcount16(u16 x) {
+    x = x - ((x >> 1) & 0x5555);
+    x = (x & 0x3333) + ((x >> 2) & 0x3333);
+    x = (x + (x >> 4)) & 0x0F0F;
+    x = x + (x >> 8);
+    return x & 0x0000001F;
+}
+
+static inline u32 i_imgutil_popcount32(u32 x) {
     x = x - ((x >> 1) & 0x55555555);
     x = (x & 0x33333333) + ((x >> 2) & 0x33333333);
     x = (x + (x >> 4)) & 0x0F0F0F0F;

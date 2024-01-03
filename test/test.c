@@ -6,8 +6,7 @@
 #define MARCH_x86_64_v0
 #define _MULTITHREAD_MSPOOL_IMPL
 #define DEBUG 1
-#include "../submodules/multithread/multithread_mspool.c"
-#include "../submodules/multithread/multithread_good.c"
+#include "../submodules/multithread/multithread.c"
 #include "../src/imgutil_all.c"
 #include "../submodules/leanloader/leanloader.c"
 
@@ -61,9 +60,41 @@ int main(int argc, char* argv[])
         for (int i=0; i<10; i++) {
             mt_run(ctx, testworker, ctx);
         }
-        mt_deinit(ctx);
+        //mt_deinit(ctx);
     }
     printf("job's done\n");
+
+    u64 start, end, freq;
+    u32 res;
+
+    ctx->QueryPerformanceFrequency(&freq);
+    ctx->QueryPerformanceCounter(&start);
+    for (int i=0; i<100000000; i++) {
+        res += i_imgutil_popcount16(i);
+        asm("");
+    }
+    ctx->QueryPerformanceCounter(&end);
+    printf("%lluus for 100000000 iters\n", (end - start) * 10000 / freq);
+
+    ctx->QueryPerformanceCounter(&start);
+    for (int i=0; i<100000000; i++) {
+        res += i_imgutil_popcount(i);
+        asm("");
+    }
+    ctx->QueryPerformanceCounter(&end);
+    printf("%lluus for 100000000 iters\n", (end - start) * 10000 / freq);
+
+    ctx->QueryPerformanceCounter(&start);
+    for (int i=0; i<100000000; i++) {
+        res += __builtin_popcount(i);
+        asm("");
+    }
+    ctx->QueryPerformanceCounter(&end);
+    printf("%lluus for 100000000 iters\n", (end - start) * 10000 / freq);
+
+    printf("To make gcc /O3 happy: %d\n", res);
+
+    mt_deinit(ctx);
 
     return 0;
 }

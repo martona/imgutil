@@ -7,7 +7,7 @@
     (0 threads refers to a completely single-threaded implementation with no
     thread scheduling overhead at all)
 
-    #threads:                                 0        24        12        8         4
+    threads:                                  0        24        12        8         4
     psabi level 4 (avx512):           5643.34us  660.33us  907.28us 851.21us 1377.41us    
     psabi level 3 (avx2):             4520.80us  623.99us  840.05us 747.94us 1154.73us
     psabi level 2 (sse4.1):           4721.44us  629.88us  813.67us 734.11us 1252.19us
@@ -16,12 +16,29 @@
 
     on intel core i9 12900h (alder lake, 6p&8e cores), with the same inputs:
 
-    #threads:                                   0        14        7          4
-    psabi level 4 (avx512):                   n/a       n/a     n/a         n/a
+    threads:                                    0        14         7         4
+    psabi level 4 (avx512):                   n/a       n/a       n/a       n/a
     psabi level 3 (avx2):               2585.32us 1148.11us  895.74us  963.76us
     psabi level 2 (sse4.1):             2637.13us 1167.68us  915.58us 1050.42us
     psabi level 1 (sse2, no popcnt):    2608.24us 1193.32us  912.41us 1047.78us
     psabi level 0 (scalar only code):   3270.11us 1212.42us 1076.43us 1329.08us
+
+    intel xeon e5-2687w, 2 sockets, 10 cores each:
+
+    threads:                                  20       10        4
+    psabi level 4 (avx512):                  n/a      n/a      n/a
+    psabi level 3 (avx2):               
+    psabi level 2 (sse4.1):             
+    psabi level 1 (sse2, no popcnt):    
+    psabi level 0 (scalar only code):   
+
+    threads:                                  4
+    psabi level 4 (avx512):                 n/a
+    psabi level 3 (avx2):             3906.25us
+    psabi level 2 (sse4.1):           3623.19us
+    psabi level 1 (sse2, no popcnt):  3599.71us
+    psabi level 0 (scalar only code): 3465.00us
+
 */
 
 #include "i_imgutil_blit.c"
