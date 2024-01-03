@@ -158,20 +158,11 @@ class imgutil {
     }
     
     ;########################################################################################################
-    ; screenshot
-    ;########################################################################################################
-    screengrab(x, y, w, h) {
-        img := ImagePutBuffer([x, y, w, h])
-        img.origin := {x: x, y: y}
-        return img
-    }
-
-    ;########################################################################################################
     ; imagesearch
     ;########################################################################################################
     srch(&fx, &fy,                      ; output coordinates if image found
-        haystack,                       ; ImagePutBuffer or anything acceptef by ImagePut
-        needle,                         ; ImagePutBuffer or anything accepted by ImagePut
+        haystack,                       ; img object, file name, or screen rect
+        needle,                         ; img object, file name, or screen rect
         tolerance := 0,                 ; pixels that differ by this much still match
         min_percent_match := 100,       ; percentage of pixels needed to return a match
         force_topleft_pixel_match := 1) ; top left pixel must match? (tolerance applies)
@@ -211,6 +202,8 @@ class imgutil {
                 return x
             if Type(x) = "ImagePut.BitmapBuffer"
                 return this.from_imageputbuffer(x)
+            if Type(x) = "imgutil.rect"
+                return this.from_screen(x)
             if Type(x) = "Array" && x.Length = 4
                 return this.from_screen(imgutil.rect(x[1], x[2], x[3], x[4]))
             if Type(x) = "String"
@@ -262,7 +255,16 @@ class imgutil {
     ;########################################################################################################
     ; capture the screen
     ;########################################################################################################
-    from_screen(rect := 0) {
+    from_screen(x := 0, y := 0, w := 0, h := 0) {
+        rect := 0
+        if Type(x) = "imgutil.rect"
+            rect := x
+        else if Type(x) = "Array" && x.Length = 4
+            rect := imgutil.rect(x[1], x[2], x[3], x[4])
+        else 
+            rect := imgutil.rect(x, y, w, h)
+        if rect.w = 0 || rect.h = 0
+            rect := 0
         return imgutil.img(this).from_screen(rect)
     }
 

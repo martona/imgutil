@@ -1,8 +1,6 @@
 #Requires AutoHotkey 2.0+
 
-#include "..\lib\ahk\imageput.ahk"
 #include "..\imgutil.ahk"
-
 
 /*
     innermost:            200x200  0x0000ff (blue) rectangle
@@ -63,9 +61,7 @@ class imgutilTest {
                 this.gui.Add("Edit", "ys w70 vbenchdisplay5" . v, "")
                 this.gui.Add("Button", "ys", "comp.src"      ).OnEvent("Click", this.benchmark.Bind(this, v, 6))
                 this.gui.Add("Edit", "ys w70 vbenchdisplay6" . v, "")
-                this.gui.Add("Button", "ys", "imp crop"      ).OnEvent("Click", this.benchmark.Bind(this, v, 7))
-                this.gui.Add("Edit", "ys w70 vbenchdisplay7" . v, "")
-                this.gui.Add("Button", "ys", "crop"          ).OnEvent("Click", this.benchmark.Bind(this, v, 8))
+                this.gui.Add("Button", "ys", "crop"          ).OnEvent("Click", this.benchmark.Bind(this, v, 7))
                 this.gui.Add("Edit", "ys w70 vbenchdisplay8" . v, "")
             }
             v++
@@ -92,8 +88,8 @@ class imgutilTest {
         iterations := 0
         start := A_TickCount
         time_taken := 0
-        haystack := ImagePutBuffer("imgutil_test_haystack_with_needle" . this.benchmarkFileSelection . ".png")
-        needle := ImagePutBuffer("imgutil_test_needle" . this.benchmarkFileSelection . ".png")
+        haystack := imgu.from_file("imgutil_test_haystack_with_needle" . this.benchmarkFileSelection . ".png")
+        needle := imgu.from_file("imgutil_test_needle" . this.benchmarkFileSelection . ".png")
         if target = 0 {
             ;;; benchmark imgu.srch without forced top left pixel
             while time_taken < 5000 {
@@ -146,14 +142,6 @@ class imgutilTest {
                 time_taken := A_TickCount - start
             }
         } else if target = 7 {
-            ;;; benchmark imageput
-            original := ImagePutBuffer([0, 0, A_ScreenWidth, A_ScreenHeight])
-            while time_taken < 5000 {
-                iterations++
-                original.crop(1920, 0, 1920, 2160)
-                time_taken := A_TickCount - start
-            }
-        } else if target = 8 {
             ;;; benchmark crop
             original := imgu.from_screen()
             while time_taken < 5000 {
@@ -302,13 +290,13 @@ class imgutilTest {
             throw("test error (x: " . x . ", y: " . y . ")")
 
         imgu.from_screen().to_file("imgutil_test.tmp.png")
-        img1 := ImagePutBuffer("imgutil_test.tmp.png")
-        img2 := ImagePutBuffer("imgutil_test.tmp.png")
+        img1 := imgu.from_file("imgutil_test.tmp.png")
+        img2 := imgu.from_file("imgutil_test.tmp.png")
         FileDelete("imgutil_test.tmp.png")
         if !imgu.srch(&x, &y, img1, img2, 0, 100, 0)
             throw("test error")
 
-        img := ImagePutBuffer("imgutil_test.png")
+        img := imgu.from_file("imgutil_test.png")
 
         bgc := 0x000000
         rect := {x: 0, y: 0, w: 1200, h: 1200}
@@ -321,8 +309,8 @@ class imgutilTest {
         results := [0, 0, 1200-1, 1200-1, 300, 300, 1200-1-300, 1200-1-300]
         test_rect(img, bgc, 18, {x: 0, y: 0, w: 1200, h: 1200}, results)
 
-        haystack := ImagePutBuffer("imgutil_test_haystack_with_needle01.png")
-        needle := ImagePutBuffer("imgutil_test_needle01.png")
+        haystack := imgu.from_file("imgutil_test_haystack_with_needle01.png")
+        needle := imgu.from_file("imgutil_test_needle01.png")
 
         ;TODO: need more of these tests
         if !imgu.srch(&x, &y, haystack, needle, 8, 95, 1)
@@ -334,8 +322,8 @@ class imgutilTest {
         if x != 0 || y != 0
             throw("test error (x: " . x . ", y: " . y . ")")
 
-        haystack := ImagePutBuffer("imgutil_test_haystack_with_needle02.png")
-        needle := ImagePutBuffer("imgutil_test_needle02.png")
+        haystack := imgu.from_file("imgutil_test_haystack_with_needle02.png")
+        needle := imgu.from_file("imgutil_test_needle02.png")
 
         ;TODO: need more of these tests
         if !imgu.srch(&x, &y, haystack, needle, 8, 100, 0)
@@ -347,8 +335,8 @@ class imgutilTest {
         if x != 0 || y != 0
             throw("test error (x: " . x . ", y: " . y . ")")
 
-        haystack := ImagePutBuffer("imgutil_test_haystack_with_needle03.png")
-        needle := ImagePutBuffer("imgutil_test_needle03.png")
+        haystack := imgu.from_file("imgutil_test_haystack_with_needle03.png")
+        needle := imgu.from_file("imgutil_test_needle03.png")
 
         ;TODO: need more of these tests
         if !imgu.srch(&x, &y, haystack, needle, 8, 100, 0)
