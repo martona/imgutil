@@ -4,33 +4,32 @@
     on my 2-socket xeon gold 6256 (cascade lake) with 12 cores each, copying a
     3840x2160 bitmap to a 3840x2160 bitmap, the following timings were observed:
 
-    (0 threads refers to a completely single-threaded implementation with no
-    thread scheduling overhead at all)
-
-    threads:                                  0        24        12        8         4
-    psabi level 4 (avx512):           5643.34us  660.33us  907.28us 851.21us 1377.41us    
-    psabi level 3 (avx2):             4520.80us  623.99us  840.05us 747.94us 1154.73us
-    psabi level 2 (sse4.1):           4721.44us  629.88us  813.67us 734.11us 1252.19us
-    psabi level 1 (sse2, no popcnt):  4708.10us  618.58us  833.47us 724.22us 1254.71us
-    psabi level 0 (scalar only code): 5175.98us  626.80us  878.73us 776.88us 1296.01us
+    threads:                                24        12        8         4
+    psabi level 4 (avx512):           660.33us  907.28us 851.21us 1377.41us    
+    psabi level 3 (avx2):             623.99us  840.05us 747.94us 1154.73us
+    psabi level 2 (sse4.1):           629.88us  813.67us 734.11us 1252.19us
+    psabi level 1 (sse2, no popcnt):  618.58us  833.47us 724.22us 1254.71us
+    psabi level 0 (scalar only code): 626.80us  878.73us 776.88us 1296.01us
 
     on intel core i9 12900h (alder lake, 6p&8e cores), with the same inputs:
 
-    threads:                                    0        14         7         4
-    psabi level 4 (avx512):                   n/a       n/a       n/a       n/a
-    psabi level 3 (avx2):               2585.32us 1148.11us  895.74us  963.76us
-    psabi level 2 (sse4.1):             2637.13us 1167.68us  915.58us 1050.42us
-    psabi level 1 (sse2, no popcnt):    2608.24us 1193.32us  912.41us 1047.78us
-    psabi level 0 (scalar only code):   3270.11us 1212.42us 1076.43us 1329.08us
+    threads:                                   14         7         4
+    psabi level 4 (avx512):                   n/a       n/a       n/a
+    psabi level 3 (avx2):               1148.11us  895.74us  963.76us
+    psabi level 2 (sse4.1):             1167.68us  915.58us 1050.42us
+    psabi level 1 (sse2, no popcnt):    1193.32us  912.41us 1047.78us
+    psabi level 0 (scalar only code):   1212.42us 1076.43us 1329.08us
 
     intel xeon e5-2687w, 2 sockets, 10 cores each:
 
-    threads:                                  20       10        4
-    psabi level 4 (avx512):                  n/a      n/a      n/a
-    psabi level 3 (avx2):               
-    psabi level 2 (sse4.1):             
-    psabi level 1 (sse2, no popcnt):    
-    psabi level 0 (scalar only code):   
+    threads:                                  20        10         4
+    psabi level 4 (avx512):                  n/a       n/a       n/a
+    psabi level 3 (avx2):              2317.89us 2408.52us 2555.22us
+    psabi level 2 (sse4.1):            2294.40us 2403.87us 2571.07us
+    psabi level 1 (sse2, no popcnt):   2290.24us 2417.87us 2540.93us
+    psabi level 0 (scalar only code):  2291.28us 2411.99us 2651.63us
+
+    intel core i5 8250u (kaby lake-r, 4 cores):
 
     threads:                                  4
     psabi level 4 (avx512):                 n/a
@@ -39,6 +38,14 @@
     psabi level 1 (sse2, no popcnt):  3599.71us
     psabi level 0 (scalar only code): 3465.00us
 
+    intel core i7 8650u (coffee lake-u/y, 4 cores):
+    
+    threads:                                  4
+    psabi level 4 (avx512):                 n/a
+    psabi level 3 (avx2):             5170.63us
+    psabi level 2 (sse4.1):           4826.25us
+    psabi level 1 (sse2, no popcnt):  4859.09us
+    psabi level 0 (scalar only code): 4480.29us
 */
 
 #include "i_imgutil_blit.c"
@@ -86,6 +93,16 @@ i32 imgutil_blit_multi (
     argb* src, i32 sx, i32 sy, i32 sstride,
     i32 w, i32 h)
 {
+    // some basic sanity checks.
+    // we dont know the size of the images, 
+    // so we can't do much more
+    if (!dst || !src)
+        return 0;
+    if (dx < 0 || sx < 0 || dy < 0 || sy < 0)
+        return 0;
+    if (w <= 0 || h <= 0)
+        return 0;
+
     // context for worker threads
     blit_thread_ctx tctx = {
         .thread_idx = 0,                // start at the top

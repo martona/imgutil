@@ -566,3 +566,4 @@ class i_BITMAPINFOHEADER {
         return this.buffer        
     }
 }
+

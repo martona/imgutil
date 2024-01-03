@@ -49,24 +49,22 @@ class imgutilTest {
                 this.gui.Add("Text", "section xs", "X86_X64_V" . v)
                 this.gui.Add("Button", "ys", "srch (brute)"  ).OnEvent("Click", this.benchmark.Bind(this, v, 0))
                 this.gui.Add("Edit", "ys w70 vbenchdisplay0" . v, "")
-                this.gui.Add("Button", "ys", "srch (pixel)"  ).OnEvent("Click", this.benchmark.Bind(this, v, 1))
+                this.gui.Add("Button", "ys", "blit"          ).OnEvent("Click", this.benchmark.Bind(this, v, 1))
                 this.gui.Add("Edit", "ys w70 vbenchdisplay1" . v, "")
-                this.gui.Add("Button", "ys", "blit"          ).OnEvent("Click", this.benchmark.Bind(this, v, 2))
+                this.gui.Add("Button", "ys", "gdi_scrshot"   ).OnEvent("Click", this.benchmark.Bind(this, v, 2))
                 this.gui.Add("Edit", "ys w70 vbenchdisplay2" . v, "")
-                this.gui.Add("Button", "ys", "gdi_scrshot"   ).OnEvent("Click", this.benchmark.Bind(this, v, 3))
+                this.gui.Add("Button", "ys", "dxgi_scrshot"  ).OnEvent("Click", this.benchmark.Bind(this, v, 3))
                 this.gui.Add("Edit", "ys w70 vbenchdisplay3" . v, "")
-                this.gui.Add("Button", "ys", "dxgi_scrshot"  ).OnEvent("Click", this.benchmark.Bind(this, v, 4))
+                this.gui.Add("Button", "ys", "builtin.srch"  ).OnEvent("Click", this.benchmark.Bind(this, v, 4))
                 this.gui.Add("Edit", "ys w70 vbenchdisplay4" . v, "")
-                this.gui.Add("Button", "ys", "builtin.srch"  ).OnEvent("Click", this.benchmark.Bind(this, v, 5))
+                this.gui.Add("Button", "ys", "comp.src"      ).OnEvent("Click", this.benchmark.Bind(this, v, 5))
                 this.gui.Add("Edit", "ys w70 vbenchdisplay5" . v, "")
-                this.gui.Add("Button", "ys", "comp.src"      ).OnEvent("Click", this.benchmark.Bind(this, v, 6))
+                this.gui.Add("Button", "ys", "crop"          ).OnEvent("Click", this.benchmark.Bind(this, v, 6))
                 this.gui.Add("Edit", "ys w70 vbenchdisplay6" . v, "")
-                this.gui.Add("Button", "ys", "crop"          ).OnEvent("Click", this.benchmark.Bind(this, v, 7))
-                this.gui.Add("Edit", "ys w70 vbenchdisplay8" . v, "")
             }
             v++
         }
-        this.ctlbench := this.gui.Add("Text", "section xs w300 +Multi h40", "")
+        this.ctlbench := this.gui.Add("Text", "section xs w500 +Multi h60", "")
         this.benchmarkMultiCtl := this.gui.Add("Checkbox", "section xs checked", "Allow multiple threads")
         this.benchmarkMultiCtl.OnEvent("Click", this.benchmarkMulti.Bind(this))
 
@@ -86,77 +84,108 @@ class imgutilTest {
         this.ctlbench.Text := "Benchmarking..."
         this.ctlbench.Redraw()
         iterations := 0
-        start := A_TickCount
+        iterations_placebo := 0
         time_taken := 0
+        time_taken_placebo := 0
         haystack := imgu.from_file("imgutil_test_haystack_with_needle" . this.benchmarkFileSelection . ".png")
         needle := imgu.from_file("imgutil_test_needle" . this.benchmarkFileSelection . ".png")
         if target = 0 {
+            ;;; benchmark imgu.srch with immediate return (measure ahk overhead)
+            haystack_placebo := haystack.clone()
+            haystack_placebo.ptr := 0
+            needle_placebo := needle.clone()
+            needle_placebo.ptr := 0
+            start := A_TickCount
+            while time_taken_placebo < 5000 {
+                iterations_placebo++
+                imgu.srch(&x, &y, haystack_placebo, needle_placebo, 8, 100, 0)
+                time_taken_placebo := A_TickCount - start
+            }
             ;;; benchmark imgu.srch without forced top left pixel
+            start := A_TickCount
             while time_taken < 5000 {
                 iterations++
                 imgu.srch(&x, &y, haystack, needle, 8, 95, 0)
                 time_taken := A_TickCount - start
             }
         } else if target = 1 {
-            ;;; benchmark imgu.srch with forced top left pixel
-            while time_taken < 5000 {
-                iterations++
-                imgu.srch(&x, &y, haystack, needle, 8, 95, 1)
-                time_taken := A_TickCount - start
+            ;;; measure ahk overhead
+            start := A_TickCount
+            while time_taken_placebo < 5000 {
+                iterations_placebo++
+                imgu.blit(0, 0, 0, haystack.width, 0, 0, 0, needle.width, needle.width, needle.height, imgu.i_use_single_thread ? 1 : 2)
+                time_taken_placebo := A_TickCount - start
             }
-        } else if target = 2 {
             ;;; benchmark imgu.blit
+            start := A_TickCount
             while time_taken < 5000 {
                 iterations++
                 imgu.blit(haystack.ptr, 0, 0, haystack.width, needle.ptr, 0, 0, needle.width, needle.width, needle.height, imgu.i_use_single_thread ? 1 : 2)
                 time_taken := A_TickCount - start
             }
-        } else if target = 3 {
+        } else if target = 2 {
+            ;;; can't really measure overhead here
+            time_taken_placebo := 0
+            iterations_placebo := 1
+            start := A_TickCount
             ;;; benchmark screenshots (gdi)
             while time_taken < 5000 {
                 iterations++
                 image_provider.gdi_screen().get_image()
                 time_taken := A_TickCount - start
             }
-        } else if target = 4 {
+        } else if target = 3 {
+            ;;; can't really measure overhead here
+            time_taken_placebo := 0
+            iterations_placebo := 1
+            start := A_TickCount
             ;;; benchmark screenshots (dxgi)
             while time_taken < 5000 {
                 iterations++
                 image_provider.dx_screen().get_image()
                 time_taken := A_TickCount - start
             }
-        } else if target = 5 {
+        } else if target = 4 {
+            ;;; can't really measure overhead here
+            time_taken_placebo := 0
+            iterations_placebo := 1
+            start := A_TickCount
             ;;; benchmark built-in imagesearch
             while time_taken < 5000 {
                 iterations++
                 ImageSearch &x, &y, 0, 0, A_ScreenWidth, A_ScreenHeight, "*16 imgutil_test_needle01.png"
                 time_taken := A_TickCount - start
             }
-        } else if target = 6 {
-            ;;; benchmark screenshots (dxgi)
+        } else if target = 5 {
+            ;;; can't really measure overhead here
+            time_taken_placebo := 0
+            iterations_placebo := 1
+            ;;; benchmark search from screenshot (dxgi)
+            start := A_TickCount
             ndl := imgu.from_file("imgutil_test_needle01.png")
             while time_taken < 5000 {
                 iterations++
                 img := imgu.from_screen()
-                imgu.srch(&x, &y, img, ndl, 16, 100)
+                imgu.srch(&x, &y, img, ndl, 16, 100, 0)
                 time_taken := A_TickCount - start
             }
-        } else if target = 7 {
+        } else if target = 6 {
+            ;;; TODO
+            time_taken_placebo := 0
+            iterations_placebo := 1
+            start := A_TickCount
             ;;; benchmark crop
             original := imgu.from_screen()
             while time_taken < 5000 {
                 iterations++
-                original.crop(1920, 0, 1920, 2160)
+                original.crop(original.w//2, 0, original.w//2, original.h)
                 time_taken := A_TickCount - start
             }
         }
-        iter_time := time_taken / iterations
-        if (iter_time < 10)
-            iter_text := Format("{:2.2f}", time_taken * 1000 / iterations) . "us"
-        else
-            iter_text := Format("{:2.2f}", time_taken / iterations) . "ms"
-
-        this.ctlbench.Text := "Benchmark: " . iterations . " iterations in " . time_taken . "ms" . "`n" . "Average: " . iter_text . " per iteration"
+        txt :=       "Overhead:  " . iterations_placebo . " iterations in " . time_taken_placebo . "ms. Average: " . get_iter_text(iterations_placebo, time_taken_placebo) . " per iteration`n"
+        txt := txt . "Benchmark: " . iterations . " iterations in " . time_taken . "ms. Average: " . get_iter_text(iterations, time_taken) . " per iteration`n"
+        txt := txt . "Adjusted:  " . (iter_text := get_iter_text(iterations, time_taken - (time_taken_placebo/iterations_placebo)*iterations)) . " per iteration"
+        this.ctlbench.Text := txt
         for ctl in this.gui {
             if ctl.Name ~= "benchdisplay" . target . benchTarget {
                 ctl.Value := iter_text
@@ -164,6 +193,15 @@ class imgutilTest {
             }
         }
         return
+
+        get_iter_text(iterations, time_taken) {
+            iter_time := time_taken / iterations
+            if (iter_time < 10)
+                iter_text := Format("{:2.2f}", time_taken * 1000 / iterations) . "us"
+            else
+                iter_text := Format("{:2.2f}", time_taken / iterations) . "ms"
+            return iter_text
+        }
     }
 
     benchmarkThreadCtl(ctl, *) {

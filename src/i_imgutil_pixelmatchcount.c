@@ -77,7 +77,7 @@ static inline u32 i_imgutil_pixelmatchcount_v12
         u32 mres = _mm_movemask_epi8(vres);
         // count the number of bits from this mask and divide by 4 to get matching pixel count
         // (we get 1 bit for every byte from movemask_epi8)
-        ret += imgutil_popcount(mres) / 4;
+        ret += i_imgutil_popcount16(mres) / 4;
         w -= vecsize;
     }
     while (w) {

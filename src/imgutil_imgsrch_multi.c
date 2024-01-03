@@ -40,6 +40,14 @@
     psabi level 1 (sse2, no popcnt):    537.50ms
     psabi level 0 (scalar only code):   467.36ms
 
+    intel core i7 8650u (coffee lake-u/y, 4 cores):
+    
+    threads:                                  4
+    psabi level 4 (avx512):                 n/a
+    psabi level 3 (avx2):              131.41ms
+    psabi level 2 (sse4.1):            252.35ms
+    psabi level 1 (sse2, no popcnt):   515.60ms
+    psabi level 0 (scalar only code):  446.58ms
 */
 
 #include "i_imgutil.h"
@@ -119,6 +127,10 @@ argb* imgutil_imgsrch_multi (
     i32*    ppixels_matched// optional pointer to store the number of pixels matched)
 )
 {
+    // some basic sanity checks.
+    if (!haystack || !needle_lo || !needle_hi)
+        return 0;
+
     // this is the context the guy above us expects
     thread_ctx tctx = {
         .scanline       = 0,                // the threads will compete to increase this up to haystack_h - needle_h

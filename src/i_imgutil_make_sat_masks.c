@@ -156,6 +156,8 @@ u32 imgutil_make_sat_masks (
     u8      t
 ) {
     vec v;
+    if (needle == 0 || needle_lo == 0 || needle_hi == 0)
+        return 0;
     v.__mvec = _mvec_set1_epi32(0xff << 24  | t << 16 | t << 8 | t);
     return i_imgutil_make_sat_masks(needle, pixelcount, needle_lo, needle_hi, v);
 }

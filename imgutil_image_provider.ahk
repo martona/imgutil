@@ -507,9 +507,9 @@ class image_provider {
 
             static IDXGIOutputDuplication_AcquireNextFrame  := 8
             static IDXGIOutputDuplication_ReleaseFrame      := 14
-            ID3D11DeviceContext_Map                         := 14
-            ID3D11DeviceContext_Unmap                       := 15
-            ID3D11DeviceContext_CopyResource                := 47
+            static ID3D11DeviceContext_Map                  := 14
+            static ID3D11DeviceContext_Unmap                := 15
+            static ID3D11DeviceContext_CopyResource         := 47
             static DXGI_ERROR_WAIT_TIMEOUT                  := 0x887a0027
             static ID3D11DeviceContext_Unmap                := 15
             static D3D11_MAP_READ                           := 1

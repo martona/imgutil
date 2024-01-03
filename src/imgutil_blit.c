@@ -22,18 +22,26 @@
     intel xeon e5-2687w (sandy bridge ep)
 
     psabi level 4 (avx512):                  n/a
-    psabi level 3 (avx2):            
-    psabi level 2 (sse4.1):          
-    psabi level 1 (sse2, no popcnt): 
-    psabi level 0 (scalar only code):
+    psabi level 3 (avx2):              5617.98us
+    psabi level 2 (sse4.1):            5518.76us
+    psabi level 1 (sse2, no popcnt):   5537.10us
+    psabi level 0 (scalar only code):  5827.51us
 
-    intel core i5 8250u (kaby lake-r, 4 cores):
+    intel core i5 8250u (kaby lake-r):
 
     psabi level 4 (avx512):                  n/a
     psabi level 3 (avx2):              3863.99us
     psabi level 2 (sse4.1):            3924.65us
     psabi level 1 (sse2, no popcnt):   3652.30us
     psabi level 0 (scalar only code):  4317.79us
+
+    intel core i7 8650u (coffee lake-u/y):
+
+    psabi level 4 (avx512):                  n/a
+    psabi level 3 (avx2):              4672.90us
+    psabi level 2 (sse4.1):            4703.67us
+    psabi level 1 (sse2, no popcnt):   4757.37us
+    psabi level 0 (scalar only code):  5165.29us
 */
 
 i32 imgutil_blit (
@@ -44,6 +52,8 @@ i32 imgutil_blit (
     // some basic sanity checks.
     // we dont know the size of the images, 
     // so we can't do much more
+    if (!dst || !src)
+        return 0;
     if (dx < 0 || sx < 0 || dy < 0 || sy < 0)
         return 0;
     if (w <= 0 || h <= 0)

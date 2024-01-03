@@ -27,13 +27,21 @@
     psabi level 1 (sse2, no popcnt):   1802.00ms
     psabi level 0 (scalar only code):  1625.00ms
 
-    intel core i5 8250u (kaby lake-r, 4 cores):
+    intel core i5 8250u (kaby lake-r):
 
     psabi level 4 (avx512):                  n/a
     psabi level 3 (avx2):               389.46ms
     psabi level 2 (sse4.1):             662.00ms
     psabi level 1 (sse2, no popcnt):   1597.75ms
     psabi level 0 (scalar only code):  1378.75ms
+
+    intel core i7 8650u (coffee lake-u/y):
+    
+    psabi level 4 (avx512):                 n/a
+    psabi level 3 (avx2):              356.27ms
+    psabi level 2 (sse4.1):            632.75ms
+    psabi level 1 (sse2, no popcnt):  1519.50ms
+    psabi level 0 (scalar only code): 1301.00ms
 */
 
 /*  important: if we can ensure that needle, needle_lo, needle_hi AND haystack
@@ -54,6 +62,8 @@ argb* imgutil_imgsrch (
     i32*  ppixels_matched // optional pointer to store the number of pixels matched)
 )
 {
+    if (!haystack || !needle_lo || !needle_hi)
+        return 0;
     i32 needle_pixels       = needle_w * needle_h;
     i32 pixels_needed       = needle_pixels * pctmatchreq / 100;
     force_topleft           = pctmatchreq == 100 ? 1 : force_topleft;
