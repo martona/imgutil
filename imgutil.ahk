@@ -170,10 +170,16 @@ class imgutil {
         haystack := checkInputImg(haystack)
         needle   := checkInputImg(needle)
         
+        ;; TODO eventually we should do something about this
+        if (needle.w * 4 != needle.stride)
+            throw "imgutil.srch: needle stride must be needle.w * 4"
+        if (haystack.w * 4 != haystack.stride)
+            throw "imgutil.srch: haystack stride must be haystack.w * 4"
+
         imgutil_mask_lo := Buffer(needle.w * needle.h * 4)
         imgutil_mask_hi := Buffer(needle.w * needle.h * 4)
         DllCall(this.i_mcode_map["imgutil_make_sat_masks"], 
-            "ptr", needle.ptr, "uint", needle.w * needle.h, 
+            "ptr", needle.ptr, "uint", needle.w * needle.h,
             "ptr", imgutil_mask_lo, "ptr", imgutil_mask_hi, "char", tolerance, "int")
 
         pixels_matched := 0
@@ -566,4 +572,5 @@ class i_BITMAPINFOHEADER {
         return this.buffer        
     }
 }
+
 

@@ -3,6 +3,7 @@
 #ifndef _IMGUTIL_BLIT_INCLUDED
 #define _IMGUTIL_BLIT_INCLUDED
 
+__attribute__((optimize("no-tree-vectorize")))
 static inline i32 imgutil_blit_line_v0 (argb* d, argb* s, i32 w) {
     while (w) {
         *d++ = *s++;

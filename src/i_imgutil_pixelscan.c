@@ -5,6 +5,7 @@
 // returns a pointer to the first occurrence of a pixel 
 // on the given scanline, or zero if none found.
 
+__attribute__((optimize("no-tree-vectorize")))
 static inline argb* i_imgutil_pixel_scan_v0
 (   
     argb* __restrict p,
@@ -180,7 +181,6 @@ static inline argb* i_imgutil_pixel_scan_v4
             // to get the index of the pixel that matched
             return p + imgutil_ctz16(bits);
     }
-    // i guess we were called with w=0
     return 0;
 }
 #endif

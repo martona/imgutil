@@ -1,6 +1,7 @@
 #include "i_imgutil.h"
 
-// the scalar version should never be used other than for falling through
+// the scalar version; only for comparison
+__attribute__((optimize("no-tree-vectorize")))
 static inline u32 i_imgutil_pixelmatchcount_v0
 (
     argb** __restrict  haystack,    //pointer to haystack array
@@ -28,6 +29,7 @@ static inline u32 i_imgutil_pixelmatchcount_v0
         i32 cond_r = ((i32)s.r - (i32)l.r) <= ((i32)h.r - (i32)l.r);
         i32 cond_g = ((i32)s.g - (i32)l.g) <= ((i32)h.g - (i32)l.g);
         i32 cond_b = ((i32)s.b - (i32)l.b) <= ((i32)h.b - (i32)l.b);
+        // note bitwise &, not logical
         ret += (cond_r & cond_g & cond_b);
 
         w--;
@@ -35,7 +37,7 @@ static inline u32 i_imgutil_pixelmatchcount_v0
     return ret;
 }
 
-#if defined(MARCH_x86_64_v4) || defined(MARCH_x86_64_v3) || defined(MARCH_x86_64_v2) || defined(MARCH_x86_64_v1)
+#if defined(MARCH_x86_64_v3) || defined(MARCH_x86_64_v2) || defined(MARCH_x86_64_v1)
 // this is the same for v1 and v2, with the only difference being the unavailability of
 // popcnt in v1, so we have a software implementation through the macro. it is, however,
 // a massive speed penalty.
@@ -56,7 +58,7 @@ static inline u32 i_imgutil_pixelmatchcount_v12
         // get precomputed low values
         __m128i nl = _mm_loadu_si128((__m128i*) * needle_lo);
         *needle_lo += vecsize;
-        // get precomputed hight values
+        // get precomputed high values
         __m128i nh = _mm_loadu_si128((__m128i*) * needle_hi);
         *needle_hi += vecsize;
 
@@ -76,10 +78,12 @@ static inline u32 i_imgutil_pixelmatchcount_v12
         // condense the result into one bit per byte comparison
         u32 mres = _mm_movemask_epi8(vres);
         // count the number of bits from this mask and divide by 4 to get matching pixel count
-        // (we get 1 bit for every byte from movemask_epi8)
-        ret += i_imgutil_popcount16(mres) / 4;
+        // (we get 1 bit for every byte from movemask_epi8), but the nibbles are all 0xf or 0x0
+        // due to cmpeq_epi32, so it's safe to divide by 4
+        ret += imgutil_popcnt16(mres) / 4;
         w -= vecsize;
     }
+    // process the remaining 3 or fewer pixels one by one
     while (w) {
         __m128i nl   = _mm_loadu_si32(*needle_lo);
         __m128i nh   = _mm_loadu_si32(*needle_hi);
@@ -89,7 +93,8 @@ static inline u32 i_imgutil_pixelmatchcount_v12
         __m128i both = _mm_and_si128(lres, hres);
         __m128i vres = _mm_cmpeq_epi32(both, _mm_set1_epi32(-1));
         u32 mres = _mm_movemask_epi8(vres);
-        ret += (mres & 1);
+        // we either have 0xf or 0x0 in mres so just add the low bit
+        ret += (mres & 0x1);
         (*needle_lo)++;
         (*needle_hi)++;
         (*haystack)++;
@@ -99,7 +104,7 @@ static inline u32 i_imgutil_pixelmatchcount_v12
 }
 #endif
 
-#if defined(MARCH_x86_64_v4) || defined(MARCH_x86_64_v3)
+#if defined(MARCH_x86_64_v3)
 // https://stackoverflow.com/questions/77620019/
 // the avx check for the final value seems better than the 
 // (admittedly more "elegant") bit twiddling solutions
@@ -119,7 +124,7 @@ static inline u32 i_imgutil_pixelmatchcount_v3
         // get precomputed low values
         __m256i nl = _mm256_loadu_si256((__m256i*)*needle_lo);
         *needle_lo += vecsize;
-        // get precomputed hight values
+        // get precomputed high values
         __m256i nh = _mm256_loadu_si256((__m256i*)*needle_hi);
         *needle_hi += vecsize;
 
@@ -140,7 +145,7 @@ static inline u32 i_imgutil_pixelmatchcount_v3
         u32 mres = _mm256_movemask_epi8(vres);
         // count the number of bits from this mask and divide by 4 to get matching pixel count
         // (we get 1 bit for every byte from movemask_epi8)
-        ret += imgutil_popcount(mres) / 4;
+        ret += imgutil_popcnt32(mres) / 4;
         w -= vecsize;
     }
     ret += i_imgutil_pixelmatchcount_v12(haystack, w, needle_lo, needle_hi);
@@ -180,7 +185,7 @@ static inline u32 i_imgutil_pixelmatchcount_v4
         // compare this with the all-1 mask on a 32-bit basis to get 1 bit per pixel match
         __mmask16 bits = _mm512_cmpeq_epi32_mask(vboth, _mm512_set1_epi32(-1));
         // count the number of 1-bits in the result
-        ret += imgutil_popcount((u32)bits);
+        ret += imgutil_popcnt32((u32)bits);
         *needle_lo += vecsize;
         *needle_hi += vecsize;
         *haystack  += vecsize;
@@ -189,15 +194,15 @@ static inline u32 i_imgutil_pixelmatchcount_v4
     // cleanup any remaining pixels
     if (w) {
         //16-bit mask for loading the last w pixels;
-        u32 mask = (1 << w) - 1;
+        __mmask16 loadmask = _cvtu32_mask16((1 << w) - 1);
         //perform the load; this looks like it might reach beyond
         //the bounds of memory this code is allowed to access, but 
         //masked-off areas do not generate faults
-        __m512i h512 = _mm512_maskz_loadu_epi32(_cvtu32_mask16(mask), *haystack);
+        __m512i h512 = _mm512_maskz_loadu_epi32(loadmask, *haystack);
         // get precomputed low values
-        __m512i nl = _mm512_maskz_loadu_epi32(mask, *needle_lo);
+        __m512i nl = _mm512_maskz_loadu_epi32(loadmask, *needle_lo);
         // get precomputed high values
-        __m512i nh = _mm512_maskz_loadu_epi32(mask, *needle_hi);
+        __m512i nh = _mm512_maskz_loadu_epi32(loadmask, *needle_hi);
         // compare haystack to needle low (this gives us 4 bits per pixel in the mask; one for each channel)
         __mmask64 lres = _mm512_cmpge_epu8_mask(h512, nl);
         // compare haystack to needle high where the low comparison was true
@@ -207,9 +212,9 @@ static inline u32 i_imgutil_pixelmatchcount_v4
         // compare this with the all-1 mask on a 32-bit basis to get 1 bit per pixel match
         __mmask16 bits = _mm512_cmpeq_epi32_mask(vboth, _mm512_set1_epi32(-1));
         // don't let the zero loads affect the result, those are guaranteed to be matches
-        bits &= mask;
+        bits = _kand_mask16(bits, loadmask);
         // count the number of 1-bits in the result
-        ret += imgutil_popcount((u32)bits);
+        ret += imgutil_popcnt32((u32)_cvtmask16_u32(bits));
         *needle_lo += w;
         *needle_hi += w;
         *haystack  += w;

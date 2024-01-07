@@ -56,3 +56,4 @@ src/*.lst.txt
 src/*.c.s
 
 test/test.exo
+test/Thumbs.db

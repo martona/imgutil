@@ -1,15 +1,9 @@
 #Requires AutoHotkey 2.0+
+#SingleInstance Off
 
 #include "..\imgutil.ahk"
 
-/*
-    innermost:            200x200  0x0000ff (blue) rectangle
-    contained in:         400x400  0xff0000 (green) rectangle
-    contained in:         600x600  0x00ff00 (red) rectangle   
-    contained in:         800x800  0x000000 (black) rectangle
-    contained in:       1000x1000  0x101010 (dark gray) rectangle
-    contained in:       1200x1200  0x000000 (black) rectangle
-*/
+ProcessSetPriority "High"   ; for benchmarking
 
 imgutilTest().show()
 
@@ -320,7 +314,6 @@ class imgutilTest {
     test() {
 
         img := imgu.from_file("imgutil_test.png")
-        img.to_hbitmap()
         small := img.crop(1000, 1000, 200, 200)
         if !imgu.srch(&x, &y, img, small, 0, 100, 0)
             throw("test error")

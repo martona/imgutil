@@ -1,12 +1,13 @@
 #include "i_imgutil.h"
 
+__attribute__((optimize("no-tree-vectorize")))
 static inline u32 i_imgutil_make_sat_masks_v0
             (
                 u32* __restrict needle, 
-                         i32  pixelcount,
+                i32  pixelcount,
                 u32* __restrict needle_lo,
                 u32* __restrict needle_hi,
-                vec     tv
+                vec  tv
             )
 {
     argb t = tv.margb;
@@ -25,14 +26,14 @@ static inline u32 i_imgutil_make_sat_masks_v0
     return 0;
 }
 
-#if defined(MARCH_x86_64_v4) || defined(MARCH_x86_64_v3) || defined(MARCH_x86_64_v2) || defined(MARCH_x86_64_v1)
+#if defined(MARCH_x86_64_v3) || defined(MARCH_x86_64_v2) || defined(MARCH_x86_64_v1)
 static inline u32 i_imgutil_make_sat_masks_v12
             (
                 u32* __restrict needle, 
-                         i32  pixelcount,
+                i32  pixelcount,
                 u32* __restrict needle_lo,
                 u32* __restrict needle_hi,
-                vec     tv 
+                vec  tv 
             )
 {
     i32 vecsize      = (sizeof(__m128i)/sizeof(i32));
@@ -70,14 +71,14 @@ static inline u32 i_imgutil_make_sat_masks_v12
 }
 #endif
 
-#if defined(MARCH_x86_64_v4) || defined(MARCH_x86_64_v3)
+#if defined(MARCH_x86_64_v3)
 static inline u32 i_imgutil_make_sat_masks_v3
             (
                 u32* __restrict needle, 
-                         i32  pixelcount,
+                i32  pixelcount,
                 u32* __restrict needle_lo,
                 u32* __restrict needle_hi,
-                vec     tv
+                vec  tv
             )
 {
     i32 vecsize      = (sizeof(__m256i)/sizeof(i32));
@@ -109,10 +110,10 @@ static inline u32 i_imgutil_make_sat_masks_v3
 static inline u32 i_imgutil_make_sat_masks_v4
             (
                 u32* __restrict needle, 
-                         i32  pixelcount,
+                i32  pixelcount,
                 u32* __restrict needle_lo,
                 u32* __restrict needle_hi,
-                vec     tv
+                vec  tv
             )
 {
     i32 vecsize      = (sizeof(__m512i)/sizeof(i32));
@@ -150,10 +151,10 @@ static inline u32 i_imgutil_make_sat_masks_v4
 
 u32 imgutil_make_sat_masks (
     u32* __restrict needle, 
-            i32  pixelcount,
+    i32  pixelcount,
     u32* __restrict needle_lo,
     u32* __restrict needle_hi,
-    u8      t
+    u8   t
 ) {
     vec v;
     if (needle == 0 || needle_lo == 0 || needle_hi == 0)

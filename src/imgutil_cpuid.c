@@ -49,18 +49,14 @@ static inline unsigned int cpuid_available() {
 
 static inline int cpuid_feature_available(int info_type, int reg, int bit) {
     cpuid_output cpuinfo;
-    static unsigned int last_info_type = -1;
-    if (last_info_type != info_type) {
-        cpuid(&cpuinfo, info_type);            
-        last_info_type = info_type;
-    }
+    cpuid(&cpuinfo, info_type);            
     return (cpuinfo.array[reg] & bit) != 0;           
 }
 
 int get_cpu_psabi_level() {
 
-    if (!cpuid_available())
-        return 0;
+    // if (!cpuid_available())
+    //     return 0;
 
     unsigned int max_basic       = cpuid_max_basic();
     unsigned int max_extended    = cpuid_max_extended();

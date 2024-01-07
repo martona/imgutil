@@ -1,51 +1,53 @@
 /*
-    notes on performance:
+    copying a 3840x2160 bitmap
 
-    on my 2-socket xeon gold 6256 (cascade lake) with 12 cores each, copying a
-    3840x2160 bitmap to a 3840x2160 bitmap, the following timings were observed:
-
+    2-socket xeon gold 6256 (cascade lake, 12 cores each)
     threads:                                24        12        8         4
     psabi level 4 (avx512):           660.33us  907.28us 851.21us 1377.41us    
     psabi level 3 (avx2):             623.99us  840.05us 747.94us 1154.73us
-    psabi level 2 (sse4.1):           629.88us  813.67us 734.11us 1252.19us
+    psabi level 2 (sse4.2):           629.88us  813.67us 734.11us 1252.19us
     psabi level 1 (sse2, no popcnt):  618.58us  833.47us 724.22us 1254.71us
     psabi level 0 (scalar only code): 626.80us  878.73us 776.88us 1296.01us
 
-    on intel core i9 12900h (alder lake, 6p&8e cores), with the same inputs:
-
+    intel core i9 12900h (alder lake, 6p&8e cores)
     threads:                                   14         7         4
     psabi level 4 (avx512):                   n/a       n/a       n/a
     psabi level 3 (avx2):               1148.11us  895.74us  963.76us
-    psabi level 2 (sse4.1):             1167.68us  915.58us 1050.42us
+    psabi level 2 (sse4.2):             1167.68us  915.58us 1050.42us
     psabi level 1 (sse2, no popcnt):    1193.32us  912.41us 1047.78us
     psabi level 0 (scalar only code):   1212.42us 1076.43us 1329.08us
 
-    intel xeon e5-2687w, 2 sockets, 10 cores each:
-
+    2-socket intel xeon e5-2687w (sandy bridge ep, 10 cores each)
     threads:                                  20        10         4
     psabi level 4 (avx512):                  n/a       n/a       n/a
     psabi level 3 (avx2):              2317.89us 2408.52us 2555.22us
-    psabi level 2 (sse4.1):            2294.40us 2403.87us 2571.07us
+    psabi level 2 (sse4.2):            2294.40us 2403.87us 2571.07us
     psabi level 1 (sse2, no popcnt):   2290.24us 2417.87us 2540.93us
     psabi level 0 (scalar only code):  2291.28us 2411.99us 2651.63us
 
-    intel core i5 8250u (kaby lake-r, 4 cores):
-
+    intel core i5 8250u (kaby lake-r, 4 cores)
     threads:                                  4
     psabi level 4 (avx512):                 n/a
     psabi level 3 (avx2):             3906.25us
-    psabi level 2 (sse4.1):           3623.19us
+    psabi level 2 (sse4.2):           3623.19us
     psabi level 1 (sse2, no popcnt):  3599.71us
     psabi level 0 (scalar only code): 3465.00us
 
-    intel core i7 8650u (coffee lake-u/y, 4 cores):
-    
+    intel core i7 8650u (coffee lake-u/y, 4 cores)
     threads:                                  4
     psabi level 4 (avx512):                 n/a
     psabi level 3 (avx2):             5170.63us
-    psabi level 2 (sse4.1):           4826.25us
+    psabi level 2 (sse4.2):           4826.25us
     psabi level 1 (sse2, no popcnt):  4859.09us
     psabi level 0 (scalar only code): 4480.29us
+
+    intel core 2 duo t7700 (merom, 2 cores)
+    threads:                                  2
+    psabi level 4 (avx512):                 n/a
+    psabi level 3 (avx2):                   n/a
+    psabi level 2 (sse4.2):                 n/a
+    psabi level 1 (sse2, no popcnt):    26.39ms
+    psabi level 0 (scalar only code):   63.68ms
 */
 
 #include "i_imgutil_blit.c"
