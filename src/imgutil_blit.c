@@ -3,14 +3,14 @@
     copying a 3840x2160 bitmap
     -- conclusion is that AVX512 = bad for plain copying.
     -- apparently it blocks port 1 on the cpu on many
-    -- architectures. will not use it for this purpose.
-
-    xeon gold 6256 (cascade lake)
-    psabi level 4 (avx512):             5643.34us
-    psabi level 3 (avx2):               4520.80us
-    psabi level 2 (sse4.2):             4721.44us
-    psabi level 1 (sse2, no popcnt):    4708.10us
-    psabi level 0 (scalar only code):   5175.98us
+    -- architectures. should not use it for this purpose.
+         
+*** xeon gold 6256 (cascade lake) (2021 desktop) 
+    psabi level 4 (avx512):             5550.68us
+    psabi level 3 (avx2):               4548.87us
+    psabi level 2 (sse4.2):             4548.84us
+    psabi level 1 (sse2, no popcnt):    4582.27us
+    psabi level 0 (scalar only code):   5325.60us
 
     intel core i9 12900h (alder lake) (2023 alienware x15 r2)
     psabi level 4 (avx512):                   n/a
@@ -19,12 +19,19 @@
     psabi level 1 (sse2, no popcnt):    2608.24us
     psabi level 0 (scalar only code):   3270.11us
 
-    intel xeon e5-2687w (sandy bridge ep)
+*** intel xeon d-1540 (broadwell-de, 8 cores) (cca. 2016 supermicro x10sdv-tln4f)
     psabi level 4 (avx512):                  n/a
-    psabi level 3 (avx2):              5617.98us
-    psabi level 2 (sse4.2):            5518.76us
-    psabi level 1 (sse2, no popcnt):   5537.10us
-    psabi level 0 (scalar only code):  5827.51us
+    psabi level 3 (avx2):              6772.29us
+    psabi level 2 (sse4.2):            6818.38us
+    psabi level 1 (sse2, no popcnt):   6836.74us
+    psabi level 0 (scalar only code):  7426.55us
+         
+*** intel xeon e5-2687w (sandy bridge ep) (2014 desktop)
+    psabi level 4 (avx512):                  n/a
+    psabi level 3 (avx2):              5328.44us
+    psabi level 2 (sse4.2):            5374.31us
+    psabi level 1 (sse2, no popcnt):   5322.71us
+    psabi level 0 (scalar only code):  5362.73us
 
     intel core i5 8250u (kaby lake-r) (2017 system76 galago pro)
     psabi level 4 (avx512):                  n/a

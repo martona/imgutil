@@ -1,42 +1,49 @@
 /*
     3840x2160 haystack 64x64 needle located in the bottom right corner
 
-    xeon gold 6256 (cascade lake)
-    psabi level 4 (avx512):              167.2ms
-    psabi level 3 (avx2):                297.8ms
-    psabi level 2 (sse4.2):              511.0ms
-    psabi level 1 (sse2, no popcnt):    1234.4ms
-    psabi level 0 (scalar only code):   1078.2ms
+*** 2-socket xeon gold 6256 (cascade lake, 12 cores each) (2021 desktop)
+    psabi level 4 (avx512):              155.29ms
+    psabi level 3 (avx2):                283.87ms
+    psabi level 2 (sse4.2):              501.58ms
+    psabi level 1 (sse2, no popcnt):    1134.38ms
+    psabi level 0 (scalar only code):   2176.98ms
 
-    intel core i9 12900h (alder lake)
+    intel core i9 12900h (alder lake) (2023 alienware x15 r2)
     psabi level 4 (avx512):                  n/a
     psabi level 3 (avx2):                214.9ms
     psabi level 2 (sse4.2):              366.1ms
     psabi level 1 (sse2, no popcnt):     779.0ms
     psabi level 0 (scalar only code):    725.4ms
-
-    intel xeon e5-2687w (sandy bridge ep)
+         
+*** intel xeon d-1540 (broadwell-de, 8 cores) (cca. 2016 supermicro x10sdv-tln4f)
     psabi level 4 (avx512):                  n/a
-    psabi level 3 (avx2):               463.09ms
-    psabi level 2 (sse4.2):             854.17ms
-    psabi level 1 (sse2, no popcnt):   1802.00ms
-    psabi level 0 (scalar only code):  1625.00ms
+    psabi level 3 (avx2):               564.32ms
+    psabi level 2 (sse4.2):            1021.79ms
+    psabi level 1 (sse2, no popcnt):   2348.66ms
+    psabi level 0 (scalar only code):  3835.99ms
 
-    intel core i5 8250u (kaby lake-r)
+*** intel xeon e5-2687w (sandy bridge ep) (2014 desktop)
+    psabi level 4 (avx512):                  n/a
+    psabi level 3 (avx2):               406.22ms
+    psabi level 2 (sse4.2):             765.56ms
+    psabi level 1 (sse2, no popcnt):   1437.49ms
+    psabi level 0 (scalar only code):  2906.49ms
+
+    intel core i5 8250u (kaby lake-r) (2017 system76 galago pro)
     psabi level 4 (avx512):                  n/a
     psabi level 3 (avx2):               389.46ms
     psabi level 2 (sse4.2):             662.00ms
     psabi level 1 (sse2, no popcnt):   1597.75ms
     psabi level 0 (scalar only code):  1378.75ms
 
-    intel core i7 8650u (coffee lake-u/y)
+    intel core i7 8650u (coffee lake-u/y) (2018 surface book 2)
     psabi level 4 (avx512):                 n/a
     psabi level 3 (avx2):              356.27ms
     psabi level 2 (sse4.2):            632.75ms
     psabi level 1 (sse2, no popcnt):  1519.50ms
     psabi level 0 (scalar only code): 1301.00ms
 
-    intel core 2 duo t7700 (merom)
+    intel core 2 duo t7700 (merom) (2007 macbook pro a1229)
     psabi level 4 (avx512):                 n/a
     psabi level 3 (avx2):                   n/a
     psabi level 2 (sse4.2):                 n/a

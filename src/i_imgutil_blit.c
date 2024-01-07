@@ -3,13 +3,25 @@
 #ifndef _IMGUTIL_BLIT_INCLUDED
 #define _IMGUTIL_BLIT_INCLUDED
 
-__attribute__((optimize("no-tree-vectorize")))
-static inline i32 imgutil_blit_line_v0 (argb* d, argb* s, i32 w) {
+__attribute__((optimize("no-tree-vectorize"), always_inline))
+static inline void imgutil_blit_line_v0 (argb* d, argb* s, i32 w) {
     while (w) {
         *d++ = *s++;
         w--;
-    }   
-    return 1;
+    }
+    // note that the below works as a replacement, but isn't 
+    // noticably faster than the above code
+    /*asm volatile (
+        "movl %2, %%ecx\n\t"
+        "shr $1, %%rcx\n\t"
+        "rep movsq\n\t"
+        "movl %2, %%ecx\n\t"
+        "and $1, %%rcx\n\t"
+        "rep movsl\n\t"
+        : 
+        : "D" (d), "S" (s), "r" (w)
+        : "rcx"
+    );*/ 
 }
 
 #if defined(MARCH_x86_64_v1) || defined(MARCH_x86_64_v2) || defined(MARCH_x86_64_v3) || defined(MARCH_x86_64_v4)

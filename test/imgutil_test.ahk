@@ -16,16 +16,17 @@ class imgutilTest {
     benchmarkThreadCtlText := 0
     benchmarkThreadCtlEdit := 0
     benchmarkMultiCtl := 0
+    psabi_level := 0
 
     show() {
 
-        psabi_level := DllCall(imgu.i_mcode_map["get_cpu_psabi_level"], "int")
+        this.psabi_level := DllCall(imgu.i_mcode_map["get_cpu_psabi_level"], "int")
 
         this.gui := Gui()
         this.gui.Add("Text", "section", "Tests")
         this.gui.Add("Text", "section xs w0 h0")
         loop 5 {
-            if (psabi_level >= A_Index-1)
+            if (this.psabi_level >= A_Index-1)
                 this.gui.Add("Button", "ys", "X86_X64_V" . (A_Index-1)).OnEvent("Click", this.runTests.Bind(this, (A_Index-1)))
         }
 
@@ -39,7 +40,7 @@ class imgutilTest {
         
         v := 0
         while v < 6 {
-            if (psabi_level >= A_Index-1) {
+            if (this.psabi_level >= A_Index-1) {
                 this.gui.Add("Text", "section xs", "X86_X64_V" . v)
                 this.gui.Add("Button", "ys", "srch (brute)"  ).OnEvent("Click", this.benchmark.Bind(this, v, 0))
                 this.gui.Add("Edit", "ys w70 vbenchdisplay0" . v, "")
@@ -94,14 +95,14 @@ class imgutilTest {
         if (benchTarget == 5) {
             ; perform all 5 psabi levels in one go
             i := 0
-            while i < 5 {
+            while i <= this.psabi_level {
                 this.benchmark(i, target, ctl)
                 i++
             }
             results := []
             longest_result_len := 0
             for ctl in this.gui {
-                if ctl.Name ~= "benchdisplay" . target . benchTarget {
+                if ctl.Name ~= "benchdisplay" . target . "\d" {
                     results.push(ctl.Value)
                     if strlen(ctl.Value) > longest_result_len
                         longest_result_len := strlen(ctl.Value)
@@ -109,8 +110,8 @@ class imgutilTest {
             }
             strclip := ""
             for r in results {
-                r := Format("{:>" . longest_result_len . "}", r)
-                strclip .= r . "`n"
+                r := Format("{:" . longest_result_len . "}", r)
+                strclip := r . "`n" . strclip
             }
             A_Clipboard := strclip
             return
@@ -353,6 +354,18 @@ class imgutilTest {
     }
 
     test() {
+
+        img := imgu.from_file("imgutil_test.png")
+        ; grab a part of the blue rectangle in the middle
+        needle := img.crop(500, 500, 171, 111)
+        ; copy it to an arbitrary location in the main image
+        imgu.blit(img.ptr, 983, 10, img.w, needle.ptr, 0, 0, needle.w, needle.w, needle.h)
+        imgu.tolerance_set(0)
+        if (!imgu.srch(&x, &y, img, needle, 0, 100, 0))
+            throw("test error")
+        if (x != 983 || y != 10)
+            throw("test error (x: " . x . ", y: " . y . ")")
+
 
         img := imgu.from_file("imgutil_test.png")
         small := img.crop(1000, 1000, 200, 200)

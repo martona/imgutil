@@ -1,7 +1,7 @@
 #include "i_imgutil.h"
 
 // the scalar version; only for comparison
-__attribute__((optimize("no-tree-vectorize")))
+__attribute__((optimize("no-tree-vectorize"), always_inline))
 static inline u32 i_imgutil_pixelmatchcount_v0
 (
     argb** __restrict  haystack,    //pointer to haystack array

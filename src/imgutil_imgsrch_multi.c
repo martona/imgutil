@@ -1,15 +1,15 @@
 /*
     3840x2160 haystack, 64x64 needle located in the bottom right corner
 
-    2-socket xeon gold 6256 (cascade lake, 12 cores each)
-    threads:                                  24       12        8        4
-    psabi level 4 (avx512):              12.36ms  15.53ms  21.74ms  43.14ms
-    psabi level 3 (avx2):                23.35ms  28.90ms  38.46ms  76.23ms
-    psabi level 2 (sse4.2):              80.10ms  47.02ms  66.00ms 130.20ms
-    psabi level 1 (sse2, no popcnt):     80.63ms 110.39ms 158.22ms 313.44ms
-    psabi level 0 (scalar only code):    76.91ms  98.35ms 138.05ms 273.84ms
+*** 2-socket xeon gold 6256 (cascade lake, 12 cores each) (2021 desktop)
+    threads:                                   24        12         8         4         2
+    psabi level 4 (avx512):               11.56ms   15.37ms   20.90ms   40.97ms   80.87ms
+    psabi level 3 (avx2):                 21.89ms   28.01ms   37.02ms   73.35ms  143.30ms
+    psabi level 2 (sse4.2):               37.98ms   46.43ms   64.09ms  127.33ms  252.33ms
+    psabi level 1 (sse2, no popcnt):      77.63ms   99.87ms  141.48ms  279.48ms  558.98ms
+    psabi level 0 (scalar only code):    153.38ms  188.61ms  272.98ms  542.18ms 1081.18ms
 
-    intel core i9 12900h (alder lake, 6p&8e cores)
+    intel core i9 12900h (alder lake, 6p&8e cores) (2023 alienware x15 r2)
     threads:                                  14        7        4
     psabi level 4 (avx512):                  n/a      n/a      n/a
     psabi level 3 (avx2):                31.75ms  42.28ms  65.34ms
@@ -17,15 +17,23 @@
     psabi level 1 (sse2, no popcnt):     96.46ms 138.89ms 217.39ms
     psabi level 0 (scalar only code):    89.84ms 130.62ms 203.12ms
 
-    2-socket intel xeon e5-2687w (sandy bridge ep, 10 cores each)
-    threads:                                  20       10        4
-    psabi level 4 (avx512):                  n/a      n/a      n/a
-    psabi level 3 (avx2):                41.24ms  45.33ms 116.63ms
-    psabi level 2 (sse4.2):              77.65ms  88.54ms 214.17ms
-    psabi level 1 (sse2, no popcnt):    163.29ms 183.61ms 458.82ms    
-    psabi level 0 (scalar only code):   140.64ms 170.83ms 400.23ms
+*** intel xeon d-1540 (broadwell-de, 8 cores) (cca. 2016 supermicro x10sdv-tln4f)
+    threads:                                   8         4         2
+    psabi level 4 (avx512):                  n/a       n/a       n/a
+    psabi level 3 (avx2):                93.73ms  164.31ms  468.72ms
+    psabi level 2 (sse4.2):             161.28ms  309.69ms  644.49ms
+    psabi level 1 (sse2, no popcnt):    304.22ms  598.99ms 1601.49ms
+    psabi level 0 (scalar only code):   593.77ms 1152.99ms 2135.66ms
 
-    intel core i5 8250u (kaby lake-r, 4 cores)
+*** 2-socket intel xeon e5-2687w (sandy bridge ep, 10 cores each) (2014 desktop)
+    threads:                                  20       10        8           4          2
+    psabi level 4 (avx512):                  n/a       n/a       n/a       n/a        n/a
+    psabi level 3 (avx2):                38.45ms   44.38ms   55.45ms  110.71ms   205.63ms
+    psabi level 2 (sse4.2):              76.69ms   85.26ms  106.12ms  212.24ms   401.45ms
+    psabi level 1 (sse2, no popcnt):    138.88ms  160.15ms  198.30ms  400.22ms   738.85ms
+    psabi level 0 (scalar only code):   267.26ms  312.49ms  391.84ms  794.71ms  1484.49ms
+
+    intel core i5 8250u (kaby lake-r, 4 cores) (2017 system76 galago pro)
     threads:                                   4
     psabi level 4 (avx512):                  n/a
     psabi level 3 (avx2):               134.87ms
@@ -33,7 +41,7 @@
     psabi level 1 (sse2, no popcnt):    537.50ms
     psabi level 0 (scalar only code):   467.36ms
 
-    intel core i7 8650u (coffee lake-u/y, 4 cores)
+    intel core i7 8650u (coffee lake-u/y, 4 cores) (2018 surface book 2)
     threads:                                  4
     psabi level 4 (avx512):                 n/a
     psabi level 3 (avx2):              131.41ms
@@ -41,7 +49,7 @@
     psabi level 1 (sse2, no popcnt):   515.60ms
     psabi level 0 (scalar only code):  446.58ms
 
-    intel core 2 duo t7700 (merom, 2 cores)
+    intel core 2 duo t7700 (merom, 2 cores) (2007 macbook pro a1229)
     threads:                                  2
     psabi level 4 (avx512):                 n/a
     psabi level 3 (avx2):                   n/a
