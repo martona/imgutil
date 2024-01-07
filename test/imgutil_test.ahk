@@ -38,7 +38,7 @@ class imgutilTest {
         this.benchmarkFileCtl := this.gui.Add("Text", "section xs", "Currently selected: " . this.benchmarkFileSelection)
         
         v := 0
-        while v < 5 {
+        while v < 6 {
             if (psabi_level >= A_Index-1) {
                 this.gui.Add("Text", "section xs", "X86_X64_V" . v)
                 this.gui.Add("Button", "ys", "srch (brute)"  ).OnEvent("Click", this.benchmark.Bind(this, v, 0))
@@ -55,6 +55,23 @@ class imgutilTest {
                 this.gui.Add("Edit", "ys w70 vbenchdisplay5" . v, "")
                 this.gui.Add("Button", "ys", "crop"          ).OnEvent("Click", this.benchmark.Bind(this, v, 6))
                 this.gui.Add("Edit", "ys w70 vbenchdisplay6" . v, "")
+            }
+            if (v == 5) {
+                this.gui.Add("Text", "section xs", "X86_X64_V" . v)
+                this.gui.Add("Button", "ys", "srch (brute)"  ).OnEvent("Click", this.benchmark.Bind(this, v, 0))
+                this.gui.Add("Edit", "ys w70 hidden vbenchdisplay0" . v, "")
+                this.gui.Add("Button", "ys", "blit"          ).OnEvent("Click", this.benchmark.Bind(this, v, 1))
+                this.gui.Add("Edit", "ys w70 hidden vbenchdisplay1" . v, "")
+                this.gui.Add("Button", "ys", "gdi_scrshot"   ).OnEvent("Click", this.benchmark.Bind(this, v, 2))
+                this.gui.Add("Edit", "ys w70 hidden vbenchdisplay2" . v, "")
+                this.gui.Add("Button", "ys", "dxgi_scrshot"  ).OnEvent("Click", this.benchmark.Bind(this, v, 3))
+                this.gui.Add("Edit", "ys w70 hidden vbenchdisplay3" . v, "")
+                this.gui.Add("Button", "ys", "builtin.srch"  ).OnEvent("Click", this.benchmark.Bind(this, v, 4))
+                this.gui.Add("Edit", "ys w70 hidden vbenchdisplay4" . v, "")
+                this.gui.Add("Button", "ys", "comp.src"      ).OnEvent("Click", this.benchmark.Bind(this, v, 5))
+                this.gui.Add("Edit", "ys w70 hidden vbenchdisplay5" . v, "")
+                this.gui.Add("Button", "ys", "crop"          ).OnEvent("Click", this.benchmark.Bind(this, v, 6))
+                this.gui.Add("Edit", "ys w70 hidden vbenchdisplay6" . v, "")
             }
             v++
         }
@@ -74,6 +91,30 @@ class imgutilTest {
     }
 
     benchmark(benchTarget, target, ctl, *) {
+        if (benchTarget == 5) {
+            ; perform all 5 psabi levels in one go
+            i := 0
+            while i < 5 {
+                this.benchmark(i, target, ctl)
+                i++
+            }
+            results := []
+            longest_result_len := 0
+            for ctl in this.gui {
+                if ctl.Name ~= "benchdisplay" . target . benchTarget {
+                    results.push(ctl.Value)
+                    if strlen(ctl.Value) > longest_result_len
+                        longest_result_len := strlen(ctl.Value)
+                }
+            }
+            strclip := ""
+            for r in results {
+                r := Format("{:>" . longest_result_len . "}", r)
+                strclip .= r . "`n"
+            }
+            A_Clipboard := strclip
+            return
+        }
         imgu.i_mcode_map := imgu.i_get_mcode_map(benchTarget)
         this.ctlbench.Text := "Benchmarking..."
         this.ctlbench.Redraw()
