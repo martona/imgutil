@@ -145,6 +145,26 @@ class image_provider {
 
     } ; end of image_provider.gdip class
 
+    ;############################################################################################################
+    ; image provider to create empty images of arbitrary size
+    ;############################################################################################################
+    class nothing extends image_provider {
+
+        buff := 0
+        
+        __New() {
+            super.__New()
+        }
+
+        __Delete() {
+            super.__Delete()    
+        }
+
+        get_image(w, h) {
+            this.buff := Buffer(w * h * 4)
+            return super.get_image(this.buff.ptr, w, h, w * 4)
+        }
+    } ; end of image_provider.nothing class
 
     ;############################################################################################################
     ; image provider for memory sources

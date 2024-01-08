@@ -152,7 +152,7 @@ class imgutil {
     ;########################################################################################################
     crop(img, x, y, w, h) {
         new := img.crop(x, y, w, h)
-        if img.HasOwnProp("origin")
+        if img.HasOwnProp("origin") && img.origin
             new.origin := {x: img.origin.x + x, y: img.origin.y + y}
         return new
     }
@@ -255,9 +255,36 @@ class imgutil {
     ; replace a color with another within the image
     ;########################################################################################################
     replace_color(img, color, replacement, tolerance := 0) {
-        return DllCall(this.i_mcode_map["imgutil_replace_color"], 
-            "ptr", img.ptr, "int", img.w, "int", img.h, "int", img.stride//4,
+        newimg := imgutil.img(this).from_memory(img.ptr, img.w, img.h, img.stride)
+        newimg.origin := img.origin
+        DllCall(this.i_mcode_map["imgutil_replace_color"], 
+            "ptr", newimg.ptr, "int", newimg.w, "int", newimg.h, "int", newimg.stride//4,
             "uint", color, "uint", replacement, "char", tolerance, "int")
+        return newimg
+    }
+
+    ;########################################################################################################
+    ; convert an image to grayscale
+    ;########################################################################################################
+    grayscale(img) {
+        ; todo: mcode
+        newimg := imgutil.img(this).from_memory(img.ptr, img.w, img.h, img.stride)
+        newimg.origin := img.origin
+        y := 0
+        while y < newimg.h {
+            x := 0
+            while x < newimg.w {
+                px := newimg[x, y]
+                r := (px & 0x00FF0000) >> 16
+                g := (px & 0x0000ff00) >>  8
+                b := (px & 0x000000ff)
+                avg := (r + g + b) // 3
+                newimg[x, y] := (avg << 16) | (avg << 8) | avg
+                x++
+            }
+            y++
+        }
+        return newimg
     }
 
     ;########################################################################################################
@@ -281,6 +308,13 @@ class imgutil {
         if rect.w = 0 || rect.h = 0
             rect := 0
         return imgutil.img(this).from_screen(rect)
+    }
+
+    ;########################################################################################################
+    ; create blank image
+    ;########################################################################################################
+    from_nothing(w, h) {
+        return imgutil.img(this).from_nothing(w, h)
     }
 
     ;########################################################################################################
@@ -370,6 +404,16 @@ class imgutil {
             get => pretty ? Format("0x{:08X}", this.get_pixel(x, y)) : this.get_pixel(x, y)
             set => this.set_pixel(x, y, value)
          }  
+
+        ;########################################################################################################
+        ; create blank image
+        ;########################################################################################################
+        from_nothing(w, h) {
+            i_provider := image_provider.nothing()
+            if i_provider.get_image(w, h)
+                return this.from_provider(i_provider)
+            return false
+        }
 
         ;########################################################################################################
         ; object from memory location
@@ -496,7 +540,8 @@ class imgutil {
         ;   the image is assumed to be a line of glyphs, such as a captured image of one row of text
         ;############################################################################################################
         extract_glyphs(gui) {
-            imgu.tolerance_set(4)
+            old_tolerance := imgu.tolerance_get()
+            imgu.tolerance_set(128)
             glyphs := []
             x := 0
             bgc := this[0, 0, true]
@@ -515,6 +560,7 @@ class imgutil {
                 glyphs.push(glyph)
                 x := xr
             }
+            imgu.tolerance_set(old_tolerance)
             return glyphs
         }
 

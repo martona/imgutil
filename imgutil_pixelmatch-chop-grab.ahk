@@ -134,7 +134,7 @@
         if t <= 0
             return pic
         h := pic.height - t
-        return this.crop(pic, 0, t, pic.width, pic.height - t)
+        return this.crop(pic, 0, t, pic.width, h)
     }
     chop_match_b(pic, refc) {
         b := this.get_row_mism_rev(pic, refc, pic.height-1)
