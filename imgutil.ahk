@@ -357,9 +357,9 @@ class imgutil {
         ;########################################################################################################
         ; access individual pixel valus
         ;########################################################################################################
-        __Item[x, y] {
-            get => NumGet(this.ptr + y * this.stride + x * 4, "uint")
-            set => NumPut("uint", value, this.ptr + y * this.stride + x * 4)
+        __Item[x, y, pretty := false] {
+            get => pretty ? Format("0x{:08X}", this.get_pixel(x, y)) : this.get_pixel(x, y)
+            set => this.set_pixel(x, y, value)
          }  
 
         ;########################################################################################################
@@ -466,6 +466,69 @@ class imgutil {
                 obj.origin := {x: this.origin.x + x, y: this.origin.y + y}
             }
             return obj
+        }
+
+        ;############################################################################################################
+        ; get a pixel from the image
+        ;############################################################################################################
+        get_pixel(x, y) {
+            return NumGet(this.ptr + (y * this.stride) + (x * 4), "uint")
+        }
+
+        ;############################################################################################################
+        ; set a pixel in the image
+        ;############################################################################################################
+        set_pixel(x, y, px) {
+            NumPut("uint", px, this.ptr + (y * this.stride) + (x * 4))
+        }
+
+        ;############################################################################################################
+        ; extract glyphs from an image
+        ;   the image is assumed to be a line of glyphs, such as a captured image of one row of text
+        ;############################################################################################################
+        extract_glyphs(gui) {
+            imgu.tolerance_set(4)
+            glyphs := []
+            x := 0
+            bgc := this[0, 0, true]
+            while (x < this.w) {
+                xl := imgu.get_col_mism(this, bgc, x)
+                if xl < 0
+                    break
+                xr := imgu.get_col_match(this, bgc, xl)
+                if xr < 0
+                    break
+                w := xr - xl
+                glyph := this.crop(xl, 0, w, this.h)
+                glyph := imgu.chop_match_t(glyph, bgc)
+                glyph := imgu.chop_match_b(glyph, bgc)
+                gui.setStatusPic(glyph)
+                glyphs.push(glyph)
+                x := xr
+            }
+            return glyphs
+        }
+
+        ;############################################################################################################
+        ; blit - copy another image into this one
+        ;############################################################################################################
+        blit(srcimg, dx, dy) {
+            return this.i_imgu.blit(this.ptr, dx, dy, this.stride//4, srcimg.ptr, 0, 0, srcimg.stride//4, srcimg.w, srcimg.h)
+        }
+
+        ;############################################################################################################
+        ; fill - fill the image with a color within the given coordinates
+        ;############################################################################################################
+        fill(x, y, w, h, color) {
+            ; TODO: mcode
+            while (w > 0) {
+                w--
+                h1 := h
+                while (h1 > 0) {
+                    h1--
+                    this[x+w, y+h1] := color
+                }
+            }
         }
 
     } ; end of img class

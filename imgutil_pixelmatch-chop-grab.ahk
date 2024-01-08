@@ -194,7 +194,7 @@
     grab_mism_t(pic, refc) {
         b := this.get_row_match(pic, refc, 0)
         if b <= 0
-            Throw Error("Fail", -1)
+            return 0
         return this.crop(pic, 0, 0, pic.width, b)
     }
     
@@ -202,14 +202,14 @@
         b := this.get_row_match_rev(pic, refc, pic.height-1)
         h := pic.height - b
         if h <= 0
-            Throw Error("Fail", -1)
+            return 0
         return this.crop(pic, 0, b, pic.width, h)
     }
     
     grab_mism_l(pic, refc) {
         l := this.get_col_match(pic, refc, 0)
         if l <= 0
-            Throw Error("Fail", -1)
+            return 0
         return this.crop(pic, 0, 0, l, pic.height)
     }
     
@@ -217,7 +217,7 @@
         r := imgu.get_col_match_rev(pic, refc, pic.width-1)
         w := pic.width - r
         if r <= 0
-            Throw Error("Fail", -1)
+            return 0
         return this.crop(pic, r, 0, pic.width-r, pic.height)
     }
     
