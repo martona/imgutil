@@ -69,3 +69,21 @@ i32 imgutil_row_uniform(
 {
     return i_imgutil_row_uniform(ptr, width, height, refc, y, tolerance, xmin, xmax);
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+i32 imgutil_replace_color(argb* ptr, i32 width, i32 height, i32 stride, argb cold, argb cnew, i32 tolerance) {
+    argb* end = ptr + height * stride;
+    i32 clr_replaced = 0;
+    while (ptr < end) {
+        argb* end2 = ptr + width;
+        while (ptr < end2) {
+            if (i_imgutil_pixels_match(*ptr, cold, tolerance)) {
+                clr_replaced++;
+                *ptr = cnew;
+            }
+            ptr++;
+        }
+        ptr += stride - width;
+    }
+    return clr_replaced;
+}

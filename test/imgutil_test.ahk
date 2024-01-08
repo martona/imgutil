@@ -21,7 +21,6 @@ class imgutilTest {
     show() {
 
         this.psabi_level := DllCall(imgu.i_mcode_map["get_cpu_psabi_level"], "int")
-
         this.gui := Gui()
         this.gui.Add("Text", "section", "Tests")
         this.gui.Add("Text", "section xs w0 h0")
@@ -354,6 +353,10 @@ class imgutilTest {
     }
 
     test() {
+
+        img := imgu.from_file("imgutil_test_clrreplace.png")
+        imgu.replace_color(img, 0x4CAF50, 0xff121212, 150)
+        img.to_file("imgutil_test_clrreplace.tmp.png")
 
         img := imgu.from_file("imgutil_test.png")
         ; grab a part of the blue rectangle in the middle

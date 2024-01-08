@@ -55,5 +55,5 @@ src/*.err.txt
 src/*.lst.txt
 src/*.c.s
 
-test/test.exo
 test/Thumbs.db
+test/*.tmp.png

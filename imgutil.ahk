@@ -252,6 +252,15 @@ class imgutil {
     }
 
     ;########################################################################################################
+    ; replace a color with another within the image
+    ;########################################################################################################
+    replace_color(img, color, replacement, tolerance := 0) {
+        return DllCall(this.i_mcode_map["imgutil_replace_color"], 
+            "ptr", img.ptr, "int", img.w, "int", img.h, "int", img.stride//4,
+            "uint", color, "uint", replacement, "char", tolerance, "int")
+    }
+
+    ;########################################################################################################
     ; load an image from disk
     ;########################################################################################################
     from_file(fname) {
