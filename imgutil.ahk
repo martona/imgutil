@@ -479,9 +479,8 @@ class imgutil {
         ;############################################################################################################
         crop(x, y, w, h) {
             obj := this.i_imgu.from_memory(this.ptr + (y * this.stride) + (x * 4), w, h, this.stride)
-            if this.origin {
+            if this.origin
                 obj.origin := {x: this.origin.x + x, y: this.origin.y + y}
-            }
             return obj
         }
 
@@ -503,7 +502,7 @@ class imgutil {
         ; extract glyphs from an image
         ;   the image is assumed to be a line of glyphs, such as a captured image of one row of text
         ;############################################################################################################
-        extract_glyphs(gui) {
+        extract_glyphs(*) {
             old_tolerance := imgu.tolerance_get()
             imgu.tolerance_set(128)
             glyphs := []
@@ -520,7 +519,6 @@ class imgutil {
                 glyph := this.crop(xl, 0, w, this.h)
                 glyph := imgu.chop_match_t(glyph, bgc)
                 glyph := imgu.chop_match_b(glyph, bgc)
-                gui.setStatusPic(glyph)
                 glyphs.push(glyph)
                 x := xr
             }
@@ -539,16 +537,19 @@ class imgutil {
         ; fill - fill the image with a color within the given coordinates
         ;############################################################################################################
         fill(x, y, w, h, color) {
+            newimg := this.i_imgu.from_memory(this.ptr, this.w, this.h, this.stride)
+            newimg.origin := this.origin
             DllCall(this.i_imgu.i_mcode_map["imgutil_fill"], 
-                "ptr", this.ptr, "int", this.w, "int", this.h, "int", this.stride//4,
-                "int", x, "int", y, "int", w, "int", h, "uint", color)
+                "ptr", newimg.ptr, "int", newimg.w, "int", newimg.h, "int", newimg.stride//4,
+                "uint", color, "int", x, "int", y, "int", w, "int", h)
+            return newimg
         }
 
         ;########################################################################################################
         ; convert an image to grayscale
         ;########################################################################################################
         grayscale() {
-            newimg := this.i_imgu.img(this.i_imgu).from_memory(this.ptr, this.w, this.h, this.stride)
+            newimg := this.i_imgu.from_memory(this.ptr, this.w, this.h, this.stride)
             newimg.origin := this.origin
             DllCall(this.i_imgu.i_mcode_map["imgutil_grayscale"], 
                 "ptr", newimg.ptr, "int", newimg.w, "int", newimg.h, "int", newimg.stride//4)
@@ -559,12 +560,36 @@ class imgutil {
         ; replace a color with another within the image
         ;########################################################################################################
         replace_color(color, replacement, tolerance := 0) {
-            newimg := this.i_imgu.img(this.i_imgu).from_memory(this.ptr, this.w, this.h, this.stride)
+            newimg := this.i_imgu.from_memory(this.ptr, this.w, this.h, this.stride)
             newimg.origin := this.origin
-            DllCall(this.i_mcode_map["imgutil_replace_color"], 
+            DllCall(this.i_imgu.i_mcode_map["imgutil_replace_color"], 
                 "ptr", newimg.ptr, "int", newimg.w, "int", newimg.h, "int", newimg.stride//4,
-                "uint", color, "uint", replacement, "char", tolerance, "int")
+                "uint", color, "uint", replacement, "char", tolerance)
             return newimg
+        }
+
+        ;########################################################################################################
+        ; display the image in a gui
+        ;########################################################################################################
+        show(w := 0, h := 0, title := "imgutil") {
+            if (w = 0 || h = 0) {
+                w := this.w
+                h := this.h
+            }
+            _gui := Gui()
+            ctl := _gui.Add("pic", "w" . w . " h" . h)
+            ; determine correct aspect ratio and adjust control size accordingly
+            ctlRatio := w / h
+            picRatio := this.w / this.h
+            if (ctlRatio > picRatio)
+                ctl.move(, , floor(h * picRatio), h)
+            else
+                ctl.move(, , w, floor(w / picRatio))
+            hbm := this.to_hbitmap()
+            ctl.Value := "HBITMAP:" . hbm
+            DllCall("gdi32\DeleteObject", "ptr", hbm)
+            _gui.Show()
+            return gui
         }
 
     } ; end of img class
@@ -671,5 +696,3 @@ class i_BITMAPINFOHEADER {
         return this.buffer        
     }
 }
-
-
