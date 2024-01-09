@@ -87,3 +87,36 @@ i32 imgutil_replace_color(argb* ptr, i32 width, i32 height, i32 stride, argb col
     }
     return clr_replaced;
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void imgutil_fill(argb* ptr, i32 width, i32 height, i32 stride, argb c, i32 x, i32 y, i32 w, i32 h) {
+    argb* end = ptr + (y + h) * stride + x;
+    ptr += y * stride + x;
+    while (ptr < end) {
+        argb* end2 = ptr + w;
+        while (ptr < end2) {
+            *ptr = c;
+            ptr++;
+        }
+        ptr += stride - w;
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void imgutil_grayscale(argb* ptr, i32 width, i32 height, i32 stride) {
+    argb* end = ptr + height * stride;
+    while (ptr < end) {
+        argb* end2 = ptr + width;
+        while (ptr < end2) {
+            i32 r = ptr->r;
+            i32 g = ptr->g;
+            i32 b = ptr->b;
+            i32 avg = (r + g + b) / 3;
+            ptr->r = avg;
+            ptr->g = avg;
+            ptr->b = avg;
+            ptr++;
+        }
+        ptr += stride - width;
+    }
+}

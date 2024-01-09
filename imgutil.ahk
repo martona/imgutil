@@ -252,42 +252,6 @@ class imgutil {
     }
 
     ;########################################################################################################
-    ; replace a color with another within the image
-    ;########################################################################################################
-    replace_color(img, color, replacement, tolerance := 0) {
-        newimg := imgutil.img(this).from_memory(img.ptr, img.w, img.h, img.stride)
-        newimg.origin := img.origin
-        DllCall(this.i_mcode_map["imgutil_replace_color"], 
-            "ptr", newimg.ptr, "int", newimg.w, "int", newimg.h, "int", newimg.stride//4,
-            "uint", color, "uint", replacement, "char", tolerance, "int")
-        return newimg
-    }
-
-    ;########################################################################################################
-    ; convert an image to grayscale
-    ;########################################################################################################
-    grayscale(img) {
-        ; todo: mcode
-        newimg := imgutil.img(this).from_memory(img.ptr, img.w, img.h, img.stride)
-        newimg.origin := img.origin
-        y := 0
-        while y < newimg.h {
-            x := 0
-            while x < newimg.w {
-                px := newimg[x, y]
-                r := (px & 0x00FF0000) >> 16
-                g := (px & 0x0000ff00) >>  8
-                b := (px & 0x000000ff)
-                avg := (r + g + b) // 3
-                newimg[x, y] := (avg << 16) | (avg << 8) | avg
-                x++
-            }
-            y++
-        }
-        return newimg
-    }
-
-    ;########################################################################################################
     ; load an image from disk
     ;########################################################################################################
     from_file(fname) {
@@ -575,15 +539,32 @@ class imgutil {
         ; fill - fill the image with a color within the given coordinates
         ;############################################################################################################
         fill(x, y, w, h, color) {
-            ; TODO: mcode
-            while (w > 0) {
-                w--
-                h1 := h
-                while (h1 > 0) {
-                    h1--
-                    this[x+w, y+h1] := color
-                }
-            }
+            DllCall(this.i_imgu.i_mcode_map["imgutil_fill"], 
+                "ptr", this.ptr, "int", this.w, "int", this.h, "int", this.stride//4,
+                "int", x, "int", y, "int", w, "int", h, "uint", color)
+        }
+
+        ;########################################################################################################
+        ; convert an image to grayscale
+        ;########################################################################################################
+        grayscale() {
+            newimg := this.i_imgu.img(this.i_imgu).from_memory(this.ptr, this.w, this.h, this.stride)
+            newimg.origin := this.origin
+            DllCall(this.i_imgu.i_mcode_map["imgutil_grayscale"], 
+                "ptr", newimg.ptr, "int", newimg.w, "int", newimg.h, "int", newimg.stride//4)
+            return newimg
+        }
+
+        ;########################################################################################################
+        ; replace a color with another within the image
+        ;########################################################################################################
+        replace_color(color, replacement, tolerance := 0) {
+            newimg := this.i_imgu.img(this.i_imgu).from_memory(this.ptr, this.w, this.h, this.stride)
+            newimg.origin := this.origin
+            DllCall(this.i_mcode_map["imgutil_replace_color"], 
+                "ptr", newimg.ptr, "int", newimg.w, "int", newimg.h, "int", newimg.stride//4,
+                "uint", color, "uint", replacement, "char", tolerance, "int")
+            return newimg
         }
 
     } ; end of img class
