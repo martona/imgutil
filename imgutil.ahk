@@ -541,7 +541,7 @@ class imgutil {
         ;############################################################################################################
         extract_glyphs(gui) {
             old_tolerance := imgu.tolerance_get()
-            imgu.tolerance_set(128)
+            imgu.tolerance_set(160)
             glyphs := []
             x := 0
             bgc := this[0, 0, true]
