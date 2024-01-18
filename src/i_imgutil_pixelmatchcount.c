@@ -1,7 +1,7 @@
 #include "i_imgutil.h"
 
 // the scalar version; only for comparison
-__attribute__((optimize("no-tree-vectorize"), always_inline))
+__attribute__((optimize("no-tree-vectorize")))
 static inline u32 i_imgutil_pixelmatchcount_v0
 (
     argb** __restrict  haystack,    //pointer to haystack array
@@ -12,25 +12,26 @@ static inline u32 i_imgutil_pixelmatchcount_v0
 {
     // pixel match count to be returned
     u32 ret = 0;
-    while (w > 0) {
+    while (w >= 1) {
         argb s = **haystack;
         argb l = **needle_lo;
         argb h = **needle_hi;
         (*haystack)++;
         (*needle_lo)++;
         (*needle_hi)++;
-        // GCC and clang produce code for this with 5 branches:
-        // if ((s.r <= h.r) && (s.r >= l.r) && 
-        //     (s.g <= h.g) && (s.g >= l.g) && 
-        //     (s.b <= h.b) && (s.b >= l.b))
-        //     ret++;
 
-        // this is branchless and runs in 70% of the time:        
-        i32 cond_r = ((i32)s.r - (i32)l.r) <= ((i32)h.r - (i32)l.r);
-        i32 cond_g = ((i32)s.g - (i32)l.g) <= ((i32)h.g - (i32)l.g);
-        i32 cond_b = ((i32)s.b - (i32)l.b) <= ((i32)h.b - (i32)l.b);
-        // note bitwise &, not logical
-        ret += (cond_r & cond_g & cond_b);
+        // GCC and clang produce code for this with 5 branches:
+        if ((s.r <= h.r) && (s.r >= l.r) && 
+            (s.g <= h.g) && (s.g >= l.g) && 
+            (s.b <= h.b) && (s.b >= l.b))
+            ret++;
+
+        // // this is branchless and runs in 70% of the time:        
+        // i32 cond_r = ((u32)s.r - (u32)l.r) <= ((u32)h.r - (u32)l.r);
+        // i32 cond_g = ((u32)s.g - (u32)l.g) <= ((u32)h.g - (u32)l.g);
+        // i32 cond_b = ((u32)s.b - (u32)l.b) <= ((u32)h.b - (u32)l.b);
+        // // note bitwise &, not logical
+        // ret += (cond_r & cond_g & cond_b);
 
         w--;
     }

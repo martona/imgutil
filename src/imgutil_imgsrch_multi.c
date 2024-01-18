@@ -9,15 +9,15 @@
     psabi level 1 (sse2, no popcnt):      77.63ms   99.87ms  141.48ms  279.48ms  558.98ms
     psabi level 0 (scalar only code):    153.38ms  188.61ms  272.98ms  542.18ms 1081.18ms
 
-    intel core i9 12900h (alder lake, 6p&8e cores) (2023 alienware x15 r2)
-    threads:                                  14        7        4
-    psabi level 4 (avx512):                  n/a      n/a      n/a
-    psabi level 3 (avx2):                31.75ms  42.28ms  65.34ms
-    psabi level 2 (sse4.2):              48.53ms  67.57ms 105.81ms
-    psabi level 1 (sse2, no popcnt):     96.46ms 138.89ms 217.39ms
-    psabi level 0 (scalar only code):    89.84ms 130.62ms 203.12ms
+*** intel core i9 12900h (alder lake, 6p&8e cores) (2023 alienware x15 r2)
+    threads:                                   6         4         2
+    psabi level 4 (avx512):                  n/a       n/a       n/a
+    psabi level 3 (avx2):                45.18ms   64.93ms  117.37ms
+    psabi level 2 (sse4.2):              70.64ms  101.88ms  183.57ms
+    psabi level 1 (sse2, no popcnt):    133.21ms  188.66ms  344.80ms
+    psabi level 0 (scalar only code):   467.36ms  662.12ms 1212.40ms
 
-*** intel xeon d-1540 (broadwell-de, 8 cores) (cca. 2016 supermicro x10sdv-tln4f)
+    intel xeon d-1540 (broadwell-de, 8 cores) (cca. 2016 supermicro x10sdv-tln4f)
     threads:                                   8         4         2
     psabi level 4 (avx512):                  n/a       n/a       n/a
     psabi level 3 (avx2):                93.73ms  164.31ms  468.72ms
@@ -25,13 +25,21 @@
     psabi level 1 (sse2, no popcnt):    304.22ms  598.99ms 1601.49ms
     psabi level 0 (scalar only code):   593.77ms 1152.99ms 2135.66ms
 
-*** 2-socket intel xeon e5-2687w (sandy bridge ep, 10 cores each) (2014 desktop)
+    2-socket intel xeon e5-2687w v3 (sandy bridge ep, 10 cores each) (2014 desktop)
     threads:                                  20       10        8           4          2
     psabi level 4 (avx512):                  n/a       n/a       n/a       n/a        n/a
     psabi level 3 (avx2):                38.45ms   44.38ms   55.45ms  110.71ms   205.63ms
     psabi level 2 (sse4.2):              76.69ms   85.26ms  106.12ms  212.24ms   401.45ms
     psabi level 1 (sse2, no popcnt):    138.88ms  160.15ms  198.30ms  400.22ms   738.85ms
     psabi level 0 (scalar only code):   267.26ms  312.49ms  391.84ms  794.71ms  1484.49ms
+
+    2-socket intel xeon e5-2687w (sandy bridge ep, 8 cores each) (2012 desktop)
+    threads:                                  16         8         4         2
+    psabi level 4 (avx512):                  n/a       n/a       n/a       n/a
+    psabi level 3 (avx2):                    n/a       n/a       n/a       n/a
+    psabi level 2 (sse4.2):              90.90ms  105.78ms  206.23ms  401.45ms
+    psabi level 1 (sse2, no popcnt):    206.87ms  249.28ms  485.81ms  968.66ms
+    psabi level 0 (scalar only code):   168.76ms  201.87ms  394.22ms  763.42ms
 
     intel core i5 8250u (kaby lake-r, 4 cores) (2017 system76 galago pro)
     threads:                                   4
@@ -49,13 +57,22 @@
     psabi level 1 (sse2, no popcnt):   515.60ms
     psabi level 0 (scalar only code):  446.58ms
 
-    intel core 2 duo t7700 (merom, 2 cores) (2007 macbook pro a1229)
+*** intel core 2 duo t7700 (merom, 2 cores) (2007 macbook pro a1229)
     threads:                                  2
     psabi level 4 (avx512):                 n/a
     psabi level 3 (avx2):                   n/a
     psabi level 2 (sse4.2):                 n/a
-    psabi level 1 (sse2, no popcnt):  3351.50ms
-    psabi level 0 (scalar only code): 2255.32ms
+    psabi level 1 (sse2, no popcnt):  3843.98ms
+    psabi level 0 (scalar only code): 8014.98ms
+
+*** 2-socket intel xeon x5680 (westmere ep, 6 cores each) (2010 desktop)
+    threads:                                 12         8         4         2
+    psabi level 4 (avx512):                 n/a       n/a       n/a       n/a
+    psabi level 3 (avx2):                   n/a       n/a       n/a       n/a
+    psabi level 2 (sse4.2):             92.88ms  138.50ms  272.20ms  528.09ms
+    psabi level 1 (sse2, no popcnt):   437.49ms  658.11ms 1246.79ms 2432.32ms
+    psabi level 0 (scalar only code): 1015.59ms 1578.24ms 2890.49ms 5905.99ms
+
 */
 
 #include "i_imgutil.h"
@@ -84,13 +101,13 @@ static void __stdcall imgutil_imgsrch_worker(ptr param, i32 thread_idx) {
         argb* result = 0;
         if (ctx->srch_ctx.force_topleft) {
             result = i_imgutil_imgsrch_haystackline_forcetopleft(
-                &ctx->srch_ctx,      // serach parameters
+                &ctx->srch_ctx,      // search parameters
                 &pixels_matched,     // pointer to store the number of pixels matched
                 scanline
             );
         } else {
             result = i_imgutil_imgsrch_haystackline(
-                &ctx->srch_ctx,      // serach parameters
+                &ctx->srch_ctx,      // search parameters
                 &pixels_matched,     // pointer to store the number of pixels matched
                 scanline
             );

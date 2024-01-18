@@ -9,29 +9,37 @@
     psabi level 1 (sse2, no popcnt):  663.21us  816.52us 806.64us 1198.03us 2266.57us
     psabi level 0 (scalar only code): 692.27us  840.97us 831.17us 1397.86us 2411.49us
 
-    intel core i9 12900h (alder lake, 6p&8e cores) (2023 alienware x15 r2)
-    threads:                                   14         7         4
+*** intel core i9 12900h (alder lake, 6p&8e cores) (2023 alienware x15 r2)
+    threads:                                    6         4         2
     psabi level 4 (avx512):                   n/a       n/a       n/a
-    psabi level 3 (avx2):               1148.11us  895.74us  963.76us
-    psabi level 2 (sse4.2):             1167.68us  915.58us 1050.42us
-    psabi level 1 (sse2, no popcnt):    1193.32us  912.41us 1047.78us
-    psabi level 0 (scalar only code):   1212.42us 1076.43us 1329.08us
+    psabi level 3 (avx2):                852.35us  987.28us 1706.61us
+    psabi level 2 (sse4.2):              877.39us 1037.38us 1740.51us
+    psabi level 1 (sse2, no popcnt):     878.93us 1038.46us 1735.07us
+    psabi level 0 (scalar only code):   1065.75us 1367.71us 2048.99us
 
-*** intel xeon d-1540 (broadwell-de, 8 cores) (cca. 2016 supermicro x10sdv-tln4f)
-    threads:                                   8         4         2
-    psabi level 4 (avx512):                  n/a       n/a       n/a
-    psabi level 3 (avx2):              3787.74us 3635.94us 4223.40us
-    psabi level 2 (sse4.2):            3373.25us 3614.86us 4251.88us
-    psabi level 1 (sse2, no popcnt):   3386.67us 3607.09us 4248.53us
-    psabi level 0 (scalar only code):  3390.67us 3711.62us 4731.66us
+    intel xeon d-1540 (broadwell-de, 8 cores) (cca. 2016 supermicro x10sdv-tln4f)
+    threads:                                                       8         4         2
+    psabi level 4 (avx512):                                      n/a       n/a       n/a
+    psabi level 3 (avx2):                                  3787.74us 3635.94us 4223.40us
+    psabi level 2 (sse4.2):                                3373.25us 3614.86us 4251.88us
+    psabi level 1 (sse2, no popcnt):                       3386.67us 3607.09us 4248.53us
+    psabi level 0 (scalar only code):                      3390.67us 3711.62us 4731.66us
          
-*** 2-socket intel xeon e5-2687w (sandy bridge ep, 10 cores each) (2014 desktop)
+    2-socket intel xeon e5-2687w v3 (sandy bridge ep, 10 cores each) (2014 desktop)
     threads:                                  20        10         8         4         2
     psabi level 4 (avx512):                  n/a       n/a       n/a       n/a       n/a
     psabi level 3 (avx2):              1711.79us 1797.60us 1812.59us 2069.82us 2866.35us
     psabi level 2 (sse4.2):            1711.28us 1799.54us 1818.53us 2076.74us 2858.15us
     psabi level 1 (sse2, no popcnt):   1711.22us 1796.32us 1816.56us 2068.15us 2856.54us
     psabi level 0 (scalar only code):  1709.45us 1801.45us 1830.57us 2153.73us 2911.41us
+         
+    2-socket intel xeon e5-2687w (sandy bridge ep, 8 cores each) (2012 desktop)
+    threads:                                            16         8         4         2
+    psabi level 4 (avx512):                            n/a       n/a       n/a       n/a
+    psabi level 3 (avx2):                              n/a       n/a       n/a       n/a
+    psabi level 2 (sse4.2):                      2491.10us 2613.79us 2590.68us 3102.92us
+    psabi level 1 (sse2, no popcnt):             2498.61us 2623.43us 2583.99us 3074.23us
+    psabi level 0 (scalar only code):            2486.11us 2620.55us 2626.07us 3332.82us
 
     intel core i5 8250u (kaby lake-r, 4 cores) (2017 system76 galago pro)
     threads:                                  4
@@ -48,14 +56,23 @@
     psabi level 2 (sse4.2):           4826.25us
     psabi level 1 (sse2, no popcnt):  4859.09us
     psabi level 0 (scalar only code): 4480.29us
-
-    intel core 2 duo t7700 (merom, 2 cores) (2007 macbook pro a1229)
+       
+*** intel core 2 duo t7700 (merom, 2 cores) (2007 macbook pro a1229)
     threads:                                  2
     psabi level 4 (avx512):                 n/a
     psabi level 3 (avx2):                   n/a
     psabi level 2 (sse4.2):                 n/a
-    psabi level 1 (sse2, no popcnt):    26.39ms
-    psabi level 0 (scalar only code):   63.68ms
+    psabi level 1 (sse2, no popcnt):    22.22ms
+    psabi level 0 (scalar only code):   22.42ms
+
+*** 2-socket intel xeon x5680 (westmere ep, 6 cores each) (2010 desktop)
+    threads:                                 12        8         4         2
+    psabi level 4 (avx512):                 n/a      n/a       n/a       n/a
+    psabi level 3 (avx2):                   n/a      n/a       n/a       n/a
+    psabi level 2 (sse4.2):           4735.20us 4558.24us 4591.57us 5677.97us
+    psabi level 1 (sse2, no popcnt):  4744.69us 4686.49us 4917.45us 5401.46us
+    psabi level 0 (scalar only code): 4780.52us 4888.49us 4902.63us 6238.32us
+
 */
 
 #include "i_imgutil_blit.c"

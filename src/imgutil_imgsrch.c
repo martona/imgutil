@@ -8,26 +8,33 @@
     psabi level 1 (sse2, no popcnt):    1134.38ms
     psabi level 0 (scalar only code):   2176.98ms
 
-    intel core i9 12900h (alder lake) (2023 alienware x15 r2)
+*** intel core i9 12900h (alder lake) (2023 alienware x15 r2)
     psabi level 4 (avx512):                  n/a
-    psabi level 3 (avx2):                214.9ms
-    psabi level 2 (sse4.2):              366.1ms
-    psabi level 1 (sse2, no popcnt):     779.0ms
-    psabi level 0 (scalar only code):    725.4ms
+    psabi level 3 (avx2):               224.87ms
+    psabi level 2 (sse4.2):             359.35ms
+    psabi level 1 (sse2, no popcnt):    687.50ms
+    psabi level 0 (scalar only code):  2411.33ms
          
-*** intel xeon d-1540 (broadwell-de, 8 cores) (cca. 2016 supermicro x10sdv-tln4f)
+    intel xeon d-1540 (broadwell-de, 8 cores) (cca. 2016 supermicro x10sdv-tln4f)
     psabi level 4 (avx512):                  n/a
     psabi level 3 (avx2):               564.32ms
     psabi level 2 (sse4.2):            1021.79ms
     psabi level 1 (sse2, no popcnt):   2348.66ms
     psabi level 0 (scalar only code):  3835.99ms
 
-*** intel xeon e5-2687w (sandy bridge ep) (2014 desktop)
+    2-socket intel xeon e5-2687w v3 (sandy bridge ep, 10 cores each) (2014 desktop)
     psabi level 4 (avx512):                  n/a
     psabi level 3 (avx2):               406.22ms
     psabi level 2 (sse4.2):             765.56ms
     psabi level 1 (sse2, no popcnt):   1437.49ms
     psabi level 0 (scalar only code):  2906.49ms
+         
+    2-socket intel xeon e5-2687w (sandy bridge ep, 8 cores each) (2012 desktop)
+    psabi level 4 (avx512):                  n/a
+    psabi level 3 (avx2):                    n/a
+    psabi level 2 (sse4.2):             747.71ms
+    psabi level 1 (sse2, no popcnt):   1786.66ms
+    psabi level 0 (scalar only code):  1550.74ms
 
     intel core i5 8250u (kaby lake-r) (2017 system76 galago pro)
     psabi level 4 (avx512):                  n/a
@@ -43,12 +50,20 @@
     psabi level 1 (sse2, no popcnt):  1519.50ms
     psabi level 0 (scalar only code): 1301.00ms
 
-    intel core 2 duo t7700 (merom) (2007 macbook pro a1229)
-    psabi level 4 (avx512):                 n/a
-    psabi level 3 (avx2):                   n/a
-    psabi level 2 (sse4.2):                 n/a
-    psabi level 1 (sse2, no popcnt):  9187.98ms
-    psabi level 0 (scalar only code): 7093.98ms
+*** intel core 2 duo t7700 (merom) (2007 macbook pro a1229)
+    psabi level 4 (avx512):                  n/a
+    psabi level 3 (avx2):                    n/a
+    psabi level 2 (sse4.2):                  n/a
+    psabi level 1 (sse2, no popcnt):   7734.98ms
+    psabi level 0 (scalar only code): 15905.98ms
+
+*** 2-socket intel xeon x5680 (westmere ep, 6 cores each) (2010 desktop)
+    psabi level 4 (avx512):                  n/a
+    psabi level 3 (avx2):                    n/a
+    psabi level 2 (sse4.2):             976.65ms
+    psabi level 1 (sse2, no popcnt):   5468.99ms
+    psabi level 0 (scalar only code): 12093.99ms
+
 */
 
 #include "i_imgutil.h"
@@ -68,11 +83,6 @@ typedef struct {
     vec   nl;               // needle low vector
     vec   nh;               // needle high vector
 } i_imgsrch_ctx;
-
-/*  important: if we can ensure that needle, needle_lo, needle_hi AND haystack
-    are all allocated to a size that is a multiple of the vector size (so 64 bytes 
-    covers all of them), then we can simplify the cleanup code in the vector
-    loops. pixelmatchcount, pixelscan and make_sat_masks all would benefit from this. */
 
 static inline argb* i_imgutil_imgsrch_haystackline_forcetopleft (
     i_imgsrch_ctx* ctx,     // parameters
@@ -121,7 +131,6 @@ static inline argb* i_imgutil_imgsrch_haystackline (
     argb* pixels     = ctx->haystack + haystack_row * ctx->haystack_w;
     argb* pixels_max = pixels + ctx->haystack_w - ctx->needle_w;
     while (pixels <= pixels_max) {
-        i32 row_pixels_left = (i32)(pixels_max - pixels);
         argb* ptr_needle_lo  = ctx->needle_lo;
         argb* ptr_needle_hi  = ctx->needle_hi;
         argb* inner_haystack = pixels;

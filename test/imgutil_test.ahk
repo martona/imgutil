@@ -363,23 +363,23 @@ class imgutilTest {
 
         ; test blit, fill, replace_color & srch
         img := imgu.from_file("imgutil_test.png")
-        img.show()
+        ;img.show()
         ; get the color for the blue rectangle in the middle
         bgc := img[501, 501, true]
         ; create a new image and fill it with red
         needle := imgu.from_nothing(171, 111)
         needle := needle.fill(0, 0, needle.w, needle.h, 0xffff0000)
-        needle.show()
+        ;needle.show()
         ; replace the red with the color of the blue rectangle
         needle := needle.replace_color(0xffff0000, bgc)
-        needle.show()
+        ;needle.show()
         ; copy the blue rectangle in the main image to an arbitrary location within itself
         imgu.blit(img.ptr, 983, 10, img.stride//4, img.ptr, 501, 501, img.stride//4, 171, 111)
-        img.show()
-        if (!imgu.srch(&x, &y, img, needle, 0, 100, 0))
+        ;img.show()
+        if (!imgu.srch(&x:=0, &y:=0, img, needle, 0, 100, 0))
             throw("test error")
         if (x != 983 || y != 10)
-            throw("test error (x: " . x . ", y: " . y . ")")
+            throw("test error (x: " . x . ", y: " . y . ")") ;TODO this fails with psabi0 (x: 983, y: 9)
 
         img := imgu.from_file("imgutil_test.png")
         small := img.crop(1000, 1000, 200, 200)

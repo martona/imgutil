@@ -13,14 +13,18 @@ static inline argb* i_imgutil_pixel_scan_v0
     i32 w
 )
 {
-    argb lo = nl.margb, hi = nh.margb;
-    while (w >= 0) {
-        argb h = *p;
-        i32 cond_r = ((i32)h.r - (i32)lo.r) <= ((i32)hi.r - (i32)lo.r);
-        i32 cond_g = ((i32)h.g - (i32)lo.g) <= ((i32)hi.g - (i32)lo.g);
-        i32 cond_b = ((i32)h.b - (i32)lo.b) <= ((i32)hi.b - (i32)lo.b);
-        if (cond_r & cond_g & cond_b)
+    argb l = nl.margb, h = nh.margb;
+    while (w >= 1) {
+        argb s = *p;
+        if ((s.r <= h.r) && (s.r >= l.r) && 
+            (s.g <= h.g) && (s.g >= l.g) && 
+            (s.b <= h.b) && (s.b >= l.b))
             return p;
+        // i32 cond_r = ((u32)s.r - (u32)l.r) <= ((u32)h.r - (u32)l.r);
+        // i32 cond_g = ((u32)s.g - (u32)l.g) <= ((u32)h.g - (u32)l.g);
+        // i32 cond_b = ((u32)s.b - (u32)l.b) <= ((u32)h.b - (u32)l.b);
+        // if (cond_r & cond_g & cond_b)
+        //     return p;
         p++;
         w--;
     }
